@@ -283,24 +283,28 @@
         const now = Date.now();
 
         const updateButtonText = (button, lastUsedTime, originalText) => {
-            // Pobierz element span wewnątrz przycisku
+            // Pobierz element span wewnątrz przycisku, który zawiera tekst
             const superpowerTextSpan = button.querySelector('.superpower-text');
-            if (!superpowerTextSpan) return; // Upewnij się, że span istnieje
+            // Jeśli nie ma spana (np. na desktopie, gdzie tekst jest bezpośrednio w przycisku),
+            // użyj textContent całego przycisku.
+            const targetElement = superpowerTextSpan || button; 
 
             if (!isGameActive && button.classList.contains('hidden')) {
-                superpowerTextSpan.textContent = ` ${originalText}`;
+                // Jeśli ukryty i gra nieaktywna, przywróć oryginalny tekst (ze spacją)
+                targetElement.textContent = ` ${originalText}`;
                 return;
             }
             if (!isGameActive) {
-                superpowerTextSpan.textContent = ` ${originalText}`;
+                // Jeśli gra nieaktywna, ale nie ukryty, przywróć oryginalny tekst (ze spacją)
+                targetElement.textContent = ` ${originalText}`;
                 return;
             }
 
             const timeLeft = Math.ceil((lastUsedTime + COOLDOWN_DURATION_MS - now) / 1000);
             if (timeLeft > 0) {
-                superpowerTextSpan.textContent = ` ${timeLeft}s`; // Dodaj spację dla lepszego wyglądu
+                targetElement.textContent = ` ${timeLeft}s`; // Dodaj spację dla lepszego wyglądu
             } else {
-                superpowerTextSpan.textContent = ` ${originalText}`; 
+                targetElement.textContent = ` ${originalText}`; 
             }
         };
 
