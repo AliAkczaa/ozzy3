@@ -31,7 +31,6 @@
     const ozzyImage = document.getElementById('ozzy-image');
     const healthBarFill = document.getElementById('health-bar-fill');
     const scoreDisplay = document.getElementById('score');
-    // Removed: const messageDisplay = document.getElementById('message-display'); // For general messages (e.g., "Stonks stronger")
     const gameContainer = document.getElementById('game-container');
 
     const startScreen = document.getElementById('start-screen');
@@ -144,7 +143,7 @@
         "Farmer z bsc tom pisze ze to ja jestem scammerem"
     ];
     let bossMovementAnimationFrameId; // Changed from IntervalId to AnimationFrameId
-    let bossDx = BOSS_MOVEMENT_SPEED; // Boss movement direction (initially right)
+    let bossDx = BOSS_MOVEMENT_SPEED; // Boss movement direction (początkowo w prawo)
     let bossCurrentTransformX = 0; // NEW: Tracks the translateX value for the boss
 
     // --- Audio element references ---
@@ -168,6 +167,7 @@
     const buyLightningDamageButton = document.getElementById('buy-lightning-damage');
 
     const freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+    // POPRAWKA: Usunięto zbędne "document = " z tej linii
     const freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
     const buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
 
@@ -603,7 +603,7 @@
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
         upgradeShopScreen.classList.add('hidden'); // Hide shop
-        startScreen.classList.remove('hidden'); // Pokaż ekran startowy
+        startScreen.classList.remove('hidden'); // Show start screen
         shopButton.classList.remove('hidden'); // Show shop button on start screen
         superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons on start screen
 
@@ -995,7 +995,6 @@
         ozzyContainer.classList.add('hidden');
         scoreDisplay.classList.add('hidden');
         currentLevelDisplay.parentElement.classList.add('hidden');
-        // Removed: messageDisplay.style.display = 'none';
         quoteImagesContainer.innerHTML = ''; // Ensure quotes container is empty at start
 
         resetGame(); // This function will also reset superpowers and cooldowns
