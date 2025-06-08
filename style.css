@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+.hidden {
+    display: none !important;
+}
+
 body {
     font-family: 'Press Start 2P', 'Comic Sans MS', cursive, sans-serif;
     margin: 0;
@@ -543,7 +547,8 @@ button:active {
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.95); /* Ciemniejsze, bardziej nieprzezroczyste tło */
     color: white;
-    display: flex;
+    /* WAŻNE: display flex, aby poprawnie wyśrodkować zawartość */
+    display: flex; 
     flex-direction: column;
     justify-content: center;
     align-items: center;

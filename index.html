@@ -52,8 +52,8 @@
             <button id="back-to-start-button">Wróć do menu</button>
         </div>
 
-        <!-- NOWY EKRAN SKLEPU ULEPSZEŃ -->
-        <div id="upgrade-shop-screen" class="hidden">
+        <!-- EKRAN SKLEPU ULEPSZEŃ (WAŻNE: klasa hidden na początek) -->
+        <div id="upgrade-shop-screen" class="hidden"> 
             <h2>Sklep Ulepszeń</h2>
             <div class="upgrade-shop-content">
                 <!-- Ulepszenie Obrażeń Podstawowych -->
@@ -104,15 +104,15 @@
         <div id="quote-images-container"></div> <!-- Kontener na obrazki cytatów -->
 
 
-        <!-- Kontener na przyciski supermocy -->
+        <!-- Kontener na przyciski supermocy (ukryty na start) -->
         <div id="superpower-buttons-container" class="hidden">
             <button id="btn-lightning" class="superpower-button">⚡ Piorun Zagłady</button>
             <button id="btn-freeze" class="superpower-button">❄️ Lodowy Wybuch</button>
             <button id="btn-frenzy" class="superpower-button">🔥 Szał Bojowy</button>
         </div>
 
-        <!-- Przycisk Sklepu Ulepszeń (widoczny podczas gry) -->
-        <button id="shop-button">SKLEP ULEPSZEŃ</button>
+        <!-- Przycisk Sklepu Ulepszeń (widoczny podczas gry, ale ukryty na ekranach menu) -->
+        <button id="shop-button" class="hidden">SKLEP ULEPSZEŃ</button>
 
         <!-- Efekty supermocy (początkowo ukryte) -->
         <div id="lightning-effect" class="effect-overlay hidden"></div>
@@ -123,7 +123,7 @@
 
     <!-- Dźwięki do gry -->
     <audio id="background-music" loop>
-        <source src="traktor.mp3" type="audio/mpeg">
+        <source src="traktor.mp3" type="audio/mpeg"> <!-- POPRAWIONO ŚCIEŻKĘ AUDIO -->
         Twoja przeglądarka nie obsługuje elementu audio.
     </audio>
     <audio id="punch-sound">

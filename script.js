@@ -2,7 +2,7 @@
     // Przejdź do Firebase Console -> Twój Projekt -> Ustawienia projektu (zębatka) -> Dodaj aplikację (ikona </> dla web)
     // Skopiuj obiekt firebaseConfig i wklej go tutaj:
     const firebaseConfig = {
-        apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Twoje klucze Firebase
+        apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
         authDomain: "ozzy-14c19.firebaseapp.com",
         projectId: "ozzy-14c19",
         storageBucket: "ozzy-14c19.firebasestorage.app",
@@ -10,28 +10,28 @@
         appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
     };
 
-    // === ZMIENIONO: Importy modularne Firebase SDK v9 ===
+    // === Modular Firebase SDK v9 Imports ===
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js'; // Usunięto serverTimestamp, bo nie jest bezpośrednio importowany, ale używany w kodzie
-    import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js'; 
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js'; 
+    import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+    import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js';
 
-    // Inicjalizacja Firebase (teraz używamy modularnych funkcji)
+    // Firebase Initialization
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app); 
-    const functions = getFunctions(app); 
-    const submitScoreFunction = httpsCallable(functions, 'submitScore'); // Odwołanie do naszej funkcji chmurowej
+    const auth = getAuth(app);
+    const functions = getFunctions(app);
+    const submitScoreFunction = httpsCallable(functions, 'submitScore'); // Reference to our Cloud Function
 
     // ===================================================================
 
-    // Pobieranie referencji do elementów DOM
+    // Get DOM element references
     const backgroundTractor = document.getElementById('animated-background-tractor');
-    const ozzyContainer = document.getElementById('ozzy-container'); 
-    const ozzyImage = document.getElementById('ozzy-image'); 
-    const healthBarFill = document.getElementById('health-bar-fill'); 
+    const ozzyContainer = document.getElementById('ozzy-container');
+    const ozzyImage = document.getElementById('ozzy-image');
+    const healthBarFill = document.getElementById('health-bar-fill');
     const scoreDisplay = document.getElementById('score');
-    const messageDisplay = document.getElementById('message-display'); // Do ogólnych komunikatów (np. "Stonks silniejszy")
+    const messageDisplay = document.getElementById('message-display'); // For general messages (e.g., "Stonks stronger")
     const gameContainer = document.getElementById('game-container');
 
     const startScreen = document.getElementById('start-screen');
@@ -44,34 +44,34 @@
     const endScreen = document.getElementById('end-screen');
     const finalScoreDisplay = document.getElementById('final-score');
     const restartButton = document.getElementById('restart-button');
-    const showLeaderboardAfterGameButton = document.getElementById('show-leaderboard-after-game-button'); 
+    const showLeaderboardAfterGameButton = document.getElementById('show-leaderboard-after-game-button');
 
     const leaderboardScreen = document.getElementById('leaderboard-screen');
     const leaderboardList = document.getElementById('leaderboard-list');
     const backToStartButton = document.getElementById('back-to-start-button');
 
-    // Referencja do wyświetlania poziomu
+    // Level display reference
     const currentLevelDisplay = document.getElementById('current-level');
 
-    let score = 0; 
-    let ozzyHealth = 100; 
-    let INITIAL_OZZY_HEALTH = 100; 
-    let PUNCH_DAMAGE = 10; // Zmieniono na let, bo będzie modyfikowane przez Szał Bojowy i ulepszenia
-    let currentUserId = null; 
-    let isGameActive = false; // Flaga określająca, czy gra jest W TRAKCIE (nie pauzowana na ekranach menu/sklepu)
+    let score = 0;
+    let ozzyHealth = 100;
+    let INITIAL_OZZY_HEALTH = 100;
+    let PUNCH_DAMAGE = 10; // Changed to let, as it will be modified by Frenzy and upgrades
+    let currentUserId = null;
+    let isGameActive = false; // Flag indicating if the game is active (not paused on menu/shop screens)
 
-    // Zmienna dla aktualnego poziomu
+    // Current level variable
     let currentLevel = 0;
-    // Flaga do oznaczania walki z bossem
+    // Flag for boss fight
     let isBossFight = false;
 
-    // DODANO: Deklaracja zmiennej punchesSinceLastPowerup
+    // Punches since last powerup activation
     let punchesSinceLastPowerup = 0;
 
-    // --- Referencje i zmienne dla obrazków cytatów ---
+    // --- Quote image references and variables ---
     const quoteImagesContainer = document.getElementById('quote-images-container');
     const quoteImagePaths = [
-        '1.png', '2.png', '3.png', 
+        '1.png', '2.png', '3.png',
         '4.png', '5.png', '6.png',
         '7.png', '8.png', '9.png',
         '10.png', '11.png', '12.png',
@@ -85,58 +85,57 @@
     const QUOTE_DISPLAY_DURATION_MS = 2000;
     const QUOTE_SIZE_PX = 150;
 
-    // --- Elementy i zmienne dla supermocy ---
+    // --- Superpower elements and variables ---
     const superpowerButtonsContainer = document.getElementById('superpower-buttons-container');
     const btnLightning = document.getElementById('btn-lightning');
-    const btnFreeze = document.getElementById('btn-freeze'); 
+    const btnFreeze = document.getElementById('btn-freeze');
     const btnFrenzy = document.getElementById('btn-frenzy');
 
-    // Oryginalne teksty przycisków (do wyświetlania po zakończeniu cooldownu)
+    // Original button texts (for displaying after cooldown)
     const originalLightningText = '⚡ Piorun Zagłady';
     const originalFreezeText = '❄️ Lodowy Wybuch';
     const originalFrenzyText = '🔥 Szał Bojowy';
 
-
     const lightningEffect = document.getElementById('lightning-effect');
-    const freezeEffect = document.getElementById('freeze-effect'); 
+    const freezeEffect = document.getElementById('freeze-effect');
     const frenzyEffect = document.getElementById('frenzy-effect');
 
-    const PUNCHES_PER_POWERUP = 10; // Ile uderzeń do aktywacji supermocy (próg)
+    const PUNCHES_PER_POWERUP = 10; // How many punches to activate a superpower (threshold)
 
-    const COOLDOWN_DURATION_MS = 60 * 1000; // 60 sekund
+    const COOLDOWN_DURATION_MS = 60 * 1000; // 60 seconds
 
-    let lastUsedLightningTime = 0; // Timestamp ostatniego użycia Pioruna
-    let lastUsedFreezeTime = 0; // Timestamp ostatniego użycia Lodowego Wybuchu
-    let lastUsedFrenzyTime = 0; // Timestamp ostatniego użycia Szału Bojowego
+    let lastUsedLightningTime = 0; // Timestamp of last Lightning use
+    let lastUsedFreezeTime = 0; // Timestamp of last Ice Blast use
+    let lastUsedFrenzyTime = 0; // Timestamp of last Frenzy use
 
     let frenzyModeActive = false;
     let frenzyTimerId;
-    const FRENZY_DAMAGE_MULTIPLIER = 3; // Np. 3 razy większe obrażenia
-    const FRENZY_DURATION_MS = 5000; // Czas trwania Szału Bojowego (5 sekund)
+    const FRENZY_DAMAGE_MULTIPLIER = 3; // E.g., 3 times more damage
+    const FRENZY_DURATION_MS = 5000; // Duration of Frenzy (5 seconds)
 
-    // Zmieniono na zmienne dynamiczne (będą skalowane przez ulepszenia)
-    let LIGHTNING_BASE_DAMAGE = 150; // Zmniejszone z 450 do 150, skalowalne
-    let ICE_BLAST_INITIAL_DAMAGE = 50; 
-    let ICE_BLAST_DOT_DAMAGE_PER_SECOND = 25; 
-    const ICE_BLAST_DOT_DURATION_SECONDS = 5; 
+    // Dynamic variables (will be scaled by upgrades)
+    let LIGHTNING_BASE_DAMAGE = 150; // Reduced from 450 to 150, scalable
+    let ICE_BLAST_INITIAL_DAMAGE = 50;
+    let ICE_BLAST_DOT_DAMAGE_PER_SECOND = 25;
+    const ICE_BLAST_DOT_DURATION_SECONDS = 5;
     let FRENZY_INITIAL_DAMAGE = 30;
 
-    let superpowerCooldownIntervalId; // ID dla setInterval do aktualizacji timerów
+    let superpowerCooldownIntervalId; // Interval ID for updating timers
 
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    // Ścieżki do obrazków Stonksa (normalnego i bossa)
+    // Paths to Stonks images (normal and boss)
     const ORIGINAL_OZZY_IMAGE_URL = 'zdjecie 2.jpg';
-    const BOSS_IMAGE_URL = 'stonksboss.png'; // Użyj grafiki stonksboss.png
+    const BOSS_IMAGE_URL = 'stonksboss.png'; // Use stonksboss.png graphic
 
-    // Wartości zdrowia dla normalnego Stonksa i Bossa
+    // Health values for normal Stonks and Boss
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
-    const NORMAL_OZZY_HEALTH_INCREMENT = 20; // Zwiększenie zdrowia dla normalnego Stonksa co 5 zabic
-    const BOSS_INITIAL_HEALTH = 450; // Zwiększone o 50% względem 300 -> 450
+    const NORMAL_OZZY_HEALTH_INCREMENT = 20; // Health increase for normal Stonks every 5 knockouts
+    const BOSS_INITIAL_HEALTH = 450; // Increased by 50% from 300 -> 450
 
-    // Modyfikatory prędkości i kwestie dla bossa
-    const BOSS_MOVEMENT_SPEED = 2; // Szybkość ruchu bossa (piksele na klatkę animacji)
+    // Boss movement modifiers and quotes
+    const BOSS_MOVEMENT_SPEED = 2; // Boss movement speed (pixels per animation frame)
     const BOSS_QUOTES = [
         "CHLOPY OD CRYPTONA FARMIA!",
         "TTB TO GÓWNO! TYLKO STONKS!",
@@ -144,18 +143,18 @@
         "Jeden launchpad, jeden bot, jeden dex!",
         "Farmer z bsc tom pisze ze to ja jestem scammerem"
     ];
-    let bossMovementAnimationFrameId; // Zmieniono z IntervalId na AnimationFrameId
-    let bossDx = BOSS_MOVEMENT_SPEED; // Kierunek ruchu bossa (początkowo w prawo)
-    let bossCurrentTransformX = 0; // NOWE: Śledzi wartość translateX dla bossa
+    let bossMovementAnimationFrameId; // Changed from IntervalId to AnimationFrameId
+    let bossDx = BOSS_MOVEMENT_SPEED; // Boss movement direction (initially right)
+    let bossCurrentTransformX = 0; // NEW: Tracks the translateX value for the boss
 
-    // --- Referencje do elementów audio ---
+    // --- Audio element references ---
     const backgroundMusic = document.getElementById('background-music');
-    const punchSound = document.getElementById('punch-sound'); 
+    const punchSound = document.getElementById('punch-sound');
 
-    // --- Maksymalny wynik po stronie klienta (anti-cheat) ---
-    const CLIENT_SIDE_MAX_SCORE = 200; 
+    // --- Client-side max score (anti-cheat) ---
+    const CLIENT_SIDE_MAX_SCORE = 200;
 
-    // --- NOWE: Elementy i zmienne dla systemu ulepszeń ---
+    // --- NEW: Upgrade system elements and variables ---
     const shopButton = document.getElementById('shop-button');
     const upgradeShopScreen = document.getElementById('upgrade-shop-screen');
     const closeShopButton = document.getElementById('close-shop-button');
@@ -176,7 +175,7 @@
     const frenzyDamageCostDisplay = document.getElementById('frenzy-damage-cost');
     const buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
 
-    // Zmienne stanu ulepszeń
+    // Upgrade state variables
     let upgradeLevels = {
         baseDamage: 1,
         lightningDamage: 1,
@@ -184,46 +183,46 @@
         frenzyDamage: 1
     };
 
-    // Koszty i modyfikatory ulepszeń (do dostosowania!)
+    // Upgrade costs and modifiers (adjustable!)
     const UPGRADE_COST_BASE = 10;
-    const UPGRADE_COST_MULTIPLIER = 1.5; // Koszt rośnie o 50% za każdy poziom
-    const DAMAGE_INCREASE_PER_LEVEL = 5; // Zwiększenie bazowych obrażeń o 5 na poziom
+    const UPGRADE_COST_MULTIPLIER = 1.5; // Cost increases by 50% for each level
+    const DAMAGE_INCREASE_PER_LEVEL = 5; // Base damage increases by 5 per level
 
-    const LIGHTNING_DAMAGE_INCREASE_PER_LEVEL = 30; // Piorun: zwiększenie obrażeń o 30
-    const FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL = 10; // Freeze: zwiększenie początkowych obrażeń o 10
-    const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; // Freeze: zwiększenie obrażeń DOT o 5
-    const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; // Frenzy: zwiększenie początkowych obrażeń o 15
+    const LIGHTNING_DAMAGE_INCREASE_PER_LEVEL = 30; // Lightning: damage increase by 30
+    const FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL = 10; // Freeze: initial damage increase by 10
+    const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; // Freeze: DOT damage increase by 5
+    const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; // Frenzy: initial damage increase by 15
 
 
-    // --- Funkcje Leaderboarda ---
+    // --- Leaderboard Functions ---
     async function saveScoreToLeaderboard(nickname, score) {
-        console.log("saveScoreToLeaderboard wywołane z nickiem:", nickname, "wynikiem:", score); 
+        console.log("saveScoreToLeaderboard called with nickname:", nickname, "score:", score);
         if (score > CLIENT_SIDE_MAX_SCORE) {
-            showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000); 
-            console.warn(`Próba zapisu nierealnego wyniku (${score}) przez ${nickname}. Zablokowano po stronie klienta.`);
-            setTimeout(resetGame, 3000); 
-            return; 
+            showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000);
+            console.warn(`Attempt to save unrealistic score (${score}) by ${nickname}. Blocked client-side.`);
+            setTimeout(resetGame, 3000);
+            return;
         }
 
-        if (score > 0 && currentUserId) { 
+        if (score > 0 && currentUserId) {
             try {
-                // Dodano Timestamp dla sortowania w Firestore
+                // Cloud function call instead of direct Firestore write
                 const result = await submitScoreFunction({ nickname: nickname, score: score });
-                console.log("Odpowiedź z funkcji chmurowej:", result.data);
-                showMessage(result.data.message, 2000); 
+                console.log("Response from Cloud Function:", result.data);
+                showMessage(result.data.message, 2000);
             } catch (error) {
-                console.error("Błąd podczas wywoływania funkcji chmurowej:", error.code, error.message);
-                showMessage(`Błąd zapisu: ${error.message}`, 3000); 
+                console.error("Error calling Cloud Function:", error.code, error.message);
+                showMessage(`Błąd zapisu: ${error.message}`, 3000);
             }
-        } else if (!currentUserId) { 
-            console.warn("Nie można zapisać wyniku: Użytkownik nie jest uwierzytelniony. Sprawdź konfigurację Firebase Auth.");
+        } else if (!currentUserId) {
+            console.warn("Cannot save score: User is not authenticated. Check Firebase Auth configuration.");
             showMessage("Błąd: Brak uwierzytelnienia do zapisu wyniku.", 3000);
         }
     }
 
     async function fetchAndDisplayLeaderboard() {
-        console.log("fetchAndDisplayLeaderboard wywołane."); 
-        leaderboardList.innerHTML = ''; // Wyczyść listę przed załadowaniem
+        console.log("fetchAndDisplayLeaderboard called.");
+        leaderboardList.innerHTML = ''; // Clear list before loading
         try {
             const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), orderBy("timestamp", "asc"), limit(10));
             const snapshot = await getDocs(q);
@@ -240,52 +239,52 @@
                 leaderboardList.appendChild(li);
             });
         } catch (e) {
-            console.error("Błąd podczas pobierania rankingu: ", e);
+            console.error("Error fetching leaderboard: ", e);
             leaderboardList.innerHTML = '<li>Wystąpił błąd podczas ładowania rankingu.</li>';
         }
     }
 
-    // --- Funkcje Cytatów ---
+    // --- Quote Functions ---
     function spawnRandomQuote() {
         const randomImagePath = quoteImagePaths[Math.floor(Math.random() * quoteImagePaths.length)];
-        
+
         const img = document.createElement('img');
         img.src = randomImagePath;
-        img.classList.add('quote-image'); // Klasa dla stylizacji CSS
-        
-        // Losowa pozycja w obrębie gameContainer, ale unikając krawędzi
+        img.classList.add('quote-image'); // CSS class for styling
+
+        // Random position within gameContainer, avoiding edges
         const gameContainerRect = gameContainer.getBoundingClientRect();
         const maxX = gameContainerRect.width - QUOTE_SIZE_PX;
         const maxY = gameContainerRect.height - QUOTE_SIZE_PX;
 
-        // Upewnij się, że nie wychodzi poza kontener i ma trochę marginesu
+        // Ensure it doesn't go outside the container and has some margin
         const randomX = Math.random() * Math.max(0, maxX);
         const randomY = Math.random() * Math.max(0, maxY);
-        
+
         img.style.left = `${randomX}px`;
         img.style.top = `${randomY}px`;
 
-        // Losowy kąt obrotu (-45 do +45 stopni)
-        const randomRotation = Math.random() * 90 - 45; // Losuje od -45 do 45
+        // Random rotation angle (-45 to +45 degrees)
+        const randomRotation = Math.random() * 90 - 45; // Random from -45 to 45
         img.style.transform = `rotate(${randomRotation}deg)`;
 
         quoteImagesContainer.appendChild(img);
 
-        // Aktywuj animację pojawiania się
+        // Activate appearance animation
         setTimeout(() => {
             img.classList.add('active');
-        }, 10); // Małe opóźnienie, aby CSS transition zadziałało
+        }, 10); // Small delay for CSS transition to work
 
-        // Ustaw czas zniknięcia
+        // Set disappear time
         setTimeout(() => {
-            img.classList.remove('active'); // Rozpocznij animację znikania
+            img.classList.remove('active'); // Start fade-out animation
             setTimeout(() => {
-                img.remove(); // Usuń element z DOM po zakończeniu animacji
-            }, 500); // Czas trwania animacji opactiy
+                img.remove(); // Remove element from DOM after animation
+            }, 500); // Opacity animation duration
         }, QUOTE_DISPLAY_DURATION_MS);
     }
 
-    // --- Funkcja: Ujednolicone zadawanie obrażeń ---
+    // --- Function: Unified Damage Application ---
     function applyDamageToOzzy(damageAmount) {
         ozzyHealth -= damageAmount;
         ozzyHealth = Math.max(0, ozzyHealth);
@@ -295,61 +294,57 @@
         }
     }
 
-    // --- Funkcje supermocy ---
+    // --- Superpower Functions ---
     function updateSuperpowerButtons() {
         const now = Date.now();
 
-        // Sprawdź próg uderzeń ORAZ cooldown dla każdego przycisku
-        const canUseLightning = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
-                                ((now - lastUsedLightningTime >= COOLDOWN_DURATION_MS) || lastUsedLightningTime === 0) && 
-                                isGameActive; // Tylko jeśli gra jest aktywna
-        
-        const canUseFreeze = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
-                             ((now - lastUsedFreezeTime >= COOLDOWN_DURATION_MS) || lastUsedFreezeTime === 0) && 
-                             isGameActive; // Tylko jeśli gra jest aktywna
-        
-        const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
-                             ((now - lastUsedFrenzyTime >= COOLDOWN_DURATION_MS) || lastUsedFrenzyTime === 0) && 
-                             isGameActive; // Tylko jeśli gra jest aktywna
+        // Check punch threshold AND cooldown for each button
+        const canUseLightning = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                                ((now - lastUsedLightningTime >= COOLDOWN_DURATION_MS) || lastUsedLightningTime === 0) &&
+                                isGameActive; // Only if game is active
+
+        const canUseFreeze = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                             ((now - lastUsedFreezeTime >= COOLDOWN_DURATION_MS) || lastUsedFreezeTime === 0) &&
+                             isGameActive; // Only if game is active
+
+        const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                             ((now - lastUsedFrenzyTime >= COOLDOWN_DURATION_MS) || lastUsedFrenzyTime === 0) &&
+                             isGameActive; // Only if game is active
 
         btnLightning.disabled = !canUseLightning;
         btnFreeze.disabled = !canUseFreeze;
         btnFrenzy.disabled = !canUseFrenzy;
 
-        // Kontener przycisków jest klikalny, jeśli którykolwiek przycisk jest aktywny
+        // Superpower buttons container is clickable if any button is active
         if (canUseLightning || canUseFreeze || canUseFrenzy) {
-            superpowerButtonsContainer.style.pointerEvents = 'auto'; 
+            superpowerButtonsContainer.style.pointerEvents = 'auto';
         } else {
             superpowerButtonsContainer.style.pointerEvents = 'none';
         }
 
-        // Aktualizuj wyświetlanie cooldownów
+        // Update cooldown displays
         updateSuperpowerCooldownDisplays();
     }
 
-    // Aktualizuje tekst na przyciskach supermocy o pozostały czas cooldownu
+    // Updates superpower button texts with remaining cooldown time
     function updateSuperpowerCooldownDisplays() {
         const now = Date.now();
 
         const updateButtonText = (button, lastUsedTime, originalText) => {
-            // Jeśli gra nieaktywna lub przycisk jest aktywny (dostępny), wyświetl oryginalny tekst
-            // Zmieniono warunek, aby wyświetlać oryginalny tekst tylko gdy gra nieaktywna,
-            // ale przyciski są widoczne (np. w menu). W trakcie gry zawsze pokazujemy cooldown.
-            if (!isGameActive && button.classList.contains('hidden')) { // Jeśli gra nieaktywna i przyciski ukryte
+            if (!isGameActive && button.classList.contains('hidden')) {
                 button.textContent = originalText;
                 return;
             }
-            if (!isGameActive) { // Jeśli gra nieaktywna, ale przyciski widoczne (np. po wyjściu ze sklepu do menu)
+            if (!isGameActive) {
                 button.textContent = originalText;
                 return;
             }
-
 
             const timeLeft = Math.ceil((lastUsedTime + COOLDOWN_DURATION_MS - now) / 1000);
             if (timeLeft > 0) {
                 button.textContent = `${timeLeft}s`;
             } else {
-                button.textContent = originalText; // Cooldown minął, pokaż oryginalny tekst
+                button.textContent = originalText; // Cooldown expired, show original text
             }
         };
 
@@ -363,83 +358,81 @@
         if (!isGameActive || btnLightning.disabled) return;
 
         showMessage("PIORUN ZAGŁADY!", 1500);
-        punchesSinceLastPowerup = 0; // Resetuj licznik uderzeń
-        lastUsedLightningTime = Date.now(); // Ustaw czas ostatniego użycia
-        updateSuperpowerButtons(); // Zablokuj przyciski i zaktualizuj timery
+        punchesSinceLastPowerup = 0; // Reset punch counter
+        lastUsedLightningTime = Date.now(); // Set last use time
+        updateSuperpowerButtons(); // Disable buttons and update timers
 
-        // Oblicz obrażenia pioruna na podstawie poziomu ulepszenia
+        // Calculate lightning damage based on upgrade level
         const actualLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage - 1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
-        applyDamageToOzzy(actualLightningDamage); // Zadaj obrażenia
+        applyDamageToOzzy(actualLightningDamage); // Apply damage
 
-        // Efekt wizualny błyskawicy (generowany kodem)
-        const segments = 10; // Liczba segmentów błyskawicy
+        // Visual lightning effect (generated by code)
+        const segments = 10; // Number of lightning segments
         const ozzyRect = ozzyContainer.getBoundingClientRect();
         const startX = ozzyRect.left + ozzyRect.width / 2;
-        const startY = ozzyRect.top - 50; // Zaczyna się nad Ozzym
+        const startY = ozzyRect.top - 50; // Starts above Ozzy
 
         for (let i = 0; i < segments; i++) {
             const segment = document.createElement('div');
             segment.classList.add('lightning-segment');
-            
-            const length = Math.random() * 50 + 30; // Długość segmentu
-            const angle = Math.random() * 40 - 20; // Kąt odchylenia
-            const width = Math.random() * 5 + 3; // Grubość segmentu
+
+            const length = Math.random() * 50 + 30; // Segment length
+            const angle = Math.random() * 40 - 20; // Deviation angle
+            const width = Math.random() * 5 + 3; // Segment thickness
 
             segment.style.width = `${width}px`;
             segment.style.height = `${length}px`;
-            segment.style.left = `${startX + (Math.random() - 0.5) * 50}px`; // Losowe przesunięcie
+            segment.style.left = `${startX + (Math.random() - 0.5) * 50}px`; // Random offset
             segment.style.top = `${startY + i * (ozzyRect.height / segments) + (Math.random() - 0.5) * 20}px`;
             segment.style.transform = `rotate(${angle}deg)`;
-            segment.style.transformOrigin = `center top`; // Obracaj od góry
+            segment.style.transformOrigin = `center top`; // Rotate from top
 
             lightningEffect.appendChild(segment);
         }
 
         lightningEffect.classList.remove('hidden');
-        
+
         setTimeout(() => {
             lightningEffect.classList.add('hidden');
-            lightningEffect.innerHTML = ''; // Usuń segmenty
-        }, 1000); // Czas trwania efektu
+            lightningEffect.innerHTML = ''; // Remove segments
+        }, 1000); // Effect duration
     }
 
-    function activateIceBlast() { 
+    function activateIceBlast() {
         if (!isGameActive || btnFreeze.disabled) return;
 
         showMessage("LODOWY WYBUCH!", 1500);
-        punchesSinceLastPowerup = 0; // Resetuj licznik uderzeń
-        lastUsedFreezeTime = Date.now(); // Ustaw czas ostatniego użycia
-        updateSuperpowerButtons(); // Zablokuj przyciski i zaktualizuj timery
+        punchesSinceLastPowerup = 0; // Reset punch counter
+        lastUsedFreezeTime = Date.now(); // Set last use time
+        updateSuperpowerButtons(); // Disable buttons and update timers
 
-        // Oblicz obrażenia Lodowego Wybuchu na podstawie poziomu ulepszenia
+        // Calculate Ice Blast damage based on upgrade level
         const actualIceBlastInitialDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
         const actualIceBlastDotDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
 
-        // Usuwamy hidden, dodajemy active
+        // Remove hidden, add active
         freezeEffect.classList.remove('hidden');
-        freezeEffect.classList.add('active'); // Aktywuje efekty CSS na czas trwania
+        freezeEffect.classList.add('active'); // Activates CSS effects for the duration
 
-        applyDamageToOzzy(actualIceBlastInitialDamage); // Zadaj początkowe obrażenia
+        applyDamageToOzzy(actualIceBlastInitialDamage); // Apply initial damage
 
-        freezeModeActive = true; // Aktywuj tryb zamrożenia
+        freezeModeActive = true; // Activate freeze mode
         let dotTicks = 0;
         const maxDotTicks = ICE_BLAST_DOT_DURATION_SECONDS;
 
-        // Rozpocznij zadawanie obrażeń co sekundę i spawning kryształków
-        clearInterval(freezeDotIntervalId); // Upewnij się, że poprzedni interwał jest wyczyszczony
+        // Start applying damage every second and spawning shards
+        clearInterval(freezeDotIntervalId); // Ensure previous interval is cleared
         freezeDotIntervalId = setInterval(() => {
-            if (!isGameActive && !upgradeShopScreen.classList.contains('hidden')) { // Sprawdź, czy gra nadal aktywna LUB czy jesteśmy w sklepie
-                // Jeśli jesteśmy w sklepie, nie kończ DOT, ale zatrzymaj interwał
+            if (!isGameActive && !upgradeShopScreen.classList.contains('hidden')) { // Check if game is still active OR if we are in the shop
+                // If in shop, don't end DOT, but stop interval
                 clearInterval(freezeDotIntervalId);
-                // Nie ustawiaj freezeModeActive na false tutaj, zostanie to zrobione przy wznowieniu gry
-                // Po prostu wznawiamy interwał przy wznowieniu gry.
                 return;
             }
-            if (!isGameActive) { // Jeśli gra nieaktywna (poza sklepem)
+            if (!isGameActive) { // If game is inactive (outside shop)
                 clearInterval(freezeDotIntervalId);
-                freezeModeActive = false; // Deaktywuj tryb zamrożenia
-                freezeEffect.classList.remove('active'); // Usuń klasę efektu wizualnego
-                freezeEffect.innerHTML = ''; // Usuń kryształki
+                freezeModeActive = false; // Deactivate freeze mode
+                freezeEffect.classList.remove('active'); // Remove visual effect class
+                freezeEffect.innerHTML = ''; // Remove shards
                 return;
             }
             applyDamageToOzzy(actualIceBlastDotDamage);
@@ -457,40 +450,40 @@
                 // Remove old shards after their animation (1s defined in CSS)
                 setTimeout(() => {
                     shard.remove();
-                }, 1000); 
+                }, 1000);
             }
 
             if (dotTicks >= maxDotTicks) {
                 clearInterval(freezeDotIntervalId);
-                freezeModeActive = false; // Deaktywuj tryb zamrożenia
-                freezeEffect.classList.remove('active'); // Usuń klasę efektu wizualnego
-                freezeEffect.innerHTML = ''; // Upewnij się, że wszystkie kryształki są usunięte na koniec
-                showMessage("Lodowy Wybuch osłabł.", 1000); // Komunikat o zakończeniu efektu
+                freezeModeActive = false; // Deactivate freeze mode
+                freezeEffect.classList.remove('active'); // Remove visual effect class
+                freezeEffect.innerHTML = ''; // Ensure all shards are removed at the end
+                showMessage("Lodowy Wybuch osłabł.", 1000); // Message about effect ending
             }
-        }, 1000); // Co sekundę
+        }, 1000); // Every second
     }
 
     function activateFrenzy() {
         if (!isGameActive || btnFrenzy.disabled) return;
 
         showMessage("SZAŁ BOJOWY!", 1500);
-        punchesSinceLastPowerup = 0; // Resetuj licznik uderzeń
-        lastUsedFrenzyTime = Date.now(); // Ustaw czas ostatniego użycia
-        updateSuperpowerButtons(); // Zablokuj przyciski i zaktualizuj timery
+        punchesSinceLastPowerup = 0; // Reset punch counter
+        lastUsedFrenzyTime = Date.now(); // Set last use time
+        updateSuperpowerButtons(); // Disable buttons and update timers
 
-        // Oblicz początkowe obrażenia Szału Bojowego na podstawie poziomu ulepszenia
+        // Calculate initial Frenzy damage based on upgrade level
         const actualFrenzyInitialDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
-        applyDamageToOzzy(actualFrenzyInitialDamage); // Zadaj początkowe obrażenia
+        applyDamageToOzzy(actualFrenzyInitialDamage); // Apply initial damage
 
         frenzyModeActive = true;
-        PUNCH_DAMAGE *= FRENZY_DAMAGE_MULTIPLIER; // Zwiększ obrażenia od uderzeń
+        PUNCH_DAMAGE *= FRENZY_DAMAGE_MULTIPLIER; // Increase punch damage
         frenzyEffect.classList.remove('hidden');
         frenzyEffect.classList.add('active');
 
-        clearTimeout(frenzyTimerId); // Upewnij się, że poprzedni timer szału jest wyczyszczony
+        clearTimeout(frenzyTimerId); // Ensure previous frenzy timer is cleared
         frenzyTimerId = setTimeout(() => {
             frenzyModeActive = false;
-            PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL; // Przywróć normalne obrażenia (ale uwzględnij ulepszenie bazowe)
+            PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL; // Restore normal damage (but account for base upgrade)
             frenzyEffect.classList.add('hidden');
             frenzyEffect.classList.remove('active');
             showMessage("Szał minął. Normalne uderzenia.", 1500);
@@ -498,93 +491,93 @@
     }
 
 
-    // --- Funkcja do animacji ruchu bossa ---
-    let isBossMovementPaused = false; // Nowa flaga do pauzowania ruchu bossa
+    // --- Boss Movement Animation Function ---
+    let isBossMovementPaused = false; // New flag to pause boss movement
     function animateBossMovement() {
-        if (!isGameActive || !isBossFight || isBossMovementPaused) { // Dodano warunek pauzy
-            cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
+        if (!isGameActive || !isBossFight || isBossMovementPaused) { // Added pause condition
+            cancelAnimationFrame(bossMovementAnimationFrameId); // Use cancelAnimationFrame
             return;
         }
 
         const gameContainerRect = gameContainer.getBoundingClientRect();
-        const ozzyRect = ozzyContainer.getBoundingClientRect(); // Aktualny rozmiar i pozycja kontenera bossa
+        const ozzyRect = ozzyContainer.getBoundingClientRect(); // Current size and position of boss container
 
-        // Oblicz potencjalną nową wartość transformX
+        // Calculate potential new transformX value
         let nextTransformX = bossCurrentTransformX + bossDx;
 
-        // Definiuj granice dla nextTransformX na podstawie kontenera i szerokości Ozzy'ego
-        // maxOffsetRight to maksymalne przesunięcie w prawo, tak aby prawa krawędź Ozzy'ego dotykała prawej krawędzi kontenera
+        // Define boundaries for nextTransformX based on container and Ozzy's width
+        // maxOffsetRight is the maximum right offset so Ozzy's right edge touches the container's right edge
         const maxOffsetRight = (gameContainerRect.width / 2) - (ozzyRect.width / 2);
-        // maxOffsetLeft to maksymalne przesunięcie w lewo, tak aby lewa krawędź Ozzy'ego dotykała lewej krawędzi kontenera
+        // maxOffsetLeft is the maximum left offset so Ozzy's left edge touches the container's left edge
         const maxOffsetLeft = -((gameContainerRect.width / 2) - (ozzyRect.width / 2));
 
-        // Sprawdzenie kolizji i zmiana kierunku
+        // Collision check and direction change
         if (nextTransformX > maxOffsetRight) {
-            nextTransformX = maxOffsetRight; // Przyciągnij do granicy
-            bossDx *= -1; // Odwróć kierunek
-            ozzyImage.classList.add('flipped-x'); // Obróć obrazek w lewo
+            nextTransformX = maxOffsetRight; // Snap to boundary
+            bossDx *= -1; // Reverse direction
+            ozzyImage.classList.add('flipped-x'); // Flip image left
         } else if (nextTransformX < maxOffsetLeft) {
-            nextTransformX = maxOffsetLeft; // Przyciągnij do granicy
-            bossDx *= -1; // Odwróć kierunek
-            ozzyImage.classList.remove('flipped-x'); // Obróć obrazek w prawo
+            nextTransformX = maxOffsetLeft; // Snap to boundary
+            bossDx *= -1; // Reverse direction
+            ozzyImage.classList.remove('flipped-x'); // Flip image right
         }
 
-        // Zastosuj nową wartość transformX
+        // Apply new transformX value
         ozzyContainer.style.transform = `translate(${nextTransformX}px, -50%)`;
-        bossCurrentTransformX = nextTransformX; // Zaktualizuj zmienną stanu
+        bossCurrentTransformX = nextTransformX; // Update state variable
 
-        // Zapytaj o następną klatkę animacji
+        // Request next animation frame
         bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement);
     }
 
 
-    // --- Funkcje Gry ---
+    // --- Game Functions ---
     function resetGame() {
-        console.log("resetGame wywołane."); 
+        console.log("resetGame called.");
         score = 0;
         scoreDisplay.textContent = score;
-        // Reset poziomu
+        // Reset level
         currentLevel = 0;
         currentLevelDisplay.textContent = currentLevel;
 
-        // Reset stanu bossa i jego obrazka/stylu
+        // Reset boss state and its image/style
         isBossFight = false;
         ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
         ozzyImage.classList.remove('boss-mode');
-        ozzyImage.classList.remove('flipped-x'); // Usuń też klasę flip
-        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // Reset zdrowia do początkowej wartości normalnego Stonksa
+        ozzyImage.classList.remove('flipped-x'); // Also remove flip class
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // Reset health to initial normal Stonks value
 
-        // Resetuj obrażenia bazowe zgodnie z poziomem ulepszenia (jeśli jest)
+        // Reset base damage according to upgrade level (if any)
         PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
 
         ozzyHealth = INITIAL_OZZY_HEALTH;
         updateHealthBar();
-        ozzyImage.classList.remove('hit-effect'); 
-        // Usunięcie klasy spawn-ozzy na wypadek, gdyby gra została zresetowana w trakcie animacji
-        ozzyImage.classList.remove('spawn-ozzy'); 
-        ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego na starcie
+        ozzyImage.classList.remove('hit-effect');
+        // Remove spawn-ozzy class in case game was reset during animation
+        ozzyImage.classList.remove('spawn-ozzy');
+        ozzyContainer.classList.add('hidden'); // Hide Ozzy at start
 
-        // Zresetuj pozycję ozzyContainer na środek (ważne, aby było tam przed kolejnym spawnem)
-        bossCurrentTransformX = 0; // Reset dodatkowego przesunięcia
-        ozzyContainer.style.transform = `translate(-50%, -50%)`; // Przywróć CSSowe wyśrodkowanie
+        // Reset ozzyContainer position to center (important for next spawn)
+        bossCurrentTransformX = 0; // Reset extra offset
+        ozzyContainer.style.transform = `translate(-50%, -50%)`; // Restore CSS centering
 
-        // Zatrzymaj ruch bossa, jeśli aktywny
-        cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
-        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
-        
-        // Usuń wszystkie cytaty z ekranu przy resecie
-        quoteImagesContainer.innerHTML = ''; 
+        // Stop boss movement if active
+        cancelAnimationFrame(bossMovementAnimationFrameId); // Use cancelAnimationFrame
+        isBossMovementPaused = false; // Ensure pause flag is reset
 
-        // Resetuj stan supermocy i cooldowny
+        // Remove all quotes from screen on reset
+        quoteImagesContainer.innerHTML = '';
+
+        // Reset superpower state and cooldowns
         punchesSinceLastPowerup = 0;
         lastUsedLightningTime = 0;
         lastUsedFreezeTime = 0;
         lastUsedFrenzyTime = 0;
-        
+
         frenzyModeActive = false;
-        clearTimeout(frenzyTimerId); // Wyczyść timer szału
-        
-        // Resetuj Lodowy Wybuch
+        clearTimeout(frenzyTimerId); // Clear frenzy timer
+
+        // Reset Ice Blast
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
@@ -595,41 +588,38 @@
         lightningEffect.classList.add('hidden');
         freezeEffect.classList.add('hidden');
         frenzyEffect.classList.add('hidden');
-        lightningEffect.innerHTML = ''; // Wyczyść segmenty błyskawicy
-        freezeEffect.innerHTML = ''; // Wyczyść kryształki lodu
+        lightningEffect.innerHTML = ''; // Clear lightning segments
+        freezeEffect.innerHTML = ''; // Clear ice shards
 
 
-        messageDisplay.style.display = 'none'; // Ukryj ogólny komunikat
-        // Usuń wszystkie aktywne komunikaty nokautu, jeśli jakieś są
+        messageDisplay.style.display = 'none'; // Hide general message
+        // Remove all active knockout messages, if any
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
 
 
-        isGameActive = false; 
+        isGameActive = false;
         endScreen.classList.add('hidden');
-        leaderboardScreen.classList.add('hidden'); 
-        upgradeShopScreen.classList.add('hidden'); // Ukryj sklep
-        startScreen.classList.remove('hidden'); // Pokaż ekran startowy
-        shopButton.classList.remove('hidden'); // Pokaż przycisk sklepu na ekranie startowym
-        superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy na ekranie startowym
-        
-        // Zatrzymanie intervalu timera cooldownów
+        leaderboardScreen.classList.add('hidden');
+        upgradeShopScreen.classList.add('hidden'); // Hide shop
+        startScreen.classList.remove('hidden'); // Show start screen
+        shopButton.classList.remove('hidden'); // Show shop button on start screen
+        superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons on start screen
+
+        // Stop cooldown timer interval
         clearInterval(superpowerCooldownIntervalId);
-        updateSuperpowerCooldownDisplays(); // Końcowa aktualizacja, by pokazać oryginalny tekst
+        updateSuperpowerCooldownDisplays(); // Final update to show original text
 
         if (backgroundMusic) {
             backgroundMusic.pause();
-            backgroundMusic.currentTime = 0; 
+            backgroundMusic.currentTime = 0;
         }
     }
 
-    // Funkcja do wyświetlania OGÓLNYCH komunikatów (teraz również dla startu bossa)
-    // Będzie używać tych samych stylów co supermoce.
+    // Function to display GENERAL messages (now also for boss start)
+    // Will use the same styles as superpowers.
     function showMessage(message, duration = 1500) {
         messageDisplay.textContent = message;
         messageDisplay.style.display = 'block';
-        // Użyj stylów z messageDisplay, które są zdefiniowane w style.css
-        // Dodatkowo, aby były bardziej widoczne, upewnij się, że ich style są wyraziste w CSS
-        // (już zostały poprawione, aby były jak dla supermocy)
         setTimeout(() => {
             messageDisplay.style.display = 'none';
         }, duration);
@@ -648,50 +638,50 @@
     }
 
     function startGame() {
-        console.log("startGame wywołane."); 
-        startScreen.classList.add('hidden'); 
-        // shopButton.classList.add('hidden'); // ZMIENIONO: Nie ukrywamy przycisku sklepu podczas gry
-        console.log("Po hidden: startScreen display", window.getComputedStyle(startScreen).display); 
-        ozzyContainer.classList.remove('hidden'); // Pokaż Ozzy'ego
-        scoreDisplay.classList.remove('hidden'); // Pokaż licznik
-        // Pokaż licznik poziomu
-        currentLevelDisplay.parentElement.classList.remove('hidden'); 
-        superpowerButtonsContainer.classList.remove('hidden'); // Pokaż przyciski supermocy
-        shopButton.classList.remove('hidden'); // Upewnij się, że przycisk sklepu jest widoczny podczas gry
-        
+        console.log("startGame called.");
+        startScreen.classList.add('hidden');
+        shopButton.classList.remove('hidden'); // Ensure shop button is visible during gameplay
+        console.log("After hidden: startScreen display", window.getComputedStyle(startScreen).display);
+        ozzyContainer.classList.remove('hidden'); // Show Ozzy
+        scoreDisplay.classList.remove('hidden'); // Show score counter
+        // Show level counter
+        currentLevelDisplay.parentElement.classList.remove('hidden');
+        superpowerButtonsContainer.classList.remove('hidden'); // Show superpower buttons
+        shopButton.classList.remove('hidden'); // Ensure shop button is visible during gameplay
+
         isGameActive = true;
         score = 0;
         scoreDisplay.textContent = score;
-        // Ustaw początkowy poziom
+        // Set initial level
         currentLevel = 0;
         currentLevelDisplay.textContent = currentLevel;
 
-        // Ustawienie początkowego stanu Stonksa (normalny, bez bossa)
+        // Set initial Stonks state (normal, no boss)
         isBossFight = false;
         ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
         ozzyImage.classList.remove('boss-mode');
-        ozzyImage.classList.remove('flipped-x'); // Upewnij się, że nie jest flipnięty na starcie
+        ozzyImage.classList.remove('flipped-x'); // Ensure it's not flipped at start
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH;
 
-        // Ustaw obrażenia bazowe na początku gry, uwzględniając ulepszenia
+        // Set base damage at game start, accounting for upgrades
         PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
 
-        ozzyHealth = INITIAL_OZZY_HEALTH; 
-        updateHealthBar(); 
-        ozzyImage.classList.remove('hit-effect'); 
-        // Usunięcie klasy spawn-ozzy na start gry
+        ozzyHealth = INITIAL_OZZY_HEALTH;
+        updateHealthBar();
+        ozzyImage.classList.remove('hit-effect');
+        // Remove spawn-ozzy class at game start
         ozzyImage.classList.remove('spawn-ozzy');
 
-        // Resetuj supermoce na start gry
+        // Reset superpowers at game start
         punchesSinceLastPowerup = 0;
         lastUsedLightningTime = 0;
         lastUsedFreezeTime = 0;
         lastUsedFrenzyTime = 0;
-        
-        frenzyModeActive = false;
-        clearTimeout(frenzyTimerId); // Wyczyść timer szału
 
-        // Resetuj Lodowy Wybuch na start gry
+        frenzyModeActive = false;
+        clearTimeout(frenzyTimerId); // Clear frenzy timer
+
+        // Reset Ice Blast at game start
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
@@ -703,48 +693,48 @@
         frenzyEffect.classList.add('hidden');
         lightningEffect.innerHTML = '';
         freezeEffect.innerHTML = '';
-        // Usuń wszystkie aktywne komunikaty nokautu, jeśli jakieś są
+        // Remove all active knockout messages, if any
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
 
-        // Usuń cytaty, jeśli jakieś zostały z poprzedniej sesji gry
+        // Remove quotes, if any remained from previous game session
         quoteImagesContainer.innerHTML = '';
 
-        // Zatrzymaj i zresetuj ruch bossa
-        cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
-        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
-        bossCurrentTransformX = 0; // Reset dodatkowego przesunięcia X
-        ozzyContainer.style.transform = `translate(-50%, -50%)`; // Ustaw Ozzy'ego na środku CSS
-        
-        // Uruchomienie intervalu timera cooldownów
-        clearInterval(superpowerCooldownIntervalId); // Wyczyść poprzedni, jeśli istnieje
+        // Stop and reset boss movement
+        cancelAnimationFrame(bossMovementAnimationFrameId); // Use cancelAnimationFrame
+        isBossMovementPaused = false; // Ensure pause flag is reset
+        bossCurrentTransformX = 0; // Reset extra X offset
+        ozzyContainer.style.transform = `translate(-50%, -50%)`; // Center Ozzy with CSS
+
+        // Start cooldown timer interval
+        clearInterval(superpowerCooldownIntervalId); // Clear previous if exists
         superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
-        updateSuperpowerButtons(); // Początkowa aktualizacja stanu i tekstu przycisków
+        updateSuperpowerButtons(); // Initial update of button state and text
 
         if (backgroundMusic) {
-            backgroundMusic.play().catch(e => console.error("Błąd odtwarzania backgroundMusic:", e));
+            backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
         }
     }
 
     function endGame(message) {
-        console.log("endGame wywołane z wiadomością:", message); 
+        console.log("endGame called with message:", message);
         isGameActive = false;
-        ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego po zakończeniu gry
-        scoreDisplay.classList.add('hidden'); // Ukryj licznik
-        // Ukryj licznik poziomu
-        currentLevelDisplay.parentElement.classList.add('hidden'); 
+        ozzyContainer.classList.add('hidden'); // Hide Ozzy after game ends
+        scoreDisplay.classList.add('hidden'); // Hide score counter
+        // Hide level counter
+        currentLevelDisplay.parentElement.classList.add('hidden');
         messageDisplay.style.display = 'none';
-        quoteImagesContainer.innerHTML = ''; // Usuń wszystkie cytaty po zakończeniu gry
-        // Usuj wszystkie aktywne komunikaty nokautu, jeśli jakieś są
+        quoteImagesContainer.innerHTML = ''; // Remove all quotes after game ends
+        // Remove all active knockout messages, if any
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
 
 
-        // Zresetuj wszystkie aktywne supermoce po zakończeniu gry
+        // Reset all active superpowers after game ends
         frenzyModeActive = false;
-        // Przywróć normalne obrażenia, uwzględniając ulepszenia bazowe
-        PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL; 
+        // Restore normal damage, accounting for base upgrades
+        PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
         clearTimeout(frenzyTimerId);
-        
-        // Resetuj Lodowy Wybuch
+
+        // Reset Ice Blast
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
@@ -757,17 +747,17 @@
         frenzyEffect.classList.add('hidden');
         lightningEffect.innerHTML = '';
         freezeEffect.innerHTML = '';
-        punchesSinceLastPowerup = 0; // Resetuj licznik do supermocy
+        punchesSinceLastPowerup = 0; // Reset superpower counter
         lastUsedLightningTime = 0;
         lastUsedFreezeTime = 0;
         lastUsedFrenzyTime = 0;
-        updateSuperpowerButtons(); // Zaktualizuj stan przycisków
+        updateSuperpowerButtons(); // Update button state
 
-        // Zatrzymanie intervalu timera cooldownów
+        // Stop cooldown timer interval
         clearInterval(superpowerCooldownIntervalId);
-        // Zatrzymaj ruch bossa, jeśli aktywny
+        // Stop boss movement if active
         cancelAnimationFrame(bossMovementAnimationFrameId);
-        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
+        isBossMovementPaused = false; // Ensure pause flag is reset
 
         document.getElementById('end-message').textContent = message;
         finalScoreDisplay.textContent = score;
@@ -782,162 +772,162 @@
         }
     }
 
-    // Obsługuje znokautowanie Ozzy'ego
+    // Handles Ozzy knockout
     function handleOzzyKnockout() {
-        score++; // Uderzenia (punkty) nadal idą w górę
+        score++; // Punches (score) still go up
         scoreDisplay.textContent = score;
 
-        currentLevel++; // Zwiększ poziom
-        currentLevelDisplay.textContent = currentLevel; // Aktualizuj wyświetlanie poziomu
+        currentLevel++; // Increase level
+        currentLevelDisplay.textContent = currentLevel; // Update level display
 
 
-        // Usuń istniejące komunikaty nokautu przed utworzeniem nowego
+        // Remove existing knockout messages before creating a new one
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
-        
-        // Ozzy znika natychmiast po nokaucie
-        ozzyContainer.classList.add('hidden'); 
-        
-        // Logika bossa / zwiększania zdrowia
-        if (currentLevel > 0 && currentLevel % 10 === 0) {
-            // To jest poziom bossa
-            isBossFight = true;
-            ozzyImage.src = BOSS_IMAGE_URL; // Zmień obrazek na bossa
-            ozzyImage.classList.add('boss-mode'); // Dodaj klasę stylizacji bossa
-            INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH; // Boss ma zwiększone zdrowie
-            
-            // WYŚWIETL KOMUNIKAT O ROZPOCZĘCIU BOSS FIGHTU UŻYWAJĄC showMessage (większy, centralny styl)
-            showMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); // Dłuższy czas widoczności
 
-            // Rozpocznij ruch bossa
-            cancelAnimationFrame(bossMovementAnimationFrameId); // Upewnij się, że nie ma starego interwału
-            isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
-            
-            // Resetuj bossCurrentTransformX i zastosuj transform, aby wyśrodkować bossa
-            bossCurrentTransformX = 0; 
-            ozzyContainer.style.transform = `translate(${bossCurrentTransformX}px, -50%)`; 
-            
-            bossDx = BOSS_MOVEMENT_SPEED * (Math.random() < 0.5 ? 1 : -1); // Losowy kierunek startowy
+        // Ozzy disappears immediately after knockout
+        ozzyContainer.classList.add('hidden');
+
+        // Boss / health increase logic
+        if (currentLevel > 0 && currentLevel % 10 === 0) {
+            // This is a boss level
+            isBossFight = true;
+            ozzyImage.src = BOSS_IMAGE_URL; // Change image to boss
+            ozzyImage.classList.add('boss-mode'); // Add boss styling class
+            INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH; // Boss has increased health
+
+            // DISPLAY BOSS FIGHT START MESSAGE USING showMessage (larger, central style)
+            showMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); // Longer visibility time
+
+            // Start boss movement
+            cancelAnimationFrame(bossMovementAnimationFrameId); // Ensure no old interval
+            isBossMovementPaused = false; // Ensure pause flag is reset
+
+            // Reset bossCurrentTransformX and apply transform to center boss
+            bossCurrentTransformX = 0;
+            ozzyContainer.style.transform = `translate(${bossCurrentTransformX}px, -50%)`;
+
+            bossDx = BOSS_MOVEMENT_SPEED * (Math.random() < 0.5 ? 1 : -1); // Random starting direction
             if (bossDx < 0) {
                 ozzyImage.classList.add('flipped-x');
             } else {
                 ozzyImage.classList.remove('flipped-x');
             }
-            bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); // Rozpocznij animację bossa
-            
-        } else {
-            // Normalny poziom
-            isBossFight = false;
-            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; // Przywróć normalny obrazek
-            ozzyImage.classList.remove('boss-mode'); // Usuń klasę stylizacji bossa
-            ozzyImage.classList.remove('flipped-x'); // Usuń też klasę flip
-            // Zresetuj pozycję ozzyContainer na środek (dla kolejnego normalnego stonksa)
-            bossCurrentTransformX = 0; // Reset dodatkowego przesunięcia
-            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Przywróć CSSowe wyśrodkowanie
+            bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); // Start boss animation
 
-            cancelAnimationFrame(bossMovementAnimationFrameId); // Zatrzymaj ruch bossa, jeśli był aktywny
-            isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
-            
-            if (currentLevel > 0 && currentLevel % 5 === 0) { 
-                 INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; // Normalny przyrost zdrowia
-                 showMessage(`Stonks jest silniejszy!`, 2000); // Komunikat o zwiększeniu zdrowia
+        } else {
+            // Normal level
+            isBossFight = false;
+            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; // Restore normal image
+            ozzyImage.classList.remove('boss-mode'); // Remove boss styling class
+            ozzyImage.classList.remove('flipped-x'); // Also remove flip class
+            // Reset ozzyContainer position to center (for next normal Stonks)
+            bossCurrentTransformX = 0; // Reset extra offset
+            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Restore CSS centering
+
+            cancelAnimationFrame(bossMovementAnimationFrameId); // Stop boss movement if active
+            isBossMovementPaused = false; // Ensure pause flag is reset
+
+            if (currentLevel > 0 && currentLevel % 5 === 0) {
+                 INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; // Normal health increment
+                 showMessage(`Stonks jest silniejszy!`, 2000); // Message about increased health
             }
-            // Utwórz i wyświetl nieblokujący komunikat o nokaucie (standardowy styl)
+            // Create and display non-blocking knockout message (standard style)
             const knockoutMsgElement = document.createElement('div');
-            knockoutMsgElement.classList.add('knockout-message'); // Użyj nowej klasy CSS
-            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // Zwykły komunikat o nokaucie
+            knockoutMsgElement.classList.add('knockout-message'); // Use new CSS class
+            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // Standard knockout message
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
                 knockoutMsgElement.remove();
-            }, 2000); // Dopasowane do czasu trwania animacji CSS (fadeOutUpSmall)
+            }, 2000); // Matches CSS animation duration (fadeOutUpSmall)
         }
 
-        ozzyHealth = INITIAL_OZZY_HEALTH; // Pełne zdrowie na nową rundę
-        updateHealthBar(); // Pasek zdrowia aktualizuje się natychmiast
+        ozzyHealth = INITIAL_OZZY_HEALTH; // Full health for new round
+        updateHealthBar(); // Health bar updates immediately
 
-        // Ozzy pojawia się ponownie po BARDZO KRÓTKIM opóźnieniu z animacją
+        // Ozzy reappears after a VERY SHORT delay with animation
         setTimeout(() => {
-            ozzyContainer.classList.remove('hidden'); 
-            ozzyImage.classList.remove('hit-effect'); 
-            ozzyImage.classList.add('spawn-ozzy'); // Dodaj klasę animacji pojawiania się
+            ozzyContainer.classList.remove('hidden');
+            ozzyImage.classList.remove('hit-effect');
+            ozzyImage.classList.add('spawn-ozzy'); // Add spawn animation class
 
-            // Usuń klasę animacji po jej zakończeniu, aby nie kolidowała z innymi animacjami/stylami
+            // Remove animation class after it finishes, so it doesn't conflict with other animations/styles
             setTimeout(() => {
                 ozzyImage.classList.remove('spawn-ozzy');
-            }, 500); // Czas trwania animacji spawnOzzy w CSS
-        }, 200); // Czas "nieobecności" Ozzy'ego na ekranie przed ponownym pojawieniem się (0.2 sekundy)
+            }, 500); // spawnOzzy animation duration in CSS
+        }, 200); // Ozzy's "absence" time on screen before reappearing (0.2 seconds)
 
     }
 
     function handlePunch(event) {
-        console.log("handlePunch wywołane."); 
-        // Usunięto warunek isOzzyDown, aby umożliwić klikanie Ozzy'ego zaraz po nokaucie
-        if (!isGameActive) { 
+        console.log("handlePunch called.");
+        // Removed isOzzyDown condition to allow clicking Ozzy right after knockout
+        if (!isGameActive) {
             return;
         }
 
         const punchSoundInstance = new Audio('punch.mp3');
-        punchSoundInstance.play().catch(e => console.error("Błąd odtwarzania punchSoundInstance:", e));
+        punchSoundInstance.play().catch(e => console.error("Error playing punchSoundInstance:", e));
         punchSoundInstance.onended = () => {
             punchSoundInstance.remove();
         };
 
-        applyDamageToOzzy(PUNCH_DAMAGE); // Użyj aktualnych obrażeń bazowych
+        applyDamageToOzzy(PUNCH_DAMAGE); // Use current base damage
 
         ozzyImage.classList.add('hit-effect');
         setTimeout(() => {
             ozzyImage.classList.remove('hit-effect');
-        }, 150); 
-        
-        // Sprawdzamy, czy Ozzy został trafiony i czy jest szansa na pojawienie się cytatu
-        if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { // 30% szans na pojawienie się cytatu po trafieniu (tylko dla normalnego Stonksa)
+        }, 150);
+
+        // Check if Ozzy was hit and if there's a chance for a quote to appear
+        if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { // 30% chance for quote after hit (only for normal Stonks)
             spawnRandomQuote();
-        } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.2) { // 20% szans na kwestię bossa
-            // Sprawdź, czy żaden inny komunikat typu "knockout-message" nie jest już wyświetlany
+        } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.2) { // 20% chance for boss quote
+            // Check if no other "knockout-message" is already displayed
             if (document.querySelectorAll('.knockout-message').length === 0) {
                 const randomBossQuote = BOSS_QUOTES[Math.floor(Math.random() * BOSS_QUOTES.length)];
-                // Utwórz i wyświetl nieblokujący komunikat o nokaucie (standardowy styl)
+                // Create and display non-blocking knockout message (standard style)
                 const bossQuoteElement = document.createElement('div');
-                bossQuoteElement.classList.add('knockout-message'); 
-                bossQuoteElement.textContent = randomBossQuote; 
+                bossQuoteElement.classList.add('knockout-message');
+                bossQuoteElement.textContent = randomBossQuote;
                 gameContainer.appendChild(bossQuoteElement);
 
                 setTimeout(() => {
                     bossQuoteElement.remove();
-                }, 2000); // Znika po 2 sekundach
+                }, 2000); // Disappears after 2 seconds
             }
         }
 
-        // Zwiększ licznik uderzeń do supermocy
+        // Increase superpower punch counter
         punchesSinceLastPowerup++;
-        updateSuperpowerButtons(); // Aktualizuj stan przycisków supermocy (w tym cooldowny)
+        updateSuperpowerButtons(); // Update superpower button state (including cooldowns)
     }
 
-    // --- NOWE: Funkcje sklepu ulepszeń ---
+    // --- NEW: Upgrade Shop Functions ---
     function calculateUpgradeCost(currentLevel) {
         return Math.ceil(UPGRADE_COST_BASE * Math.pow(UPGRADE_COST_MULTIPLIER, currentLevel - 1));
     }
 
     function updateUpgradeShopUI() {
-        // Obrażenia podstawowe
+        // Base Damage
         baseDamageLevelDisplay.textContent = upgradeLevels.baseDamage;
         const nextBaseDamageCost = calculateUpgradeCost(upgradeLevels.baseDamage);
         baseDamageCostDisplay.textContent = nextBaseDamageCost;
         buyBaseDamageButton.disabled = score < nextBaseDamageCost;
 
-        // Piorun Zagłady
+        // Lightning Strike
         lightningDamageLevelDisplay.textContent = upgradeLevels.lightningDamage;
         const nextLightningDamageCost = calculateUpgradeCost(upgradeLevels.lightningDamage);
         lightningDamageCostDisplay.textContent = nextLightningDamageCost;
         buyLightningDamageButton.disabled = score < nextLightningDamageCost;
 
-        // Lodowy Wybuch
+        // Ice Blast
         freezeDamageLevelDisplay.textContent = upgradeLevels.freezeDamage;
         const nextFreezeDamageCost = calculateUpgradeCost(upgradeLevels.freezeDamage);
         freezeDamageCostDisplay.textContent = nextFreezeDamageCost;
         buyFreezeDamageButton.disabled = score < nextFreezeDamageCost;
 
-        // Szał Bojowy
+        // Frenzy
         frenzyDamageLevelDisplay.textContent = upgradeLevels.frenzyDamage;
         const nextFrenzyDamageCost = calculateUpgradeCost(upgradeLevels.frenzyDamage);
         frenzyDamageCostDisplay.textContent = nextFrenzyDamageCost;
@@ -952,72 +942,72 @@
             score -= cost;
             scoreDisplay.textContent = score;
             upgradeLevels[upgradeType]++;
-            
-            // Zastosuj ulepszenie
+
+            // Apply upgrade
             if (upgradeType === 'baseDamage') {
                 PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
                 showMessage(`Ulepszono Obrażenia Podstawowe! Nowe obrażenia: ${PUNCH_DAMAGE}`, 1500);
             } else if (upgradeType === 'lightningDamage') {
-                // LIGHTNING_BASE_DAMAGE jest używane do obliczeń w activateLightningStrike, więc nie musimy zmieniać go tutaj bezpośrednio,
-                // ale wizualnie możemy pokazać efekt:
+                // LIGHTNING_BASE_DAMAGE is used for calculations in activateLightningStrike, so we don't need to change it directly here,
+                // but we can visually show the effect:
                 const nextLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage -1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
                 showMessage(`Ulepszono Piorun Zagłady! Poziom: ${upgradeLevels.lightningDamage} (Obrażenia: ~${nextLightningDamage})`, 1500);
             } else if (upgradeType === 'freezeDamage') {
-                // Podobnie dla Freeze, obrażenia będą obliczane w activateIceBlast
+                // Similarly for Freeze, damage will be calculated in activateIceBlast
                 const nextInitialFreezeDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
                 const nextDotFreezeDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
                 showMessage(`Ulepszono Lodowy Wybuch! Poziom: ${upgradeLevels.freezeDamage} (Obrażenia: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 1500);
             } else if (upgradeType === 'frenzyDamage') {
-                // Podobnie dla Frenzy, obrażenia będą obliczane w activateFrenzy
+                // Similarly for Frenzy, damage will be calculated in activateFrenzy
                 const nextFrenzyDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
                 showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 1500);
             }
 
-            updateUpgradeShopUI(); // Odśwież UI sklepu po zakupie
+            updateUpgradeShopUI(); // Refresh shop UI after purchase
         } else {
             showMessage("Za mało punktów!", 1000);
         }
     }
 
 
-    // Ważne: to sprawdza, czy skrypt jest w ogóle uruchamiany
-    console.log("Script.js jest uruchamiany!"); 
+    // Important: this checks if the script is running at all
+    console.log("Script.js is running!");
 
     document.addEventListener('DOMContentLoaded', async () => {
-        console.log("DOMContentLoaded: DOM został załadowany!"); 
-        
-        // Upewnij się, że wszystkie ekrany są początkowo ukryte, z wyjątkiem startScreen
+        console.log("DOMContentLoaded: DOM has been loaded!");
+
+        // IMPORTANT: Hide the upgrade shop screen immediately upon load.
+        // This prevents a brief display if resetGame is slow.
+        upgradeShopScreen.classList.add('hidden');
+
+        // Ensure all screens are initially hidden, except startScreen is made visible by resetGame()
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
-        upgradeShopScreen.classList.add('hidden'); // Ukryj sklep na start
         ozzyContainer.classList.add('hidden');
-        scoreDisplay.classList.add('hidden'); 
-        currentLevelDisplay.parentElement.classList.add('hidden'); // Ukryj licznik poziomu na starcie
+        scoreDisplay.classList.add('hidden');
+        currentLevelDisplay.parentElement.classList.add('hidden');
         messageDisplay.style.display = 'none';
-        quoteImagesContainer.innerHTML = ''; // Upewnij się, że kontener cytatów jest pusty na starcie
-        // Usuń wszystkie aktywne komunikaty nokautu, jeśli jakieś są
-        document.querySelectorAll('.knockout-message').forEach(el => el.remove());
+        quoteImagesContainer.innerHTML = ''; // Ensure quotes container is empty at start
 
-
-        resetGame(); // Ta funkcja również resetuje supermoce i cooldowny
+        resetGame(); // This function will also reset superpowers and cooldowns
 
         console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
         console.log("Initial target image (Ozzy) dimensions:", ozzyImage.offsetWidth, ozzyImage.offsetHeight);
 
-        // Inicjalizacja uwierzytelniania anonimowego po załadowaniu DOM
+        // Initialize anonymous authentication after DOM is loaded
         try {
             const userCredential = await signInAnonymously(auth);
             currentUserId = userCredential.user.uid;
-            console.log("Zalogowano anonimowo. UID:", currentUserId);
+            console.log("Logged in anonymously. UID:", currentUserId);
         } catch (error) {
-            console.error("Błąd logowania anonimowego:", error);
+            console.error("Error with anonymous login:", error);
             showMessage("Błąd połączenia z rankingiem. Spróbuj odświeżyć stronę.", 5000);
         }
-        console.log("DOMContentLoaded: Uwierzytelnianie zakończone."); 
+        console.log("DOMContentLoaded: Authentication completed.");
 
-        // --- Obsługa zdarzeń ---
+        // --- Event Handlers ---
         startButton.addEventListener('click', () => {
-            console.log("Kliknięto przycisk START!"); 
+            console.log("START button clicked!");
             const nick = nicknameInput.value.trim();
             if (nick === "") {
                 showMessage("Musisz wpisać swój nick!", 2000);
@@ -1028,84 +1018,88 @@
         });
 
         showLeaderboardButton.addEventListener('click', () => {
-            console.log("Kliknięto przycisk RANKING!"); 
+            console.log("LEADERBOARD button clicked!");
             startScreen.classList.add('hidden');
-            shopButton.classList.add('hidden'); // Ukryj przycisk sklepu, gdy otwierasz ranking
-            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
-            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
+            shopButton.classList.add('hidden'); // Hide shop button when opening leaderboard
+            superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons
+            ozzyContainer.classList.add('hidden'); // Hide Ozzy
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
 
         restartButton.addEventListener('click', () => {
-            console.log("Kliknięto przycisk RESTART!"); 
+            console.log("RESTART button clicked!");
             resetGame();
         });
 
         ozzyContainer.addEventListener('click', handlePunch);
         ozzyContainer.addEventListener('touchstart', (event) => {
-            event.preventDefault(); 
+            event.preventDefault();
             handlePunch(event);
         }, { passive: false });
 
         showLeaderboardAfterGameButton.addEventListener('click', () => {
-            console.log("Kliknięto przycisk ZOBACZ RANKING (po grze)!"); 
+            console.log("SHOW LEADERBOARD (after game) button clicked!");
             endScreen.classList.add('hidden');
-            shopButton.classList.add('hidden'); // Ukryj przycisk sklepu, gdy otwierasz ranking
-            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
-            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
+            shopButton.classList.add('hidden'); // Hide shop button when opening leaderboard
+            superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons
+            ozzyContainer.classList.add('hidden'); // Hide Ozzy
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
 
         backToStartButton.addEventListener('click', () => {
-            console.log("Kliknięto przycisk WRÓĆ DO MENU!"); 
-            leaderboardScreen.classList.add('hidden'); 
-            resetGame(); // Ta funkcja już pokazuje ekran startowy i przycisk sklepu
+            console.log("BACK TO MENU button clicked!");
+            leaderboardScreen.classList.add('hidden');
+            resetGame(); // This function already shows the start screen and shop button
         });
 
-        // Obsługa kliknięć przycisków supermocy
+        // Superpower button click handlers
         btnLightning.addEventListener('click', activateLightningStrike);
-        btnFreeze.addEventListener('click', activateIceBlast); 
+        btnFreeze.addEventListener('click', activateIceBlast);
         btnFrenzy.addEventListener('click', activateFrenzy);
 
-        // --- NOWE: Obsługa zdarzeń sklepu ulepszeń ---
+        // --- NEW: Upgrade Shop Event Handlers ---
         shopButton.addEventListener('click', () => {
-            // ZMIENIONO: Logika pauzowania gry
-            isGameActive = false; // Pauzuj grę
-            cancelAnimationFrame(bossMovementAnimationFrameId); // Zatrzymaj ruch bossa
-            isBossMovementPaused = true; // Ustaw flagę pauzy ruchu bossa
-            clearInterval(superpowerCooldownIntervalId); // Zatrzymaj aktualizację cooldownów
+            // CHANGED: Game pausing logic
+            isGameActive = false; // Pause game
+            cancelAnimationFrame(bossMovementAnimationFrameId); // Stop boss movement
+            isBossMovementPaused = true; // Set boss movement pause flag
+            clearInterval(superpowerCooldownIntervalId); // Stop cooldown timer updates
 
-            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
-            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
-            shopButton.classList.add('hidden'); // Ukryj przycisk sklepu
-            
-            upgradeShopScreen.classList.remove('hidden'); // Pokaż ekran sklepu
-            updateUpgradeShopUI(); // Odśwież UI sklepu przy otwarciu
+            ozzyContainer.classList.add('hidden'); // Hide Ozzy
+            superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons
+            shopButton.classList.add('hidden'); // Hide shop button
+            scoreDisplay.classList.add('hidden'); // Hide score/level display
+            currentLevelDisplay.parentElement.classList.add('hidden'); // Hide score/level display
+
+            upgradeShopScreen.classList.remove('hidden'); // Show shop screen
+            updateUpgradeShopUI(); // Refresh shop UI when opened
         });
 
         closeShopButton.addEventListener('click', () => {
-            upgradeShopScreen.classList.add('hidden'); // Ukryj ekran sklepu
-            
-            // ZMIENIONO: Logika wznawiania gry
-            ozzyContainer.classList.remove('hidden'); // Pokaż Ozzy'ego
-            superpowerButtonsContainer.classList.remove('hidden'); // Pokaż przyciski supermocy
-            shopButton.classList.remove('hidden'); // Pokaż przycisk sklepu
-            
-            isGameActive = true; // Wznów grę
-            isBossMovementPaused = false; // Resetuj flagę pauzy ruchu bossa
-            if (isBossFight) { // Jeśli to walka z bossem, wznów ruch
+            upgradeShopScreen.classList.add('hidden'); // Hide shop screen
+
+            // CHANGED: Game resuming logic
+            ozzyContainer.classList.remove('hidden'); // Show Ozzy
+            superpowerButtonsContainer.classList.remove('hidden'); // Show superpower buttons
+            shopButton.classList.remove('hidden'); // Show shop button
+            scoreDisplay.classList.remove('hidden'); // Show score/level display
+            currentLevelDisplay.parentElement.classList.remove('hidden'); // Show score/level display
+
+            isGameActive = true; // Resume game
+            isBossMovementPaused = false; // Reset boss movement pause flag
+            if (isBossFight) { // If it's a boss fight, resume movement
                 animateBossMovement();
             }
-            // Wznów interval timera cooldownów
-            clearInterval(superpowerCooldownIntervalId); // Upewnij się, że poprzedni jest wyczyszczony
+            // Resume cooldown timer interval
+            clearInterval(superpowerCooldownIntervalId); // Ensure previous is cleared
             superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
-            updateSuperpowerButtons(); // Zaktualizuj stan przycisków
-            
-            // W przypadku Lodowego Wybuchu, jeśli był aktywny, wznów jego DOT
+            updateSuperpowerButtons(); // Update button state
+
+            // In case of Ice Blast, if it was active, resume its DOT
             if (freezeModeActive) {
-                activateIceBlast(); // Ponowne wywołanie aktywuje interwał DOT
+                activateIceBlast(); // Calling it again will activate the DOT interval
             }
         });
 
@@ -1114,6 +1108,6 @@
         buyFreezeDamageButton.addEventListener('click', () => buyUpgrade('freezeDamage'));
         buyFrenzyDamageButton.addEventListener('click', () => buyUpgrade('frenzyDamage'));
 
-        // Początkowa aktualizacja UI sklepu, gdy gra się załaduje
+        // Initial update of shop UI when the game loads
         updateUpgradeShopUI();
     });
