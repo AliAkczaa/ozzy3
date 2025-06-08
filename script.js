@@ -168,7 +168,7 @@
     const buyLightningDamageButton = document.getElementById('buy-lightning-damage');
 
     const freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
-    const freezeDamageCostDisplay = document = document.getElementById('freeze-damage-cost');
+    const freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
     const buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
 
     const frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
