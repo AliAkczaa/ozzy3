@@ -25,9 +25,7 @@
 
     // ===================================================================
 
-    // --- ZMIANA: Deklaracja WSZYSTKICH zmiennych DOM globalnie ---
-    // Te zmienne są deklarowane tutaj, aby były dostępne w całym skrypcie.
-    // Ich wartości (elementy DOM) zostaną przypisane po załadowaniu dokumentu (DOMContentLoaded).
+    // --- Deklaracja WSZYSTKICH zmiennych DOM globalnie ---
     let backgroundTractor;
     let ozzyContainer;
     let ozzyImage;
@@ -125,16 +123,18 @@
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
     const NORMAL_OZZY_HEALTH_INCREMENT = 20; 
     const BOSS_INITIAL_HEALTH = 450; 
+    // ZMIANA: Nowa stała do skalowania zdrowia bossa na kolejnych poziomach
+    const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 150; // Ile zdrowia dodajemy do bossa na każdy kolejny encounter (poziom 10, 20, 30 itd.)
 
     const BOSS_MOVEMENT_SPEED = 2; 
     const BOSS_QUOTES = [
         "CHLOPY OD CRYPTONA FARMIA!", "TTB TO GÓWNO! TYLKO STONKS!", 
-        "DO DUBAJU! ZA KASE INWESTORÓW!", "REFUNDY ZA V1 Z BSC", 
-        "ZA NASTEPNE 5 LAT DOWIEZIEMY", "STACKING FKRUTCE!", 
+        "DO DUBAJU! ZA KASE INWESTORÓW!", "Jeden launchpad, jeden bot, jeden dex!", 
+        "Farmer z bsc tom pisze ze to ja jestem scammerem"
     ];
     let bossMovementAnimationFrameId; 
     let bossDx = BOSS_MOVEMENT_SPEED; 
-    let bossCurrentTransformX = 0; 
+    let bossCurrentTransformX = 0; // Śledzi dodatkowe przesunięcie X od centrum
 
     const CLIENT_SIDE_MAX_SCORE = 200;
 
@@ -151,8 +151,6 @@
     const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; 
     const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
 
-    // --- ZMIANA: Zmienne 'original...Text' są globalne i zadeklarowane tutaj ---
-    // BŁĄD WCZEŚNIEJ: Możliwe, że były używane zanim ich deklaracja była dostępna
     const originalLightningText = '⚡ Piorun Zagłady';
     const originalFreezeText = '❄️ Lodowy Wybuch';
     const originalFrenzyText = '🔥 Szał Bojowy';
@@ -198,7 +196,7 @@
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const li = document.createElement('li');
-                li.textContent = `${data.nickname || 'Anonim'}: ${data.score} punktów`;
+                li.textContent = `${data.nickname || 'Anonim'}: ${data.score} znokautowań`;
                 leaderboardList.appendChild(li);
             });
         } catch (e) {
@@ -444,25 +442,29 @@
         }
 
         const gameContainerRect = gameContainer.getBoundingClientRect();
-        const ozzyRect = ozzyContainer.getBoundingClientRect(); 
+        const ozzyRect = ozzyContainer.getBoundingClientRect(); // Aktualny wizualny rozmiar Ozzy'ego
+
+        // ZMIANA: Obliczenie maksymalnego offsetu od centrum
+        // Całkowita przestrzeń ruchu dla ŚRODKA bossa od krawędzi do krawędzi kontenera
+        const maxOffset = (gameContainerRect.width - ozzyRect.width) / 2;
 
         let nextTransformX = bossCurrentTransformX + bossDx;
 
-        const maxOffsetRight = (gameContainerRect.width / 2) - (ozzyRect.width / 2);
-        const maxOffsetLeft = -((gameContainerRect.width / 2) - (ozzyRect.width / 2));
-
-        if (nextTransformX > maxOffsetRight) {
-            nextTransformX = maxOffsetRight; 
-            bossDx *= -1; 
-            ozzyImage.classList.add('flipped-x'); 
-        } else if (nextTransformX < maxOffsetLeft) {
-            nextTransformX = maxOffsetLeft; 
-            bossDx *= -1; 
-            ozzyImage.classList.remove('flipped-x'); 
+        // ZMIANA: Sprawdzenie i skorygowanie pozycji oraz kierunku
+        if (nextTransformX > maxOffset) {
+            nextTransformX = maxOffset; // Przyciągnij do prawej granicy
+            bossDx *= -1; // Odwróć kierunek
+            ozzyImage.classList.add('flipped-x'); // Odwróć obraz w lewo
+        } else if (nextTransformX < -maxOffset) { // Lewa granica
+            nextTransformX = -maxOffset; // Przyciągnij do lewej granicy
+            bossDx *= -1; // Odwróć kierunek
+            ozzyImage.classList.remove('flipped-x'); // Odwróć obraz w prawo
         }
 
-        ozzyContainer.style.transform = `translate(${nextTransformX}px, -50%)`;
-        bossCurrentTransformX = nextTransformX; 
+        // ZMIANA: Zastosuj transformację. calc(-50% + ${nextTransformX}px) jest kluczowe!
+        // -50% to bazowe centrowanie, a ${nextTransformX}px to dodatkowy offset.
+        ozzyContainer.style.transform = `translate(calc(-50% + ${nextTransformX}px), -50%)`;
+        bossCurrentTransformX = nextTransformX; // Zaktualizuj zmienną stanu
 
         bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement);
     }
@@ -490,6 +492,7 @@
         ozzyImage.classList.remove('spawn-ozzy');
         ozzyContainer.classList.add('hidden'); 
 
+        // ZMIANA: Zresetuj pozycję Ozzy'ego do centralnego dla normalnego Stonksa
         bossCurrentTransformX = 0; 
         ozzyContainer.style.transform = `translate(-50%, -50%)`; 
 
@@ -509,7 +512,7 @@
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
-        freezeEffect.classList.remove('active');
+        freezeEffect.classList.remove('active'); // Upewnij się, że klasa jest usunięta
         freezeEffect.innerHTML = '';
 
 
@@ -533,7 +536,7 @@
         gameInfoContainer.classList.add('hidden');
 
         clearInterval(superpowerCooldownIntervalId);
-        updateSuperpowerCooldownDisplays(); // Używa originalLightningText, które jest teraz globalnie zadeklarowane i zainicjalizowane
+        updateSuperpowerCooldownDisplays(); 
 
         if (backgroundMusic) {
             backgroundMusic.pause();
@@ -618,7 +621,7 @@
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
-        freezeEffect.classList.remove('active');
+        freezeEffect.classList.remove('active'); // Upewnij się, że klasa jest usunięta
         freezeEffect.innerHTML = '';
 
         lightningEffect.classList.add('hidden');
@@ -633,6 +636,7 @@
 
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = false; 
+        // ZMIANA: Upewnij się, że bossCurrentTransformX jest zresetowany do 0 i aplikuj tylko bazowe centrowanie
         bossCurrentTransformX = 0; 
         ozzyContainer.style.transform = `translate(-50%, -50%)`; 
 
@@ -664,7 +668,7 @@
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
-        freezeEffect.classList.remove('active');
+        freezeEffect.classList.remove('active'); // Upewnij się, że klasa jest usunięta
         freezeEffect.innerHTML = '';
 
 
@@ -712,15 +716,24 @@
             isBossFight = true;
             ozzyImage.src = BOSS_IMAGE_URL; 
             ozzyImage.classList.add('boss-mode'); 
-            INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH; 
+            
+            // ZMIANA: Skalowanie zdrowia bossa na podstawie liczby napotkań
+            const bossEncounterCount = currentLevel / 10;
+            INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
+
+            // Upewnij się, że zdrowie bossa nie spada poniżej minimalnej wartości, jeśli skalowanie jest zbyt agresywne
+            INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); 
+
+            console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}`);
 
             showBossMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); 
 
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
 
+            // ZMIANA: Resetuj bossCurrentTransformX i ustaw początkowe położenie w centrum
             bossCurrentTransformX = 0;
-            ozzyContainer.style.transform = `translate(${bossCurrentTransformX}px, -50%)`;
+            ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
 
             bossDx = BOSS_MOVEMENT_SPEED * (Math.random() < 0.5 ? 1 : -1); 
             if (bossDx < 0) {
@@ -735,6 +748,7 @@
             ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
+            // ZMIANA: Resetuj pozycję Ozzy'ego do centralnego dla normalnego Stonksa
             bossCurrentTransformX = 0; 
             ozzyContainer.style.transform = `translate(-50%, -50%)`; 
 
@@ -761,7 +775,13 @@
         setTimeout(() => {
             ozzyContainer.classList.remove('hidden');
             ozzyImage.classList.remove('hit-effect');
-            ozzyContainer.style.transform = `translate(-50%, -50%)`; 
+            // ZMIANA: Zachowaj odpowiednią transformację przy ponownym pojawieniu się
+            if (!isBossFight) {
+                ozzyContainer.style.transform = `translate(-50%, -50%)`; // Czyste centrowanie dla normalnego Stonksa
+            } else {
+                // Jeśli to boss, animacja ruchu kontynuuje, więc zachowujemy bossCurrentTransformX
+                ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
+            }
             ozzyImage.classList.add('spawn-ozzy'); 
 
             setTimeout(() => {
@@ -866,7 +886,6 @@
         console.log("DOMContentLoaded: DOM został załadowany!");
 
         // === PRZYPISANIE WARTOŚCI do zmiennych DOM globalnych ===
-        // To jest kluczowe, aby te zmienne miały przypisane elementy DOM przed użyciem w funkcjach.
         backgroundTractor = document.getElementById('animated-background-tractor');
         ozzyContainer = document.getElementById('ozzy-container');
         ozzyImage = document.getElementById('ozzy-image');
