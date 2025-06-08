@@ -397,7 +397,7 @@ button:disabled {
 /* Efekt zamrożenia */
 #freeze-effect {
     background-color: rgba(173, 216, 230, 0.3); /* Lekki niebieski nalot */
-    animation: freezeEffectGlow 1s infinite alternate;
+    /* ZMIANA: Usunięto animację z podstawowego stanu, będzie tylko na .active */
 }
 
 #freeze-effect.active {
