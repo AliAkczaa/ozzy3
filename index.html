@@ -8,23 +8,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Ikony do supermocy -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div id="game-container">
-        <!-- Tło gry -->
+        <!-- Zmienione tło, dostosuj obrazek -->
         <img id="animated-background-tractor" src="zdjecie 1 - tlo.jpg" alt="Tło areny walki" draggable="false">
         
-        <!-- Kontener dla Ozzy'ego i paska zdrowia -->
+        <div id="quote-images-container"></div>
+        
         <div id="ozzy-container" class="hidden">
+            <!-- Używamy zdjecie 2.jpg dla Ozzy'ego -->
             <img id="ozzy-image" src="zdjecie 2.jpg" alt="Ozzy do pobicia" draggable="false">
+            <!-- Pasek zdrowia dla Ozzy'ego -->
             <div id="health-bar-container">
                 <div id="health-bar-fill"></div>
             </div>
         </div>
+
+        <!-- Kontenery na efekty supermocy -->
+        <div id="lightning-effect" class="effect-overlay hidden"></div>
+        <div id="freeze-effect" class="effect-overlay hidden"></div>
+        <div id="frenzy-effect" class="effect-overlay hidden"></div>
         
-        <!-- Ekran startowy -->
         <div id="start-screen">
             <h1>Zajeb Stonksa!</h1>
             <p>Twoje zadanie: napierdalaj Stonks'a, aż padnie! Im więcej razy znokautujesz, tym lepiej!</p>
@@ -32,11 +37,10 @@
                 <label for="nickname-input">Twój Nick:</label>
                 <input type="text" id="nickname-input" placeholder="Wpisz swój nick" maxlength="15">
             </div>
-            <button id="start-button">Rozpocznij Okładanie!</button>
+            <button id="start-button">Rozpocznij!</button>
             <button id="show-leaderboard-button">Ranking</button>
         </div>
 
-        <!-- Ekran końcowy -->
         <div id="end-screen" class="hidden">
             <h1>Stonks Znokautowany!</h1>
             <p id="end-message">Gratulacje! Znokautowałeś Stonks'a!</p>
@@ -45,93 +49,76 @@
             <button id="show-leaderboard-after-game-button">Zobacz Ranking</button>
         </div>
 
-        <!-- Ekran leaderboarda -->
         <div id="leaderboard-screen" class="hidden">
-            <h2>Ranking Najlepszych Bójkarzy</h2>
+            <h2>Ranking Najlepszych</h2>
             <ol id="leaderboard-list"></ol>
             <button id="back-to-start-button">Wróć do menu</button>
         </div>
 
-        <!-- EKRAN SKLEPU ULEPSZEŃ (WAŻNE: klasa hidden na początek) -->
-        <div id="upgrade-shop-screen" class="hidden"> 
+        <!-- NOWY KONTENER NA INFORMACJE O GRZE (PUNKTY I POZIOM) -->
+        <div id="game-info-container" class="hidden">
+            <div id="score-display">Punkty: <span id="score">0</span></div>
+            <div id="level-display">Poziom: <span id="current-level">0</span></div>
+        </div>
+        
+        <!-- message-display pozostaje samodzielne, bo jest używane globalnie -->
+        <div id="message-display" class="hidden"></div>
+
+        <!-- Kontener na przyciski supermocy -->
+        <div id="superpower-buttons-container" class="hidden">
+            <button id="btn-lightning" class="superpower-button" disabled>⚡ Piorun Zagłady</button>
+            <button id="btn-freeze" class="superpower-button" disabled>❄️ Lodowy Wybuch</button>
+            <button id="btn-frenzy" class="superpower-button" disabled>🔥 Szał Bojowy</button>
+        </div>
+
+        <!-- NEW: Upgrade Shop Screen -->
+        <div id="upgrade-shop-screen" class="hidden">
             <h2>Sklep Ulepszeń</h2>
-            <div class="upgrade-shop-content">
-                <!-- Ulepszenie Obrażeń Podstawowych -->
-                <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">Bazowe Obrażenia (Poziom: <span id="base-damage-level">1</span>)</div>
-                        <div class="upgrade-description">Zwiększa podstawowe obrażenia zadawane Ozzy'emu.</div>
-                    </div>
-                    <button id="buy-base-damage" class="buy-button">Kup za <span id="base-damage-cost">10</span> punktów</button>
-                </div>
-
-                <!-- Ulepszenie Pioruna Zagłady -->
-                <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">Piorun Zagłady (Poziom: <span id="lightning-damage-level">1</span>)</div>
-                        <div class="upgrade-description">Zwiększa obrażenia "Piorun Zagłady".</div>
-                    </div>
-                    <button id="buy-lightning-damage" class="buy-button">Kup za <span id="lightning-damage-cost">10</span> punktów</button>
-                </div>
-
-                <!-- Ulepszenie Lodowego Wybuchu -->
-                <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">Lodowy Wybuch (Poziom: <span id="freeze-damage-level">1</span>)</div>
-                        <div class="upgrade-description">Zwiększa obrażenia "Lodowy Wybuch".</div>
-                    </div>
-                    <button id="buy-freeze-damage" class="buy-button">Kup za <span id="freeze-damage-cost">10</span> punktów</button>
-                </div>
-
-                <!-- Ulepszenie Szału Bojowego -->
-                <div class="upgrade-item">
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">Szał Bojowy (Poziom: <span id="frenzy-damage-level">1</span>)</div>
-                        <div class="upgrade-description">Zwiększa obrażenia "Szał Bojowy".</div>
-                    </div>
-                    <button id="buy-frenzy-damage" class="buy-button">Kup za <span id="frenzy-damage-cost">10</span> punktów</button>
-                </div>
-
+            <div class="upgrade-category">
+                <h3>Obrażenia Podstawowe</h3>
+                <p>Poziom: <span id="base-damage-level">1</span></p>
+                <p>Koszt: <span id="base-damage-cost">10</span> znokautowań</p>
+                <button id="buy-base-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Piorun Zagłady</h3>
+                <p>Poziom: <span id="lightning-damage-level">1</span></p>
+                <p>Koszt: <span id="lightning-damage-cost">10</span> znokautowań</p>
+                <button id="buy-lightning-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Lodowy Wybuch</h3>
+                <p>Poziom: <span id="freeze-damage-level">1</span></p>
+                <p>Koszt: <span id="freeze-damage-cost">10</span> znokautowań</p>
+                <button id="buy-freeze-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Szał Bojowy</h3>
+                <p>Poziom: <span id="frenzy-damage-level">1</span></p>
+                <p>Koszt: <span id="frenzy-cost">10</span> znokautowań</p>
+                <button id="buy-frenzy-damage">Kup Ulepszenie</button>
             </div>
             <button id="close-shop-button">Zamknij Sklep</button>
         </div>
 
-
-        <!-- Wskaźniki gry -->
-        <div id="score-display">Punkty: <span id="score">0</span></div>
-        <div id="current-level-display">Poziom: <span id="current-level">0</span></div>
-        <!-- Usunięto: <div id="message-display"></div> -->
-        <div id="quote-images-container"></div> <!-- Kontener na obrazki cytatów -->
-
-
-        <!-- Kontener na przyciski supermocy (ukryty na start) -->
-        <div id="superpower-buttons-container" class="hidden">
-            <button id="btn-lightning" class="superpower-button">⚡ Piorun Zagłady</button>
-            <button id="btn-freeze" class="superpower-button">❄️ Lodowy Wybuch</button>
-            <button id="btn-frenzy" class="superpower-button">🔥 Szał Bojowy</button>
-        </div>
-
-        <!-- Przycisk Sklepu Ulepszeń (widoczny podczas gry, ale ukryty na ekranach menu) -->
-        <button id="shop-button" class="hidden">SKLEP ULEPSZEŃ</button>
-
-        <!-- Efekty supermocy (początkowo ukryte) -->
-        <div id="lightning-effect" class="effect-overlay hidden"></div>
-        <div id="freeze-effect" class="effect-overlay hidden"></div>
-        <div id="frenzy-effect" class="effect-overlay hidden"></div>
-
+        <!-- NOWY PRZYCISK SKLEPU NA EKRANIE GRY -->
+        <button id="shop-button" class="hidden">🛒 SKLEP</button>
     </div>
 
-    <!-- Dźwięki do gry -->
     <audio id="background-music" loop>
         <source src="traktor.mp3" type="audio/mpeg">
-        Twoja przeglądarka nie obsługuje elementu audio.
+        Your browser does not support the audio element.
     </audio>
     <audio id="punch-sound">
-        <source src="punch.mp3" type="audio/mpeg">
-        Twoja przeglądarka nie obsługuje elementu audio.
+        <source src="punch.mp3" type="audio/mpeg"> 
+        Your browser does not support the audio element.
     </audio>
 
-    <!-- Główny skrypt aplikacji, załadowany jako moduł -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-functions-compat.js"></script>
+    
     <script src="script.js" type="module"></script>
 </body>
 </html>
