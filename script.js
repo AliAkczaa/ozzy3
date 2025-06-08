@@ -117,7 +117,7 @@
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    const ORIGINAL_OZZY_IMAGE_URL = 'zdjecie 2.jpg';
+    const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
 
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
