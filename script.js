@@ -65,6 +65,9 @@
     // Flaga do oznaczania walki z bossem
     let isBossFight = false;
 
+    // DODANO: Deklaracja zmiennej punchesSinceLastPowerup
+    let punchesSinceLastPowerup = 0;
+
     // --- Referencje i zmienne dla obrazków cytatów ---
     const quoteImagesContainer = document.getElementById('quote-images-container');
     const quoteImagePaths = [
@@ -711,7 +714,7 @@
         currentLevelDisplay.parentElement.classList.add('hidden'); 
         messageDisplay.style.display = 'none';
         quoteImagesContainer.innerHTML = ''; // Usuń wszystkie cytaty po zakończeniu gry
-        // Usuń wszystkie aktywne komunikaty nokautu, jeśli jakieś są
+        // Usuj wszystkie aktywne komunikaty nokautu, jeśli jakieś są
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
 
 
@@ -1060,4 +1063,3 @@
         // Początkowa aktualizacja UI sklepu, gdy gra się załaduje
         updateUpgradeShopUI();
     });
-    
