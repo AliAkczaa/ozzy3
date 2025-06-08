@@ -31,7 +31,7 @@
     const ozzyImage = document.getElementById('ozzy-image');
     const healthBarFill = document.getElementById('health-bar-fill');
     const scoreDisplay = document.getElementById('score');
-    const messageDisplay = document.getElementById('message-display'); // For general messages (e.g., "Stonks stronger")
+    // Removed: const messageDisplay = document.getElementById('message-display'); // For general messages (e.g., "Stonks stronger")
     const gameContainer = document.getElementById('game-container');
 
     const startScreen = document.getElementById('start-screen');
@@ -168,7 +168,7 @@
     const buyLightningDamageButton = document.getElementById('buy-lightning-damage');
 
     const freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
-    const freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
+    const freezeDamageCostDisplay = document = document.getElementById('freeze-damage-cost');
     const buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
 
     const frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
@@ -426,6 +426,8 @@
             if (!isGameActive && !upgradeShopScreen.classList.contains('hidden')) { // Check if game is still active OR if we are in the shop
                 // If in shop, don't end DOT, but stop interval
                 clearInterval(freezeDotIntervalId);
+                // No need to set freezeModeActive to false here, it will be done when resuming game
+                // We just resume the interval when resuming the game.
                 return;
             }
             if (!isGameActive) { // If game is inactive (outside shop)
@@ -592,7 +594,7 @@
         freezeEffect.innerHTML = ''; // Clear ice shards
 
 
-        messageDisplay.style.display = 'none'; // Hide general message
+        // Removed: messageDisplay.style.display = 'none'; // Hide general message
         // Remove all active knockout messages, if any
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
 
@@ -601,7 +603,7 @@
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
         upgradeShopScreen.classList.add('hidden'); // Hide shop
-        startScreen.classList.remove('hidden'); // Show start screen
+        startScreen.classList.remove('hidden'); // Pokaż ekran startowy
         shopButton.classList.remove('hidden'); // Show shop button on start screen
         superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons on start screen
 
@@ -618,10 +620,17 @@
     // Function to display GENERAL messages (now also for boss start)
     // Will use the same styles as superpowers.
     function showMessage(message, duration = 1500) {
-        messageDisplay.textContent = message;
-        messageDisplay.style.display = 'block';
+        // Create a new div for the message
+        const dynamicMessageElement = document.createElement('div');
+        dynamicMessageElement.classList.add('knockout-message'); // Reuse knockout-message styling
+        dynamicMessageElement.textContent = message;
+
+        // Append to game container
+        gameContainer.appendChild(dynamicMessageElement);
+
+        // Set timeout to remove the message after its duration
         setTimeout(() => {
-            messageDisplay.style.display = 'none';
+            dynamicMessageElement.remove();
         }, duration);
     }
 
@@ -681,7 +690,7 @@
         frenzyModeActive = false;
         clearTimeout(frenzyTimerId); // Clear frenzy timer
 
-        // Reset Ice Blast at game start
+        // Reset Ice Blast
         freezeModeActive = false;
         clearInterval(freezeDotIntervalId);
         freezeEffect.classList.add('hidden');
@@ -722,7 +731,7 @@
         scoreDisplay.classList.add('hidden'); // Hide score counter
         // Hide level counter
         currentLevelDisplay.parentElement.classList.add('hidden');
-        messageDisplay.style.display = 'none';
+        // Removed: messageDisplay.style.display = 'none';
         quoteImagesContainer.innerHTML = ''; // Remove all quotes after game ends
         // Remove all active knockout messages, if any
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
@@ -986,7 +995,7 @@
         ozzyContainer.classList.add('hidden');
         scoreDisplay.classList.add('hidden');
         currentLevelDisplay.parentElement.classList.add('hidden');
-        messageDisplay.style.display = 'none';
+        // Removed: messageDisplay.style.display = 'none';
         quoteImagesContainer.innerHTML = ''; // Ensure quotes container is empty at start
 
         resetGame(); // This function will also reset superpowers and cooldowns
