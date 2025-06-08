@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zajeb Stonksa!</title>
+    <!-- Czcionka Press Start 2P jest importowana w style.css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Zmienione tło, dostosuj obrazek -->
+        <img id="animated-background-tractor" src="zdjecie 1 - tlo.jpg" alt="Tło areny walki">
+        
+        <div id="quote-images-container"></div>
+        
+        <div id="ozzy-container" class="hidden">
+            <!-- Używamy zdjecie 2.jpg dla Ozzy'ego -->
+            <img id="ozzy-image" src="stonks2.png" alt="stonks do pobicia">
+            <!-- Pasek zdrowia dla Ozzy'ego -->
+            <div id="health-bar-container">
+                <div id="health-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Kontenery na efekty supermocy -->
+        <div id="lightning-effect" class="effect-overlay hidden"></div>
+        <div id="freeze-effect" class="effect-overlay hidden"></div>
+        <div id="frenzy-effect" class="effect-overlay hidden"></div>
+        
+        <div id="start-screen">
+            <h1>Zajeb Stonksa!</h1>
+            <p>Twoje zadanie: napierdalaj Stonks'a, aż padnie! Im więcej razy ujesz, tym lepiej!</p>
+            <div id="nick-input-container">
+                <label for="nickname-input">Twój Nick:</label>
+                <input type="text" id="nickname-input" placeholder="Wpisz swój nick" maxlength="15">
+            </div>
+            <button id="start-button">Rozpocznij!</button>
+            <button id="show-leaderboard-button">Ranking</button>
+        </div>
+
+        <div id="end-screen" class="hidden">
+            <h1>Stonks Znokautowany!</h1>
+            <p id="end-message">Gratulacje! Znokautowałeś Stonks'a!</p>
+            <!-- Zmienione ID na "final-score" dla spójności ze script.js -->
+            <p>Stonks znokautowany: <span id="final-score">0</span> razy!</p>
+            <button id="restart-button">Zagraj Jeszcze Raz!</button>
+            <button id="show-leaderboard-after-game-button">Zobacz Ranking</button>
+        </div>
+
+        <div id="leaderboard-screen" class="hidden">
+            <h2>Ranking Najlepszych</h2>
+            <ol id="leaderboard-list"></ol>
+            <button id="back-to-start-button">Wróć do menu</button>
+        </div>
+
+        <!-- NOWY KONTENER NA INFORMACJE O GRZE (PUNKTY I POZIOM) -->
+        <div id="game-info-container" class="hidden">
+            <div id="score-display">Punkty: <span id="score">0</span></div>
+            <div id="level-display">Poziom: <span id="current-level">0</span></div>
+        </div>
+        
+        <!-- message-display pozostaje samodzielne, bo jest używane globalnie -->
+        <div id="message-display" class="hidden"></div>
+
+        <!-- Kontener na przyciski supermocy -->
+        <div id="superpower-buttons-container" class="hidden">
+            <!-- ZMIANA: Dodano span.superpower-text do ukrywania tekstu na mobilnych -->
+            <button id="btn-lightning" class="superpower-button" disabled>⚡<span class="superpower-text"> Piorun Zagłady</span></button>
+            <button id="btn-freeze" class="superpower-button" disabled>❄️<span class="superpower-text"> Lodowy Wybuch</span></button>
+            <button id="btn-frenzy" class="superpower-button" disabled>🔥<span class="superpower-text"> Szał Bojowy</span></button>
+        </div>
+
+        <!-- NEW: Upgrade Shop Screen -->
+        <div id="upgrade-shop-screen" class="hidden">
+            <h2>Sklep Ulepszeń</h2>
+            <div class="upgrade-category">
+                <h3>Obrażenia Podstawowe</h3>
+                <p>Poziom: <span id="base-damage-level">1</span></p>
+                <p>Koszt: <span id="base-damage-cost">10</span> points</p>
+                <button id="buy-base-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Piorun Zagłady</h3>
+                <p>Poziom: <span id="lightning-damage-level">1</span></p>
+                <p>Koszt: <span id="lightning-damage-cost">10</span> points</p>
+                <button id="buy-lightning-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Lodowy Wybuch</h3>
+                <p>Poziom: <span id="freeze-damage-level">1</span></p>
+                <p>Koszt: <span id="freeze-damage-cost">10</span> points</p>
+                <button id="buy-freeze-damage">Kup Ulepszenie</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Szał Bojowy</h3>
+                <p>Poziom: <span id="frenzy-damage-level">1</span></p>
+                <p>Koszt: <span id="frenzy-cost">10</span> points</p>
+                <button id="buy-frenzy-damage">Kup Ulepszenie</button>
+            </div>
+            <button id="close-shop-button">Zamknij Sklep</button>
+        </div>
+
+        <!-- NOWY PRZYCISK SKLEPU NA EKRANIE GRY -->
+        <button id="shop-button" class="hidden">🛒 SKLEP</button>
+    </div>
+
+    <!-- ZMIANA: Uproszczone tagi audio -->
+    <audio id="background-music" src="muzyka.mp3" loop></audio>
+    <audio id="punch-sound" src="punch.mp3"></audio>
+
+    <!-- ZMIANA: Usunięto stare skrypty Firebase compat.js. script.js używa modular v9. -->
+    <script src="script.js" type="module"></script>
+</body>
+</html>
