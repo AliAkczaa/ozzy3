@@ -1,432 +1,377 @@
+/* Import czcionki z Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* --- Podstawowe style globalne --- */
 body {
-    font-family: 'Press Start 2P', 'Comic Sans MS', cursive, sans-serif;
     margin: 0;
-    overflow: hidden;
+    overflow: hidden; /* Zapobiega przewijaniu */
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #1a1a1a; 
-
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-user-drag: none;
+    min-height: 100vh; /* Pełna wysokość viewportu */
+    background: linear-gradient(to bottom, #4a0000, #000000); /* Stonksowe tło */
+    font-family: 'Press Start 2P', cursive;
+    color: #eee;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative; /* Dla pozycjonowania message-display */
 }
 
-/* WAŻNE: Upewnij się, że klasa .hidden jest silna! */
-.hidden {
-    display: none !important;
-}
-
+/* Kontener główny gry */
 #game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100vw; /* Pełna szerokość viewportu */
+    height: 100vh; /* Pełna wysokość viewportu */
+    max-width: 1200px; /* Maksymalna szerokość dla większych ekranów */
+    max-height: 800px; /* Maksymalna wysokość dla większych ekranów */
+    aspect-ratio: 16 / 9; /* Zachowaj proporcje 16:9, jeśli to możliwe */
+    background-color: #1a1a1a;
+    border: 8px solid #ffcc00;
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.8), 0 0 40px rgba(255, 204, 0, 0.5);
+    position: relative; /* Do pozycjonowania elementów wewnątrz */
+    overflow: hidden; /* Ukryj wszystko co wykracza poza kontener gry */
     display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 5px solid lime; 
-    box-shadow: 0 0 20px lime; 
-    overflow: hidden; 
+    justify-content: center; /* Wyśrodkuj elementy na osi X */
+    align-items: center; /* Wyśrodkuj elementy na osi Y */
 }
 
+/* Animowane tło (traktor) */
 #animated-background-tractor {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1; 
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Pokrywa cały kontener, przycinając jeśli trzeba */
+    opacity: 0.7; /* Lekko przyciemnij tło */
+    z-index: 0;
+    /* Animacja subtelnego ruchu traktorowego tła */
+    animation: backgroundPan 60s linear infinite alternate;
 }
 
-/* Kontener dla Ozzy'ego i jego paska zdrowia */
-#ozzy-container {
+@keyframes backgroundPan {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.1); /* Delikatne powiększanie */
+    }
+}
+
+/* Ukrycie ekranów */
+.hidden {
+    display: none !important; /* Użyj !important, aby nadpisać inne style display */
+}
+
+/* --- Ekrany Gry (Start, Koniec, Ranking, Sklep) --- */
+#start-screen,
+#end-screen,
+#leaderboard-screen,
+#upgrade-shop-screen {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Zapewnia wyśrodkowanie */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Ciemniejsze, półprzezroczyste tło */
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    cursor: grab; /* Kursor, który sugeruje chwytanie/uderzenie */
-    user-select: none; /* Zapobiega zaznaczaniu tekstu/obrazu */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    z-index: 10; /* WAŻNE: Ustawiamy wyższy z-index, aby Ozzy był nad tłem i cytatami */
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 100; /* Upewnij się, że są na wierzchu */
+    animation: fadeIn 0.5s ease-out;
 }
 
-/* Animacja pojawiania się Ozzy'ego */
-@keyframes spawnOzzy {
-    from {
-        opacity: 0;
-        /* Zmieniono: Usuwa początkowe przesunięcie w pionie, by postać pojawiała się od razu na środku */
-        transform: translate(-50%, -50%) scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-#ozzy-image.spawn-ozzy {
-    animation: spawnOzzy 0.5s ease-out forwards;
-}
-
-#ozzy-image {
-    width: 200px; 
-    height: auto;
-    border-radius: 15px; 
-    transition: transform 0.05s ease-out, filter 0.05s ease-out; 
-    border: 5px solid #FFD700; 
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); 
-}
-
-/* Styl dla bossa */
-#ozzy-image.boss-mode {
-    border-color: #FF4500; /* Pomarańczowo-czerwona ramka */
-    box-shadow: 0 0 30px rgba(255, 69, 0, 0.9); /* Ognisty blask */
-    transform: scale(1.1); /* Boss jest większy */
-    animation: pulse 1s infinite alternate; /* Delikatne pulsowanie */
-}
-
-@keyframes pulse {
-    from { transform: scale(1.1); }
-    to { transform: scale(1.15); }
-}
-
-/* Obrócenie obrazka bossa w osi X */
-#ozzy-image.flipped-x {
-    transform: scaleX(-1);
-}
-
-/* Animacja drżenia po uderzeniu */
-@keyframes shake {
-    0% { transform: translate(0, 0); }
-    25% { transform: translate(-3px, 0); }
-    50% { transform: translate(3px, 0); }
-    75% { transform: translate(-3px, 0); }
-    100% { transform: translate(0, 0); }
-}
-
-#ozzy-image.hit-effect {
-    filter: brightness(0.8) contrast(1.2) saturate(1.2) hue-rotate(-5deg); 
-    animation: shake 0.1s ease-in-out; 
-    transform: scale(0.98); 
-}
-
-#health-bar-container {
-    width: 80%; 
-    max-width: 300px; 
-    height: 25px; 
-    background-color: #555;
-    border: 3px solid #333;
-    border-radius: 12px;
-    margin-top: 15px; 
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-#health-bar-fill {
-    height: 100%;
-    width: 100%; 
-    background-color: limegreen;
-    border-radius: 9px;
-    transition: width 0.3s ease-out, background-color 0.3s ease-out; 
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 h1, h2 {
-    color: orange;
-    text-shadow: 3px 3px 5px black;
+    color: #ffcc00;
+    margin-bottom: 20px;
+    font-size: clamp(1.5em, 5vw, 3.5em); /* Responsywny rozmiar czcionki */
 }
 
 p {
-    font-size: 3.5vmin;
-    max-width: 90%;
-    margin-bottom: 3vh;
-    line-height: 1.5;
-    color: white;
-    text-shadow: 1px 1px 2px black;
+    font-size: clamp(0.8em, 2.5vw, 1.2em);
+    margin-bottom: 15px;
+    line-height: 1.4;
 }
 
-button {
-    background-color: #222;
-    color: lime;
-    border: 3px solid lime;
+/* Nickname Input */
+#nick-input-container {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#nickname-input {
+    padding: 10px 15px;
+    font-size: clamp(0.8em, 2.5vw, 1.2em);
+    border: 2px solid #ffcc00;
+    background-color: #333;
+    color: #eee;
     border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 1.2em;
+    text-align: center;
+    margin-top: 10px;
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    transition: all 0.3s ease;
+    width: clamp(180px, 60vw, 300px); /* Responsywna szerokość */
+    max-width: 80%;
+}
+
+#nickname-input::placeholder {
+    color: #aaa;
+}
+
+#nickname-input:focus {
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+}
+
+/* Przyciski */
+button {
+    background: linear-gradient(to bottom, #ffcc00, #ff9900);
+    color: #000;
+    border: 3px solid #ffa500;
+    padding: 12px 25px;
+    margin: 10px;
+    border-radius: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: clamp(0.7em, 2.5vw, 1.1em);
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
-    transition: all 0.2s ease-in-out;
-    margin-top: 2vh; 
+    box-shadow: 5px 5px 0px #a36f00, inset 0 0 5px rgba(255, 255, 255, 0.5);
+    transition: all 0.1s ease-out;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative; /* Dla efektu kliknięcia */
+    overflow: hidden;
 }
 
 button:hover {
-    background-color: lime;
-    color: #222;
-    box-shadow: 0 0 15px lime, 0 0 30px lime;
+    background: linear-gradient(to bottom, #ffdb4d, #ffb833);
+    box-shadow: 6px 6px 0px #b37f00, inset 0 0 8px rgba(255, 255, 255, 0.7);
     transform: translateY(-2px);
 }
 
 button:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 255, 0, 0.5);
+    transform: translateY(2px);
+    box-shadow: 2px 2px 0px #a36f00;
+    background: linear-gradient(to bottom, #ff9900, #ffcc00);
 }
 
-#score-display, #current-level-display {
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid lime;
-    border-radius: 10px;
-    padding: 10px 15px;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-    z-index: 20; 
-    position: absolute;
-    font-weight: bold;
-    color: yellow;
-    text-shadow: 2px 2px 4px black;
-    font-size: 4vmin;
+button:disabled {
+    background: #555;
+    border-color: #333;
+    color: #999;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.7;
 }
 
-#score-display {
-    top: 2vh;
-    left: 2vw;
-}
-
-#current-level-display {
-    top: 2vh;
-    right: 2vw;
-}
-
-/* Styl dla komunikatów "Stonks rozjebany!" i nowych dynamicznych komunikatów */
-.knockout-message {
-    position: absolute;
-    bottom: 25%; /* Pozycja komunikatów, niżej niż Ozzy */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 5vmin;
-    color: #FFD700; /* Złoty kolor */
-    text-shadow: 2px 2px 4px black;
-    animation: fadeOutUpSmall 2s forwards; /* Animacja znikania */
-    z-index: 25; /* Nad Ozzym, ale pod ekranami menu/sklepu */
-    pointer-events: none; /* KLUCZOWE: Nie blokuje kliknięć! */
-    white-space: nowrap; /* Zapobiega zawijaniu tekstu */
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 1.5vh 3vw;
-    border-radius: 10px;
-    border: 2px solid gold;
-}
-
-/* Animacja znikania komunikatów */
-@keyframes fadeOutUpSmall {
-    0% { opacity: 1; transform: translateY(0) translateX(-50%); }
-    100% { opacity: 0; transform: translateY(-50px) translateX(-50%); }
-}
-
-
-#start-screen, #end-screen, #leaderboard-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    z-index: 40; 
-    padding: 2vw;
-    box-sizing: border-box;
-}
-
-#start-screen h1, #end-screen h1, #leaderboard-screen h2 {
-    font-size: 7vmin;
-    margin-bottom: 2vh;
-    color: orange;
-    text-shadow: 3px 3px 5px black;
-}
-
-#start-screen p, #end-screen p {
-    font-size: 3.5vmin;
-    max-width: 90%;
-    margin-bottom: 3vh;
-    line-height: 1.5;
-}
-
-#final-score-display {
-    font-size: 5vmin;
-    color: yellow;
-    margin-bottom: 3vh;
-    text-shadow: 2px 2px 5px black;
-}
-
-#nick-input-container {
-    margin-bottom: 3vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1vh;
-}
-
-#nick-input-container label {
-    font-size: 3vmin;
-    color: yellow;
-    text-shadow: 1px 1px 2px black;
-}
-
-#nickname-input {
-    padding: 1.5vh 2vw;
-    font-size: 3vmin;
-    border: 2px solid #4CAF50;
-    border-radius: 8px;
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #333;
-    max-width: 80vw;
-}
-
-/* Leaderboard Specific Styles */
-#leaderboard-screen h2 {
-    color: gold;
-    margin-bottom: 4vh;
-}
-
+/* Ranking */
 #leaderboard-list {
     list-style: none;
     padding: 0;
-    margin: 0;
-    width: 90%;
-    max-width: 500px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
-    border: 2px solid gold;
-    max-height: 60vh;
-    overflow-y: auto;
+    font-size: clamp(0.7em, 2vw, 1em);
+    text-align: left;
+    max-height: 60%; /* Ogranicz wysokość listy */
+    overflow-y: auto; /* Dodaj przewijanie, jeśli lista jest długa */
+    width: 80%;
+    max-width: 400px;
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    padding: 15px;
+    border: 2px solid #ffcc00;
 }
 
 #leaderboard-list li {
-    font-size: 3.5vmin;
-    padding: 1.5vh 3vw;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-#leaderboard-list li:last-child {
-    border-bottom: none;
+/* --- Elementy Gry (Ozzy, Pasek Zdrowia) --- */
+#ozzy-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centruj Ozzy'ego */
+    cursor: pointer;
+    z-index: 10;
+    width: clamp(150px, 40vw, 300px); /* Responsywna szerokość */
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s ease-out; /* Płynne przejście dla transform */
 }
 
-#leaderboard-list li:nth-child(odd) {
-    background-color: rgba(255, 255, 255, 0.05);
+#ozzy-image {
+    width: 100%;
+    height: auto;
+    pointer-events: none; /* Zapobiegaj klikaniu w obraz, aby kliknięcia były obsługiwane przez ozzy-container */
+    user-select: none; /* Zapobiegaj zaznaczaniu obrazu */
+    -webkit-user-drag: none; /* Zapobiegaj przeciąganiu obrazu */
+    image-rendering: pixelated; /* Zachowaj pikselowy wygląd */
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#leaderboard-list li:first-child {
-    color: gold;
+/* Animacja pojawiania się Ozzy'ego */
+@keyframes bounceIn {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+.hit-effect {
+    animation: hitShake 0.15s ease-out;
+}
+
+@keyframes hitShake {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-5px, -5px); }
+    50% { transform: translate(5px, 5px); }
+    75% { transform: translate(-5px, 5px); }
+    100% { transform: translate(0, 0); }
+}
+
+.spawn-ozzy {
+    animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+
+/* Pasek zdrowia */
+#health-bar-container {
+    width: 80%; /* Szerokość paska względem Ozzy'ego */
+    height: 20px;
+    background-color: #333;
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#health-bar-fill {
+    height: 100%;
+    width: 100%; /* Domyślnie pełny */
+    background-color: limegreen;
+    transition: width 0.2s ease-out, background-color 0.2s ease-out;
+    border-radius: 8px;
+}
+
+/* --- Kontener informacji o grze (punkty, poziom) --- */
+#game-info-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 2px solid #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+    z-index: 20;
+    font-size: clamp(0.7em, 2vw, 1em);
+}
+
+#score-display, #level-display {
+    color: #fff;
+}
+
+#score-display span, #current-level {
+    color: #ffcc00;
     font-weight: bold;
-    font-size: 4vmin;
 }
 
-#leaderboard-list li:nth-child(2) {
-    color: silver;
-}
-
-#leaderboard-list li:nth-child(3) {
-    color: #cd7f32;
-}
-
-/* --- Cytaty Ozzy'ego --- */
+/* --- Cytaty Obrazkowe --- */
 #quote-images-container {
     position: absolute;
-    width: 100%;
-    height: 100%;
     top: 0;
     left: 0;
-    pointer-events: none; /* Upewnij się, że nie blokuje kliknięć na Ozzy'ego */
-    z-index: 5; /* Pomiędzy tłem (1) a Ozzym (10) */
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Upewnij się, że nie blokują kliknięć */
+    overflow: hidden; /* Upewnij się, że cytaty nie wychodzą poza obszar gry */
 }
 
 .quote-image {
     position: absolute;
-    width: 150px; /* Rozmiar z JS (QUOTE_SIZE_PX) */
+    width: 150px; /* Stała szerokość cytatu */
     height: auto;
-    opacity: 0; /* Początkowo niewidoczny */
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Animacja pojawiania/znikania i obrotu */
-    pointer-events: none; /* Nieklickalny */
-    z-index: 5; /* Jawny z-index dla samych obrazków cytatów */
+    opacity: 0; /* Początkowo niewidoczne */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    z-index: 15;
+    user-select: none;
+    -webkit-user-drag: none;
+    image-rendering: pixelated;
 }
 
 .quote-image.active {
-    opacity: 1; /* Pojawia się */
+    opacity: 1; /* Pojawienie się */
 }
 
-/* --- Supermoce --- */
+/* --- Supermoce i Efekty --- */
 #superpower-buttons-container {
     position: absolute;
-    bottom: 2vh;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 20px;
     display: flex;
-    gap: 15px; /* Odstęp między przyciskami */
-    z-index: 20; /* Nad Ozzym i licznikiem */
+    gap: 15px;
+    z-index: 20;
+    pointer-events: auto; /* Pozwól na klikanie */
 }
 
 .superpower-button {
-    padding: 1.5vh 3vw;
-    font-size: 2.5vmin;
-    font-weight: bold;
-    background-color: #333;
-    color: #00BFFF; /* Jasnoniebieski kolor dla supermocy */
-    border: 3px solid #00BFFF;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
-    transition: all 0.2s ease-in-out;
-    white-space: nowrap;
+    font-size: clamp(0.6em, 1.8vw, 0.9em);
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 3px 3px 0px #8d5e00, inset 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
-.superpower-button:hover:not(:disabled) {
-    background-color: #00BFFF;
-    color: #333;
-    box-shadow: 0 0 15px #00BFFF, 0 0 30px #00BFFF;
-    transform: translateY(-2px);
-}
-
-.superpower-button:disabled {
-    background-color: #555;
-    border-color: #777;
-    color: #bbb;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
-
-/* Efekty wizualne supermocy */
 .effect-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Nie blokuje interakcji */
-    z-index: 35; /* Nad grą, ale pod komunikatami */
+    pointer-events: none;
+    z-index: 50; /* Wyżej niż Ozzy, ale niżej niż ekrany menu */
     overflow: hidden;
 }
 
-/* Piorun Zagłady */
+/* Efekt pioruna */
 #lightning-effect {
-    background: radial-gradient(circle, rgba(255, 255, 0, 0.3) 0%, rgba(255, 255, 0, 0) 70%);
-    animation: flashEffect 0.5s forwards;
+    background: radial-gradient(circle at center, rgba(255, 255, 0, 0.5) 0%, rgba(255, 255, 0, 0) 70%);
+    animation: flashEffect 0.2s linear forwards;
+}
+
+.lightning-segment {
+    position: absolute;
+    background-color: rgba(255, 255, 0, 0.8);
+    box-shadow: 0 0 10px rgba(255, 255, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.5);
+    border-radius: 50%;
+    animation: lightningSegmentFade 1s forwards;
 }
 
 @keyframes flashEffect {
@@ -435,315 +380,335 @@ button:active {
     100% { opacity: 0; }
 }
 
-.lightning-segment {
-    position: absolute;
-    background-color: yellow;
-    box-shadow: 0 0 10px yellow, 0 0 20px yellow, 0 0 40px yellow;
-    border-radius: 50%;
-    opacity: 0;
-    animation: lightningSegmentFadeIn 0.3s forwards;
+@keyframes lightningSegmentFade {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0); }
 }
 
-@keyframes lightningSegmentFadeIn {
-    from { opacity: 0; transform: scale(0); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Lodowy Wybuch */
+/* Efekt zamrożenia */
 #freeze-effect {
-    background: radial-gradient(circle, rgba(173, 216, 230, 0.4) 0%, rgba(173, 216, 230, 0) 70%);
-    transition: opacity 0.5s ease-out;
+    background-color: rgba(173, 216, 230, 0.3); /* Lekki niebieski nalot */
+    animation: freezeEffectGlow 1s infinite alternate;
 }
 
 #freeze-effect.active {
-    opacity: 1;
+    /* Utrzymuj efekt wizualny dopóki aktywny */
+    animation: freezeEffectGlow 1s infinite alternate;
 }
 
 .ice-shard {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: lightblue;
-    border-radius: 50%; /* Kryształki jako okręgi dla uproszczenia */
-    box-shadow: 0 0 5px lightblue, 0 0 10px lightblue;
-    opacity: 0;
-    animation: iceShardSpawn 1s forwards;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    transform: rotate(45deg); /* Kształt rombu */
+    box-shadow: 0 0 8px rgba(0, 191, 255, 0.7);
+    animation: shardFadeOut 1s forwards;
+    pointer-events: none;
 }
 
-@keyframes iceShardSpawn {
-    0% {
-        opacity: 0;
-        transform: scale(0) translateY(0);
-    }
-    20% {
-        opacity: 1;
-        transform: scale(1.2) translateY(-10px);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0.5) translateY(20px);
-    }
+@keyframes freezeEffectGlow {
+    0% { background-color: rgba(173, 216, 230, 0.3); }
+    100% { background-color: rgba(173, 216, 230, 0.6); }
 }
 
-/* Szał Bojowy */
+@keyframes shardFadeOut {
+    0% { opacity: 1; transform: scale(1) rotate(45deg); }
+    100% { opacity: 0; transform: scale(2) rotate(90deg); }
+}
+
+/* Efekt szału */
 #frenzy-effect {
-    background: radial-gradient(circle, rgba(255, 0, 0, 0.2) 0%, rgba(255, 0, 0, 0) 70%);
-    border: 5px solid red;
-    box-shadow: 0 0 20px red, inset 0 0 10px red;
-    animation: frenzyPulse 0.5s infinite alternate;
+    background: radial-gradient(circle at center, rgba(255, 0, 0, 0.3) 0%, rgba(255, 0, 0, 0) 70%);
 }
 
 #frenzy-effect.active {
-    opacity: 1;
+    animation: frenzyEffectPulse 0.5s infinite alternate;
 }
 
-@keyframes frenzyPulse {
-    from { transform: scale(1); opacity: 1; }
-    to { transform: scale(1.02); opacity: 0.9; }
+@keyframes frenzyEffectPulse {
+    0% { background-color: rgba(255, 0, 0, 0.3); transform: scale(1); }
+    100% { background-color: rgba(255, 0, 0, 0.5); transform: scale(1.05); }
 }
 
-/* Przycisk Sklepu Ulepszeń */
+
+/* --- Komunikaty --- */
+#message-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffcc00;
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 3px solid #ffcc00;
+    font-size: clamp(0.9em, 3vw, 1.5em);
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.7);
+    z-index: 101; /* Upewnij się, że jest na wierzchu */
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+
+.knockout-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Start w centrum */
+    background-color: rgba(255, 0, 0, 0.8); /* Czerwone tło dla knockotu */
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 3px solid #ffcc00;
+    font-size: clamp(0.9em, 3vw, 1.5em);
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+    z-index: 102; /* Wyżej niż normalne wiadomości */
+    animation: fadeOutUpSmall 2s forwards; /* Animacja znikania w górę */
+    pointer-events: none; /* Nie blokuje kliknięć */
+}
+
+/* Nowa klasa dla komunikatów bossa */
+.boss-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Start w centrum */
+    background-color: rgba(255, 0, 0, 0.9); /* Bardziej intensywny czerwony */
+    color: #fff;
+    padding: 20px 40px;
+    border-radius: 15px;
+    border: 5px solid #ffcc00; /* Grubasna ramka */
+    font-size: clamp(1.2em, 4vw, 2em); /* Większa czcionka */
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.9), 0 0 50px rgba(255, 0, 0, 0.7); /* Większy, bardziej intensywny cień */
+    z-index: 103; /* Najwyższy z-index */
+    animation: bossMessageAppear 0.5s ease-out forwards, bossMessagePulse 1s ease-in-out infinite alternate;
+    pointer-events: none; /* Nie blokuje kliknięć */
+}
+
+@keyframes fadeOutUpSmall {
+    0% { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -100%); } /* Przesunięcie w górę */
+}
+
+@keyframes bossMessageAppear {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    80% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes bossMessagePulse {
+    0% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.9), 0 0 50px rgba(255, 0, 0, 0.7); }
+    100% { box-shadow: 0 0 40px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 0, 0, 0.8); }
+}
+
+
+/* Styl dla obrazu bossa */
+#ozzy-image.boss-mode {
+    width: clamp(200px, 50vw, 400px); /* Boss może być większy */
+    height: auto;
+    border: 5px solid red;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+    image-rendering: pixelated;
+    filter: brightness(1.2) contrast(1.2);
+    /* Dodaj animację pulsu dla bossa, jeśli chcesz */
+    animation: bossPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes bossPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.02); }
+}
+
+/* Odwracanie obrazu bossa przy zmianie kierunku */
+#ozzy-image.flipped-x {
+    transform: scaleX(-1);
+}
+
+/* --- Przycisk SKLEP --- */
 #shop-button {
     position: absolute;
-    bottom: 2vh;
-    right: 2vw;
-    z-index: 20; /* Nad elementami gry, obok przycisków supermocy */
-    padding: 1.5vh 3vw;
-    font-size: 2.5vmin;
-    background-color: #6A0DAD; /* Fioletowy kolor */
-    border-color: #9932CC; /* Ciemniejszy fiolet */
-    box-shadow: 0 4px 8px rgba(106, 13, 173, 0.3);
-    color: white;
+    top: 20px; /* Albo lewa, albo prawa strona, żeby nie kolidowało z game-info-container */
+    right: 20px;
+    z-index: 20;
+    background: linear-gradient(to bottom, #008000, #004d00); /* Zielony kolor */
+    border-color: #006400;
+    color: #fff;
+    box-shadow: 5px 5px 0px #003300, inset 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 #shop-button:hover {
-    background-color: #9932CC;
-    box-shadow: 0 0 15px #9932CC, 0 0 30px #9932CC;
-    color: white;
+    background: linear-gradient(to bottom, #009900, #006600);
+    box-shadow: 6px 6px 0px #004d00, inset 0 0 8px rgba(255, 255, 255, 0.5);
 }
+
+#shop-button:active {
+    background: linear-gradient(to bottom, #006600, #009900);
+    box-shadow: 2px 2px 0px #003300;
+}
+
 
 /* --- Sklep Ulepszeń --- */
 #upgrade-shop-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.95); /* Ciemniejsze, bardziej nieprzezroczyste tło */
-    color: white;
-    /* WAŻNE: display flex, aby poprawnie wyśrodkować zawartość */
-    display: flex; 
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    z-index: 50; /* Na samej górze, nad wszystkim */
-    padding: 2vw;
+    /* style ogólne dla ekranów */
+}
+
+.upgrade-category {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 2px solid #ffcc00;
+    width: clamp(250px, 70vw, 450px); /* Responsywna szerokość */
     box-sizing: border-box;
-}
-
-#upgrade-shop-screen h2 {
-    font-size: 7vmin;
-    color: gold;
-    margin-bottom: 4vh;
-    text-shadow: 3px 3px 5px black;
-}
-
-.upgrade-shop-content {
-    background-color: rgba(50, 50, 50, 0.9); /* Nieco jaśniejsze tło dla zawartości */
-    padding: 4vh 6vw;
-    border-radius: 20px;
-    border: 5px solid gold;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
-    max-width: 800px;
-    width: 90%;
-    margin-bottom: 3vh;
-    max-height: 70vh; /* Ogranicz wysokość, aby zmieściło się na mniejszych ekranach */
-    overflow-y: auto; /* Dodaj scrollbar, jeśli zawartość jest za duża */
-}
-
-.upgrade-item {
+    text-align: left;
     display: flex;
-    flex-direction: column; /* Ułożenie w kolumnach na małych ekranach */
+    flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.upgrade-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.upgrade-info {
-    flex-grow: 1; /* Pozwala na rozciąganie */
-    text-align: left;
-}
-
-.upgrade-name {
-    font-size: 3vmin;
-    color: lime;
-    text-shadow: 1px 1px 2px black;
+.upgrade-category h3 {
+    color: #ffcc00;
+    margin-top: 0;
     margin-bottom: 5px;
+    font-size: clamp(0.9em, 2.5vw, 1.3em);
+    width: 100%;
+    text-align: center;
 }
 
-.upgrade-description {
-    font-size: 2vmin;
-    color: #ccc;
-    margin-bottom: 10px;
+.upgrade-category p {
+    font-size: clamp(0.7em, 2vw, 1em);
+    margin: 0;
+    color: #eee;
 }
 
-.upgrade-level, .upgrade-cost {
-    font-size: 2.5vmin;
-    color: yellow;
+.upgrade-category span {
+    color: #ffcc00;
     font-weight: bold;
-    text-shadow: 1px 1px 2px black;
 }
 
-.buy-button {
-    font-size: 2.2vmin;
-    padding: 1.5vh 3vw;
-    background-color: #4CAF50; /* Zielony dla przycisków zakupu */
-    border-color: #388E3C;
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    color: white;
-    margin-top: 0; /* Usuń domyślny margines */
-    width: 100%; /* Rozciągnij przycisk na całą szerokość na małych ekranach */
-}
-
-.buy-button:hover:not(:disabled) {
-    background-color: #388E3C;
-    box-shadow: 0 0 15px #388E3C, 0 0 30px #388E3C;
-}
-
-.buy-button:disabled {
-    background-color: #555;
-    border-color: #777;
-    color: #bbb;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+.upgrade-category button {
+    align-self: center; /* Wyśrodkuj przycisk w kategorii */
+    margin-top: 10px;
+    padding: 8px 15px;
+    font-size: clamp(0.6em, 2vw, 0.9em);
 }
 
 #close-shop-button {
-    background-color: #CC0000; /* Czerwony kolor */
-    border-color: #990000;
-    box-shadow: 0 4px 8px rgba(204, 0, 0, 0.3);
-    color: white;
+    margin-top: 30px;
 }
 
-#close-shop-button:hover {
-    background-color: #990000;
-    box-shadow: 0 0 15px #990000, 0 0 30px #990000;
-    color: white;
-}
-
-
-/* Media Queries - dostosowanie rozmiaru Ozzy'ego na małych ekranach */
+/* --- Responsywność --- */
 @media (max-width: 768px) {
-    #ozzy-image { 
-        width: 150px; 
-        height: auto;
+    #game-container {
+        border-width: 5px;
     }
-    #health-bar-container {
-        width: 90%;
-    }
-    #score-display, #current-level-display {
-        font-size: 5vmin;
-    }
-    #nickname-input {
-        font-size: 4vmin;
-    }
-    .superpower-button, #shop-button {
-        font-size: 3vmin;
-        padding: 1vh 2vw;
-    }
-    #superpower-buttons-container {
-        flex-direction: column; /* Ułożenie pionowe na mobilnych */
-        gap: 10px;
-        bottom: 10vh; /* Więcej miejsca od dołu */
-    }
-    #shop-button {
-        bottom: 2vh; /* Niżej, żeby nie kolidowało z supermocami */
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        width: auto;
-        padding: 1.5vh 4vw;
-        font-size: 3vmin;
-    }
-    .upgrade-name {
-        font-size: 2.5vmin;
-    }
-    .upgrade-description {
-        font-size: 1.8vmin;
-    }
-    .upgrade-level, .upgrade-cost {
-        font-size: 2.2vmin;
-    }
-    .buy-button {
-        font-size: 2vmin;
-        padding: 1vh 2vw;
-    }
-}
 
-@media (min-width: 769px) {
-    .upgrade-item {
-        flex-direction: row; /* Ułożenie w rzędzie na większych ekranach */
-        align-items: center;
+    h1 {
+        font-size: clamp(1.2em, 8vw, 3em);
     }
-    .buy-button {
-        width: auto; /* Przyciski nie rozciągają się na całą szerokość */
-        margin-left: 20px; /* Odstęp od informacji */
-    }
-    #shop-button {
-        width: auto;
-    }
-}
 
-@media (min-width: 1200px) {
-    #ozzy-image {
-        width: 250px; 
+    p {
+        font-size: clamp(0.7em, 3vw, 1em);
     }
-    #health-bar-container {
-        max-width: 400px;
-    }
-    #start-screen h1, #end-screen h1, #leaderboard-screen h2, #upgrade-shop-screen h2 {
-        font-size: 60px;
-    }
-    #start-screen p, #end-screen p, .upgrade-description {
-        font-size: 24px;
-    }
-    #final-score-display {
-        font-size: 36px;
-    }
+
     button {
-        font-size: 32px;
-    }
-    #score-display, #current-level-display {
-        font-size: 30px;
-    }
-    #nickname-input {
-        font-size: 24px;
-        max-width: 300px;
-    }
-    #nick-input-container label {
-        font-size: 24px;
-    }
-    .superpower-button, #shop-button {
-        font-size: 28px;
-        padding: 15px 30px;
-    }
-    .upgrade-name {
-        font-size: 30px;
-    }
-    .upgrade-level, .upgrade-cost {
-        font-size: 25px;
-    }
-    .buy-button {
-        font-size: 22px;
         padding: 10px 20px;
+        font-size: clamp(0.6em, 2.5vw, 1em);
+        margin: 8px;
+    }
+
+    #nickname-input {
+        padding: 8px 12px;
+        font-size: clamp(0.7em, 3vw, 1em);
+    }
+
+    #leaderboard-list {
+        font-size: clamp(0.6em, 2vw, 0.9em);
+        width: 90%;
+        padding: 10px;
+    }
+
+    #ozzy-container {
+        width: clamp(120px, 50vw, 250px);
+    }
+
+    #health-bar-container {
+        height: 15px;
+        margin-top: 10px;
+    }
+    
+    #game-info-container {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: clamp(0.6em, 2.5vw, 0.9em);
+    }
+
+    #superpower-buttons-container {
+        flex-direction: column; /* Ułóż przyciski pionowo na małych ekranach */
+        gap: 8px;
+        bottom: 10px;
+    }
+
+    .superpower-button {
+        padding: 6px 12px;
+        font-size: clamp(0.5em, 2vw, 0.8em);
+    }
+
+    #shop-button {
+        top: 10px;
+        right: 10px;
+        padding: 8px 15px;
+        font-size: clamp(0.6em, 2.5vw, 1em);
+    }
+
+    .upgrade-category {
+        width: clamp(200px, 80vw, 400px);
+        padding: 10px 15px;
+    }
+
+    .upgrade-category h3 {
+        font-size: clamp(0.8em, 3vw, 1.2em);
+    }
+
+    .upgrade-category p {
+        font-size: clamp(0.6em, 2.5vw, 0.9em);
+    }
+
+    .upgrade-category button {
+        padding: 6px 12px;
+        font-size: clamp(0.5em, 2vw, 0.8em);
+    }
+
+    #close-shop-button {
+        margin-top: 20px;
+    }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+    #game-container {
+        width: 100vw;
+        height: 90vh; /* Zajmij mniej wysokości na bardzo niskich ekranach w poziomie */
+        max-height: 550px;
+    }
+
+    #superpower-buttons-container {
+        flex-direction: row; /* Wróć do poziomego układu, jeśli jest miejsce */
+        flex-wrap: wrap; /* Złam linię, jeśli za mało miejsca */
+        justify-content: center;
+        gap: 10px;
+        bottom: 5px;
     }
 }
