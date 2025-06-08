@@ -167,6 +167,7 @@
     const buyLightningDamageButton = document.getElementById('buy-lightning-damage');
 
     const freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+    // POPRAWKA: Usunięto zbędne "document = " z tej linii
     const freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
     const buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
 
@@ -725,7 +726,7 @@
         // Usuń cytaty, jeśli jakieś pozostały z poprzedniej sesji gry
         quoteImagesContainer.innerHTML = '';
 
-        // Zatrzymaj i zresetuj ruch bossa
+        // Stop i zresetuj ruch bossa
         cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
         isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest zresetowana
         bossCurrentTransformX = 0; // Zresetuj dodatkowe przesunięcie X
