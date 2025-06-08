@@ -25,12 +25,14 @@
 
     // ===================================================================
 
-    // --- ZMIANA: Deklaracja WSZYSTKICH zmiennych DOM globalnie (bez przypisania wartości na tym etapie) ---
+    // --- ZMIANA: Deklaracja WSZYSTKICH zmiennych DOM globalnie ---
+    // Te zmienne są deklarowane tutaj, aby były dostępne w całym skrypcie.
+    // Ich wartości (elementy DOM) zostaną przypisane po załadowaniu dokumentu (DOMContentLoaded).
     let backgroundTractor;
     let ozzyContainer;
     let ozzyImage;
     let healthBarFill;
-    let gameContainer; // GŁÓWNY KONTENER GRY
+    let gameContainer; 
     let gameInfoContainer;
     let scoreDisplay;
     let currentLevelDisplay;
@@ -69,9 +71,9 @@
     let frenzyDamageLevelDisplay;
     let frenzyDamageCostDisplay;
     let buyFrenzyDamageButton;
-    let quoteImagesContainer; // Dodane, aby było dostępne globalnie
+    let quoteImagesContainer; 
 
-    // --- Inne zmienne globalne (niezwiązane bezpośrednio z DOM) ---
+    // --- Inne zmienne globalne (niezwiązane bezpośrednio z DOM), z wartościami przypisanymi od razu ---
     let playerNickname = "Gracz";
     let score = 0;
     let ozzyHealth = 100;
@@ -148,6 +150,12 @@
     const FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL = 10; 
     const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; 
     const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
+
+    // --- ZMIANA: Zmienne 'original...Text' są globalne i zadeklarowane tutaj ---
+    // BŁĄD WCZEŚNIEJ: Możliwe, że były używane zanim ich deklaracja była dostępna
+    const originalLightningText = '⚡ Piorun Zagłady';
+    const originalFreezeText = '❄️ Lodowy Wybuch';
+    const originalFrenzyText = '🔥 Szał Bojowy';
 
 
     // --- Funkcje Leaderboard ---
@@ -525,7 +533,7 @@
         gameInfoContainer.classList.add('hidden');
 
         clearInterval(superpowerCooldownIntervalId);
-        updateSuperpowerCooldownDisplays(); 
+        updateSuperpowerCooldownDisplays(); // Używa originalLightningText, które jest teraz globalnie zadeklarowane i zainicjalizowane
 
         if (backgroundMusic) {
             backgroundMusic.pause();
@@ -858,6 +866,7 @@
         console.log("DOMContentLoaded: DOM został załadowany!");
 
         // === PRZYPISANIE WARTOŚCI do zmiennych DOM globalnych ===
+        // To jest kluczowe, aby te zmienne miały przypisane elementy DOM przed użyciem w funkcjach.
         backgroundTractor = document.getElementById('animated-background-tractor');
         ozzyContainer = document.getElementById('ozzy-container');
         ozzyImage = document.getElementById('ozzy-image');
@@ -901,20 +910,19 @@
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
         frenzyDamageCostDisplay = document.getElementById('frenzy-cost'); 
         buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
-        quoteImagesContainer = document.getElementById('quote-images-container'); // Ostatecznie przypisane tutaj
+        quoteImagesContainer = document.getElementById('quote-images-container'); 
 
-        // WAŻNE: Natychmiast ukryj ekran sklepu z ulepszeniami po załadowaniu.
+        // WAŻNE: Ukryj ekran sklepu z ulepszeniami natychmiast po załadowaniu.
         upgradeShopScreen.classList.add('hidden');
 
-        // Upewnij się, że wszystkie ekrany są początkowo ukryte, z wyjątkiem startScreen, który jest widoczny przez resetGame()
+        // Upewnij się, że wszystkie ekrany są początkowo ukryte
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
         ozzyContainer.classList.add('hidden');
-        
         gameInfoContainer.classList.add('hidden'); 
-        
         quoteImagesContainer.innerHTML = ''; 
 
+        // resetGame jest wywoływany w DOMContentLoaded, więc jego użycie globalnych zmiennych DOM jest bezpieczne
         resetGame(); 
 
         console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
@@ -948,9 +956,7 @@
             shopButton.classList.add('hidden'); 
             superpowerButtonsContainer.classList.add('hidden'); 
             ozzyContainer.classList.add('hidden'); 
-            
             gameInfoContainer.classList.add('hidden'); 
-            
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -972,9 +978,7 @@
             shopButton.classList.add('hidden'); 
             superpowerButtonsContainer.classList.add('hidden'); 
             ozzyContainer.classList.add('hidden'); 
-            
             gameInfoContainer.classList.add('hidden'); 
-            
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -998,7 +1002,6 @@
             ozzyContainer.classList.add('hidden'); 
             superpowerButtonsContainer.classList.add('hidden'); 
             shopButton.classList.add('hidden'); 
-            
             gameInfoContainer.classList.add('hidden'); 
 
             upgradeShopScreen.classList.remove('hidden'); 
@@ -1011,7 +1014,6 @@
             ozzyContainer.classList.remove('hidden'); 
             superpowerButtonsContainer.classList.remove('hidden'); 
             shopButton.classList.remove('hidden'); 
-            
             gameInfoContainer.classList.remove('hidden'); 
 
             isGameActive = true; 
