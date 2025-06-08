@@ -374,10 +374,25 @@ button:disabled {
 }
 
 .superpower-button {
-    font-size: clamp(0.6em, 1.8vw, 0.9em);
-    padding: 12px 25px; /* Przywróć oryginalny padding dla desktopu */
-    border-radius: 8px;
-    box-shadow: 3px 3px 0px #8d5e00, inset 0 0 3px rgba(255, 255, 255, 0.3);
+    font-size: clamp(0.7em, 2.5vw, 1.1em); /* Podstawowy rozmiar czcionki dla desktopu */
+    padding: 12px 25px; 
+    border-radius: 10px;
+    box-shadow: 5px 5px 0px #a36f00, inset 0 0 5px rgba(255, 255, 255, 0.5);
+    transition: all 0.1s ease-out;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-drag: none;
+    display: flex; /* ZMIANA: Flexbox dla lepszego ułożenia emoji/tekstu */
+    align-items: center; /* ZMIANA: Wyśrodkuj elementy w pionie */
+    justify-content: center; /* ZMIANA: Wyśrodkuj elementy w poziomie */
+}
+
+.superpower-button .superpower-text {
+    /* Domyślnie tekst jest widoczny na desktopie */
+    display: inline;
 }
 
 .effect-overlay {
@@ -703,10 +718,10 @@ button:disabled {
         font-size: clamp(0.6em, 2.5vw, 0.9em);
     }
 
-    /* Zmiany dla przycisków supermocy na urządzeniach mobilnych */
+    /* ZMIANA: Style dla przycisków supermocy na urządzeniach mobilnych */
     #superpower-buttons-container {
-        flex-direction: row; /* Trzymaj je w rzędzie */
-        flex-wrap: wrap; /* Pozwól na zawijanie, jeśli jest za dużo przycisków */
+        flex-direction: row; /* Ułóż w rzędzie */
+        flex-wrap: wrap; /* Złam linię, jeśli za mało miejsca */
         justify-content: center; /* Wyśrodkuj je */
         gap: 8px; /* Mniejszy odstęp między przyciskami */
         bottom: 10px;
@@ -727,9 +742,8 @@ button:disabled {
     }
 
     .superpower-button .superpower-text {
-        display: none; /* Ukryj tekstową część przycisku */
+        display: none; /* Ukryj tekstową część przycisku na mobilnych */
     }
-
 
     #shop-button {
         top: 10px;
