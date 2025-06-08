@@ -314,6 +314,7 @@ button:disabled {
     height: 100%;
     pointer-events: none; /* Upewnij się, że nie blokują kliknięć */
     overflow: hidden; /* Upewnij się, że cytaty nie wychodzą poza obszar gry */
+    z-index: 5; /* ZMIANA: Niższy z-index, aby były POD Ozzym (z-index: 10) */
 }
 
 .quote-image {
@@ -322,7 +323,7 @@ button:disabled {
     height: auto;
     opacity: 0; /* Początkowo niewidoczne */
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    z-index: 15;
+    /* z-index: 15; - Usunięto, dziedziczy z container */
     user-select: none;
     -webkit-user-drag: none;
     image-rendering: pixelated;
@@ -356,7 +357,7 @@ button:disabled {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 50; /* Wyżej niż Ozzy, ale niżej niż ekrany menu */
+    z-index: 50; /* Wyżej niż Ozzy (10), ale niżej niż ekrany menu (100) */
     overflow: hidden;
 }
 
@@ -487,7 +488,7 @@ button:disabled {
     padding: 20px 40px;
     border-radius: 15px;
     border: 5px solid #ffcc00; /* Grubasna ramka */
-    font-size: clamp(1.2em, 4vw, 2em); /* Większa czcionka */
+    font-size: clamp(0.9em, 3.5vw, 1.8em); /* ZMIANA: Zmniejszono font-size dla lepszej czytelności na mobilnych */
     text-align: center;
     white-space: nowrap;
     box-shadow: 0 0 30px rgba(255, 0, 0, 0.9), 0 0 50px rgba(255, 0, 0, 0.7); /* Większy, bardziej intensywny cień */
@@ -538,9 +539,9 @@ button:disabled {
 /* --- Przycisk SKLEP --- */
 #shop-button {
     position: absolute;
-    top: 20px; /* Albo lewa, albo prawa strona, żeby nie kolidowało z game-info-container */
+    top: 20px; 
     right: 20px;
-    z-index: 20;
+    z-index: 20; /* Zapewnia, że jest nad tłem i Ozzym */
     background: linear-gradient(to bottom, #008000, #004d00); /* Zielony kolor */
     border-color: #006400;
     color: #fff;
@@ -607,6 +608,8 @@ button:disabled {
 
 #close-shop-button {
     margin-top: 30px;
+    z-index: 101; /* Zapewnia, że jest widoczny w sklepie */
+    position: relative; /* Potrzebne do działania z-index */
 }
 
 /* --- Responsywność --- */
