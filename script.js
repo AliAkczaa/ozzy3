@@ -151,9 +151,9 @@
     const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; 
     const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
 
-    const originalLightningText = '⚡ Piorun Zagłady';
-    const originalFreezeText = '❄️ Lodowy Wybuch';
-    const originalFrenzyText = '🔥 Szał Bojowy';
+    const originalLightningText = 'Piorun Zagłady'; // Tylko tekst, emoji jest teraz w HTML
+    const originalFreezeText = 'Lodowy Wybuch';
+    const originalFrenzyText = 'Szał Bojowy';
 
 
     // --- Funkcje Leaderboard ---
@@ -283,20 +283,24 @@
         const now = Date.now();
 
         const updateButtonText = (button, lastUsedTime, originalText) => {
+            // Pobierz element span wewnątrz przycisku
+            const superpowerTextSpan = button.querySelector('.superpower-text');
+            if (!superpowerTextSpan) return; // Upewnij się, że span istnieje
+
             if (!isGameActive && button.classList.contains('hidden')) {
-                button.textContent = originalText;
+                superpowerTextSpan.textContent = ` ${originalText}`;
                 return;
             }
             if (!isGameActive) {
-                button.textContent = originalText;
+                superpowerTextSpan.textContent = ` ${originalText}`;
                 return;
             }
 
             const timeLeft = Math.ceil((lastUsedTime + COOLDOWN_DURATION_MS - now) / 1000);
             if (timeLeft > 0) {
-                button.textContent = `${timeLeft}s`;
+                superpowerTextSpan.textContent = ` ${timeLeft}s`; // Dodaj spację dla lepszego wyglądu
             } else {
-                button.textContent = originalText; 
+                superpowerTextSpan.textContent = ` ${originalText}`; 
             }
         };
 
