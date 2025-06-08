@@ -130,7 +130,7 @@
     const BOSS_QUOTES = [
         "CHLOPY OD CRYPTONA FARMIA!", "TTB TO GÓWNO! TYLKO STONKS!", 
         "DO DUBAJU! ZA KASE INWESTORÓW!", "REFUNDY ZA V1 Z BSC", 
-        "ZA NASTEPNE 5 LAT DOWIEZIEMY"
+        "ZA NASTEPNE 5 LAT DOWIEZIEMY", "STACKING FKRUTCE!", 
     ];
     let bossMovementAnimationFrameId; 
     let bossDx = BOSS_MOVEMENT_SPEED; 
