@@ -724,7 +724,7 @@ button:disabled {
         flex-wrap: wrap; /* Złam linię, jeśli za mało miejsca */
         justify-content: center; /* Wyśrodkuj je */
         gap: 8px; /* Mniejszy odstęp między przyciskami */
-        bottom: 10px;
+        bottom: 60px; /* ZMIANA: Zwiększono pozycję 'bottom', aby podnieść przyciski */
         left: 50%; /* Ustaw lewą krawędź na środku */
         transform: translateX(-50%); /* Przesuń o połowę swojej szerokości w lewo, aby wyśrodkować */
         width: 100%; /* Zajmij pełną szerokość kontenera */
