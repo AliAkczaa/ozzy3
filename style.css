@@ -73,6 +73,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    max-height: 100%; /* Ustawienie maksymalnej wysokości */
     background-color: rgba(0, 0, 0, 0.85); /* Ciemniejsze, półprzezroczyste tło */
     display: flex;
     flex-direction: column;
@@ -83,6 +84,14 @@ body {
     box-sizing: border-box;
     z-index: 100; /* Upewnij się, że są na wierzchu */
     animation: fadeIn 0.5s ease-out;
+}
+
+/* Zmiany dla #upgrade-shop-screen */
+#upgrade-shop-screen {
+    max-height: calc(100% - 40px); /* Odejmij marginesy/padding od góry i dołu */
+    overflow-y: auto; /* Dodaj przewijanie pionowe */
+    padding-top: 50px; /* Dodatkowy padding na górze, aby zrobić miejsce na przycisk zamykania */
+    padding-bottom: 20px;
 }
 
 @keyframes fadeIn {
@@ -314,7 +323,7 @@ button:disabled {
     height: 100%;
     pointer-events: none; /* Upewnij się, że nie blokują kliknięć */
     overflow: hidden; /* Upewnij się, że cytaty nie wychodzą poza obszar gry */
-    z-index: 5; /* ZMIANA: Niższy z-index, aby były POD Ozzym (z-index: 10) */
+    z-index: 5; /* Niższy z-index, aby były POD Ozzym (z-index: 10) */
 }
 
 .quote-image {
@@ -323,7 +332,6 @@ button:disabled {
     height: auto;
     opacity: 0; /* Początkowo niewidoczne */
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    /* z-index: 15; - Usunięto, dziedziczy z container */
     user-select: none;
     -webkit-user-drag: none;
     image-rendering: pixelated;
@@ -488,13 +496,15 @@ button:disabled {
     padding: 20px 40px;
     border-radius: 15px;
     border: 5px solid #ffcc00; /* Grubasna ramka */
-    font-size: clamp(0.9em, 3.5vw, 1.8em); /* ZMIANA: Zmniejszono font-size dla lepszej czytelności na mobilnych */
+    font-size: clamp(0.8em, 3vw, 1.6em); /* ZMIANA: Zmniejszono font-size dla lepszej czytelności na mobilnych */
     text-align: center;
-    white-space: nowrap;
+    /* white-space: nowrap; ZMIANA: Usunięto nowrap, aby tekst mógł się zawijać */
     box-shadow: 0 0 30px rgba(255, 0, 0, 0.9), 0 0 50px rgba(255, 0, 0, 0.7); /* Większy, bardziej intensywny cień */
     z-index: 103; /* Najwyższy z-index */
     animation: bossMessageAppear 0.5s ease-out forwards, bossMessagePulse 1s ease-in-out infinite alternate;
     pointer-events: none; /* Nie blokuje kliknięć */
+    max-width: 80%; /* Ograniczenie szerokości, aby tekst się zawijał */
+    line-height: 1.3;
 }
 
 @keyframes fadeOutUpSmall {
@@ -606,11 +616,17 @@ button:disabled {
     font-size: clamp(0.6em, 2vw, 0.9em);
 }
 
+/* ZMIANA: Pozycjonowanie przycisku zamykającego sklep */
 #close-shop-button {
-    margin-top: 30px;
-    z-index: 101; /* Zapewnia, że jest widoczny w sklepie */
-    position: relative; /* Potrzebne do działania z-index */
+    position: absolute; /* Pozycjonowanie absolutne względem #upgrade-shop-screen */
+    top: 10px; /* 10px od góry */
+    right: 10px; /* 10px od prawej */
+    margin: 0; /* Usuń marginesy, bo pozycja jest absolutna */
+    z-index: 102; /* Zapewnia, że jest nad zawartością sklepu, ale wciąż w sklepie */
+    padding: 8px 15px; /* Dopasuj padding dla przycisku zamykającego */
+    font-size: clamp(0.6em, 2vw, 0.9em);
 }
+
 
 /* --- Responsywność --- */
 @media (max-width: 768px) {
@@ -695,9 +711,7 @@ button:disabled {
         font-size: clamp(0.5em, 2vw, 0.8em);
     }
 
-    #close-shop-button {
-        margin-top: 20px;
-    }
+    /* Zmiana: Przycisku zamykającego sklep nie trzeba dodatkowo stylizować na mobile, bo absolutne pozycjonowanie działa */
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
