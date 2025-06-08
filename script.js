@@ -25,7 +25,53 @@
 
     // ===================================================================
 
-    // Pozostałe zmienne globalne, które nie są referencjami do DOM
+    // --- ZMIANA: Deklaracja WSZYSTKICH zmiennych DOM globalnie (bez przypisania wartości na tym etapie) ---
+    let backgroundTractor;
+    let ozzyContainer;
+    let ozzyImage;
+    let healthBarFill;
+    let gameContainer; // GŁÓWNY KONTENER GRY
+    let gameInfoContainer;
+    let scoreDisplay;
+    let currentLevelDisplay;
+    let startScreen;
+    let startButton;
+    let nicknameInput;
+    let showLeaderboardButton;
+    let endScreen;
+    let finalScoreDisplay;
+    let restartButton;
+    let showLeaderboardAfterGameButton;
+    let leaderboardScreen;
+    let leaderboardList;
+    let backToStartButton;
+    let superpowerButtonsContainer;
+    let btnLightning;
+    let btnFreeze;
+    let btnFrenzy;
+    let lightningEffect;
+    let freezeEffect;
+    let frenzyEffect;
+    let backgroundMusic;
+    let punchSound;
+    let shopButton;
+    let upgradeShopScreen;
+    let closeShopButton;
+    let baseDamageLevelDisplay;
+    let baseDamageCostDisplay;
+    let buyBaseDamageButton;
+    let lightningDamageLevelDisplay;
+    let lightningDamageCostDisplay;
+    let buyLightningDamageButton;
+    let freezeDamageLevelDisplay;
+    let freezeDamageCostDisplay;
+    let buyFreezeDamageButton;
+    let frenzyDamageLevelDisplay;
+    let frenzyDamageCostDisplay;
+    let buyFrenzyDamageButton;
+    let quoteImagesContainer; // Dodane, aby było dostępne globalnie
+
+    // --- Inne zmienne globalne (niezwiązane bezpośrednio z DOM) ---
     let playerNickname = "Gracz";
     let score = 0;
     let ozzyHealth = 100;
@@ -125,7 +171,7 @@
             }
         } else if (!currentUserId) {
             console.warn("Cannot save score: User is not authenticated. Check Firebase Auth configuration.");
-            showMessage("Błąd: Brak uwierzytelnienia do zapisu wyniku.", 3000);
+            showMessage("Błąd: Brak uwierzytelnień do zapisu wyniku.", 3000);
         }
     }
 
@@ -630,7 +676,7 @@
         isBossMovementPaused = false; 
 
         document.getElementById('end-message').textContent = message;
-        document.getElementById('final-score').textContent = score; // POPRAWKA: Użyj ID spanu dla finalnego wyniku
+        document.getElementById('final-score').textContent = score; 
 
         saveScoreToLeaderboard(playerNickname, score);
 
@@ -707,7 +753,7 @@
         setTimeout(() => {
             ozzyContainer.classList.remove('hidden');
             ozzyImage.classList.remove('hit-effect');
-            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Ensure centered before animation
+            ozzyContainer.style.transform = `translate(-50%, -50%)`; 
             ozzyImage.classList.add('spawn-ozzy'); 
 
             setTimeout(() => {
@@ -811,63 +857,51 @@
     document.addEventListener('DOMContentLoaded', async () => {
         console.log("DOMContentLoaded: DOM został załadowany!");
 
-        // === PRZENIESIONE: Pobieranie referencji do elementów DOM ===
-        // Zapewnia, że elementy istnieją, zanim spróbujemy je pobrać
-        const backgroundTractor = document.getElementById('animated-background-tractor');
-        const ozzyContainer = document.getElementById('ozzy-container');
-        const ozzyImage = document.getElementById('ozzy-image');
-        const healthBarFill = document.getElementById('health-bar-fill');
-        const gameContainer = document.getElementById('game-container'); // GŁÓWNY KONTENER GRY
-
-        const gameInfoContainer = document.getElementById('game-info-container');
-        const scoreDisplay = document.getElementById('score');
-        const currentLevelDisplay = document.getElementById('current-level');
-
-        const startScreen = document.getElementById('start-screen');
-        const startButton = document.getElementById('start-button');
-        const nicknameInput = document.getElementById('nickname-input');
-        const showLeaderboardButton = document.getElementById('show-leaderboard-button');
-
-        const endScreen = document.getElementById('end-screen');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const restartButton = document.getElementById('restart-button');
-        const showLeaderboardAfterGameButton = document.getElementById('show-leaderboard-after-game-button');
-
-        const leaderboardScreen = document.getElementById('leaderboard-screen');
-        const leaderboardList = document.getElementById('leaderboard-list');
-        const backToStartButton = document.getElementById('back-to-start-button');
-
-        const superpowerButtonsContainer = document.getElementById('superpower-buttons-container');
-        const btnLightning = document.getElementById('btn-lightning');
-        const btnFreeze = document.getElementById('btn-freeze');
-        const btnFrenzy = document.getElementById('btn-frenzy');
-
-        const lightningEffect = document.getElementById('lightning-effect');
-        const freezeEffect = document.getElementById('freeze-effect');
-        const frenzyEffect = document.getElementById('frenzy-effect');
-
-        const backgroundMusic = document.getElementById('background-music');
-        const punchSound = document.getElementById('punch-sound');
-
-        const shopButton = document.getElementById('shop-button');
-        const upgradeShopScreen = document.getElementById('upgrade-shop-screen');
-        const closeShopButton = document.getElementById('close-shop-button');
-
-        const baseDamageLevelDisplay = document.getElementById('base-damage-level');
-        const baseDamageCostDisplay = document.getElementById('base-damage-cost');
-        const buyBaseDamageButton = document.getElementById('buy-base-damage');
-
-        const lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
-        const lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
-        const buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-
-        const freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
-        const freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
-        const buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
-
-        const frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
-        const frenzyDamageCostDisplay = document.getElementById('frenzy-cost'); 
-        const buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
+        // === PRZYPISANIE WARTOŚCI do zmiennych DOM globalnych ===
+        backgroundTractor = document.getElementById('animated-background-tractor');
+        ozzyContainer = document.getElementById('ozzy-container');
+        ozzyImage = document.getElementById('ozzy-image');
+        healthBarFill = document.getElementById('health-bar-fill');
+        gameContainer = document.getElementById('game-container'); 
+        gameInfoContainer = document.getElementById('game-info-container');
+        scoreDisplay = document.getElementById('score');
+        currentLevelDisplay = document.getElementById('current-level');
+        startScreen = document.getElementById('start-screen');
+        startButton = document.getElementById('start-button');
+        nicknameInput = document.getElementById('nickname-input');
+        showLeaderboardButton = document.getElementById('show-leaderboard-button');
+        endScreen = document.getElementById('end-screen');
+        finalScoreDisplay = document.getElementById('final-score');
+        restartButton = document.getElementById('restart-button');
+        showLeaderboardAfterGameButton = document.getElementById('show-leaderboard-after-game-button');
+        leaderboardScreen = document.getElementById('leaderboard-screen');
+        leaderboardList = document.getElementById('leaderboard-list');
+        backToStartButton = document.getElementById('back-to-start-button');
+        superpowerButtonsContainer = document.getElementById('superpower-buttons-container');
+        btnLightning = document.getElementById('btn-lightning');
+        btnFreeze = document.getElementById('btn-freeze');
+        btnFrenzy = document.getElementById('btn-frenzy');
+        lightningEffect = document.getElementById('lightning-effect');
+        freezeEffect = document.getElementById('freeze-effect');
+        frenzyEffect = document.getElementById('frenzy-effect');
+        backgroundMusic = document.getElementById('background-music');
+        punchSound = document.getElementById('punch-sound');
+        shopButton = document.getElementById('shop-button');
+        upgradeShopScreen = document.getElementById('upgrade-shop-screen');
+        closeShopButton = document.getElementById('close-shop-button');
+        baseDamageLevelDisplay = document.getElementById('base-damage-level');
+        baseDamageCostDisplay = document.getElementById('base-damage-cost');
+        buyBaseDamageButton = document.getElementById('buy-base-damage');
+        lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
+        lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
+        buyLightningDamageButton = document.getElementById('buy-lightning-damage');
+        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+        freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
+        buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
+        frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
+        frenzyDamageCostDisplay = document.getElementById('frenzy-cost'); 
+        buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
+        quoteImagesContainer = document.getElementById('quote-images-container'); // Ostatecznie przypisane tutaj
 
         // WAŻNE: Natychmiast ukryj ekran sklepu z ulepszeniami po załadowaniu.
         upgradeShopScreen.classList.add('hidden');
