@@ -198,7 +198,7 @@
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const li = document.createElement('li');
-                li.textContent = `${data.nickname || 'Anonim'}: ${data.score} znokautowań`;
+                li.textContent = `${data.nickname || 'Anonim'}: ${data.score} punktów`;
                 leaderboardList.appendChild(li);
             });
         } catch (e) {
