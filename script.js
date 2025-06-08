@@ -58,7 +58,7 @@
     let INITIAL_OZZY_HEALTH = 100; 
     let PUNCH_DAMAGE = 10; // Zmieniono na let, bo będzie modyfikowane przez Szał Bojowy i ulepszenia
     let currentUserId = null; 
-    let isGameActive = false; 
+    let isGameActive = false; // Flaga określająca, czy gra jest W TRAKCIE (nie pauzowana na ekranach menu/sklepu)
 
     // Zmienna dla aktualnego poziomu
     let currentLevel = 0;
@@ -302,15 +302,15 @@
         // Sprawdź próg uderzeń ORAZ cooldown dla każdego przycisku
         const canUseLightning = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
                                 ((now - lastUsedLightningTime >= COOLDOWN_DURATION_MS) || lastUsedLightningTime === 0) && 
-                                isGameActive;
+                                isGameActive; // Tylko jeśli gra jest aktywna
         
         const canUseFreeze = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
                              ((now - lastUsedFreezeTime >= COOLDOWN_DURATION_MS) || lastUsedFreezeTime === 0) && 
-                             isGameActive;
+                             isGameActive; // Tylko jeśli gra jest aktywna
         
         const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) && 
                              ((now - lastUsedFrenzyTime >= COOLDOWN_DURATION_MS) || lastUsedFrenzyTime === 0) && 
-                             isGameActive;
+                             isGameActive; // Tylko jeśli gra jest aktywna
 
         btnLightning.disabled = !canUseLightning;
         btnFreeze.disabled = !canUseFreeze;
@@ -333,10 +333,17 @@
 
         const updateButtonText = (button, lastUsedTime, originalText) => {
             // Jeśli gra nieaktywna lub przycisk jest aktywny (dostępny), wyświetl oryginalny tekst
-            if (!isGameActive || (!button.disabled && lastUsedTime === 0)) {
-                 button.textContent = originalText;
-                 return;
+            // Zmieniono warunek, aby wyświetlać oryginalny tekst tylko gdy gra nieaktywna,
+            // ale przyciski są widoczne (np. w menu). W trakcie gry zawsze pokazujemy cooldown.
+            if (!isGameActive && button.classList.contains('hidden')) { // Jeśli gra nieaktywna i przyciski ukryte
+                button.textContent = originalText;
+                return;
             }
+            if (!isGameActive) { // Jeśli gra nieaktywna, ale przyciski widoczne (np. po wyjściu ze sklepu do menu)
+                button.textContent = originalText;
+                return;
+            }
+
 
             const timeLeft = Math.ceil((lastUsedTime + COOLDOWN_DURATION_MS - now) / 1000);
             if (timeLeft > 0) {
@@ -421,7 +428,14 @@
         // Rozpocznij zadawanie obrażeń co sekundę i spawning kryształków
         clearInterval(freezeDotIntervalId); // Upewnij się, że poprzedni interwał jest wyczyszczony
         freezeDotIntervalId = setInterval(() => {
-            if (!isGameActive) { // Sprawdź, czy gra nadal aktywna
+            if (!isGameActive && !upgradeShopScreen.classList.contains('hidden')) { // Sprawdź, czy gra nadal aktywna LUB czy jesteśmy w sklepie
+                // Jeśli jesteśmy w sklepie, nie kończ DOT, ale zatrzymaj interwał
+                clearInterval(freezeDotIntervalId);
+                // Nie ustawiaj freezeModeActive na false tutaj, zostanie to zrobione przy wznowieniu gry
+                // Po prostu wznawiamy interwał przy wznowieniu gry.
+                return;
+            }
+            if (!isGameActive) { // Jeśli gra nieaktywna (poza sklepem)
                 clearInterval(freezeDotIntervalId);
                 freezeModeActive = false; // Deaktywuj tryb zamrożenia
                 freezeEffect.classList.remove('active'); // Usuń klasę efektu wizualnego
@@ -485,8 +499,9 @@
 
 
     // --- Funkcja do animacji ruchu bossa ---
+    let isBossMovementPaused = false; // Nowa flaga do pauzowania ruchu bossa
     function animateBossMovement() {
-        if (!isGameActive || !isBossFight) {
+        if (!isGameActive || !isBossFight || isBossMovementPaused) { // Dodano warunek pauzy
             cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
             return;
         }
@@ -555,6 +570,7 @@
 
         // Zatrzymaj ruch bossa, jeśli aktywny
         cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
+        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
         
         // Usuń wszystkie cytaty z ekranu przy resecie
         quoteImagesContainer.innerHTML = ''; 
@@ -594,6 +610,7 @@
         upgradeShopScreen.classList.add('hidden'); // Ukryj sklep
         startScreen.classList.remove('hidden'); // Pokaż ekran startowy
         shopButton.classList.remove('hidden'); // Pokaż przycisk sklepu na ekranie startowym
+        superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy na ekranie startowym
         
         // Zatrzymanie intervalu timera cooldownów
         clearInterval(superpowerCooldownIntervalId);
@@ -633,12 +650,14 @@
     function startGame() {
         console.log("startGame wywołane."); 
         startScreen.classList.add('hidden'); 
-        shopButton.classList.add('hidden'); // Ukryj przycisk sklepu podczas gry
+        // shopButton.classList.add('hidden'); // ZMIENIONO: Nie ukrywamy przycisku sklepu podczas gry
         console.log("Po hidden: startScreen display", window.getComputedStyle(startScreen).display); 
         ozzyContainer.classList.remove('hidden'); // Pokaż Ozzy'ego
         scoreDisplay.classList.remove('hidden'); // Pokaż licznik
         // Pokaż licznik poziomu
         currentLevelDisplay.parentElement.classList.remove('hidden'); 
+        superpowerButtonsContainer.classList.remove('hidden'); // Pokaż przyciski supermocy
+        shopButton.classList.remove('hidden'); // Upewnij się, że przycisk sklepu jest widoczny podczas gry
         
         isGameActive = true;
         score = 0;
@@ -692,6 +711,7 @@
 
         // Zatrzymaj i zresetuj ruch bossa
         cancelAnimationFrame(bossMovementAnimationFrameId); // Użyj cancelAnimationFrame
+        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
         bossCurrentTransformX = 0; // Reset dodatkowego przesunięcia X
         ozzyContainer.style.transform = `translate(-50%, -50%)`; // Ustaw Ozzy'ego na środku CSS
         
@@ -747,6 +767,7 @@
         clearInterval(superpowerCooldownIntervalId);
         // Zatrzymaj ruch bossa, jeśli aktywny
         cancelAnimationFrame(bossMovementAnimationFrameId);
+        isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
 
         document.getElementById('end-message').textContent = message;
         finalScoreDisplay.textContent = score;
@@ -789,6 +810,7 @@
 
             // Rozpocznij ruch bossa
             cancelAnimationFrame(bossMovementAnimationFrameId); // Upewnij się, że nie ma starego interwału
+            isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
             
             // Resetuj bossCurrentTransformX i zastosuj transform, aby wyśrodkować bossa
             bossCurrentTransformX = 0; 
@@ -813,6 +835,7 @@
             ozzyContainer.style.transform = `translate(-50%, -50%)`; // Przywróć CSSowe wyśrodkowanie
 
             cancelAnimationFrame(bossMovementAnimationFrameId); // Zatrzymaj ruch bossa, jeśli był aktywny
+            isBossMovementPaused = false; // Upewnij się, że flaga pauzy jest resetowana
             
             if (currentLevel > 0 && currentLevel % 5 === 0) { 
                  INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; // Normalny przyrost zdrowia
@@ -1008,6 +1031,8 @@
             console.log("Kliknięto przycisk RANKING!"); 
             startScreen.classList.add('hidden');
             shopButton.classList.add('hidden'); // Ukryj przycisk sklepu, gdy otwierasz ranking
+            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
+            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -1026,6 +1051,9 @@
         showLeaderboardAfterGameButton.addEventListener('click', () => {
             console.log("Kliknięto przycisk ZOBACZ RANKING (po grze)!"); 
             endScreen.classList.add('hidden');
+            shopButton.classList.add('hidden'); // Ukryj przycisk sklepu, gdy otwierasz ranking
+            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
+            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -1043,16 +1071,42 @@
 
         // --- NOWE: Obsługa zdarzeń sklepu ulepszeń ---
         shopButton.addEventListener('click', () => {
-            startScreen.classList.add('hidden');
+            // ZMIENIONO: Logika pauzowania gry
+            isGameActive = false; // Pauzuj grę
+            cancelAnimationFrame(bossMovementAnimationFrameId); // Zatrzymaj ruch bossa
+            isBossMovementPaused = true; // Ustaw flagę pauzy ruchu bossa
+            clearInterval(superpowerCooldownIntervalId); // Zatrzymaj aktualizację cooldownów
+
+            ozzyContainer.classList.add('hidden'); // Ukryj Ozzy'ego
+            superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
             shopButton.classList.add('hidden'); // Ukryj przycisk sklepu
-            upgradeShopScreen.classList.remove('hidden');
+            
+            upgradeShopScreen.classList.remove('hidden'); // Pokaż ekran sklepu
             updateUpgradeShopUI(); // Odśwież UI sklepu przy otwarciu
         });
 
         closeShopButton.addEventListener('click', () => {
-            upgradeShopScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-            shopButton.classList.remove('hidden'); // Pokaż przycisk sklepu z powrotem
+            upgradeShopScreen.classList.add('hidden'); // Ukryj ekran sklepu
+            
+            // ZMIENIONO: Logika wznawiania gry
+            ozzyContainer.classList.remove('hidden'); // Pokaż Ozzy'ego
+            superpowerButtonsContainer.classList.remove('hidden'); // Pokaż przyciski supermocy
+            shopButton.classList.remove('hidden'); // Pokaż przycisk sklepu
+            
+            isGameActive = true; // Wznów grę
+            isBossMovementPaused = false; // Resetuj flagę pauzy ruchu bossa
+            if (isBossFight) { // Jeśli to walka z bossem, wznów ruch
+                animateBossMovement();
+            }
+            // Wznów interval timera cooldownów
+            clearInterval(superpowerCooldownIntervalId); // Upewnij się, że poprzedni jest wyczyszczony
+            superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
+            updateSuperpowerButtons(); // Zaktualizuj stan przycisków
+            
+            // W przypadku Lodowego Wybuchu, jeśli był aktywny, wznów jego DOT
+            if (freezeModeActive) {
+                activateIceBlast(); // Ponowne wywołanie aktywuje interwał DOT
+            }
         });
 
         buyBaseDamageButton.addEventListener('click', () => buyUpgrade('baseDamage'));
