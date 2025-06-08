@@ -129,8 +129,8 @@
     const BOSS_MOVEMENT_SPEED = 2; 
     const BOSS_QUOTES = [
         "CHLOPY OD CRYPTONA FARMIA!", "TTB TO GÓWNO! TYLKO STONKS!", 
-        "DO DUBAJU! ZA KASE INWESTORÓW!", "Jeden launchpad, jeden bot, jeden dex!", 
-        "Farmer z bsc tom pisze ze to ja jestem scammerem"
+        "DO DUBAJU! ZA KASE INWESTORÓW!", "REFUNDY ZA V1 Z BSC", 
+        "ZA NASTEPNE 5 LAT DOWIEZIEMY"
     ];
     let bossMovementAnimationFrameId; 
     let bossDx = BOSS_MOVEMENT_SPEED; 
