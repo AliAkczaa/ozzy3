@@ -415,7 +415,7 @@ button:disabled {
 /* Wiadomości dynamiczne */
 .knockout-message, .boss-message {
     position: absolute;
-    top: 80%; /* ZMIANA: Niższe położenie, z 65% na 80% */
+    top: 80%; /* Domyślne niższe położenie dla desktopu */
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: rgba(0, 0, 0, 0.8);
@@ -567,7 +567,7 @@ button:disabled {
     }
 
     #superpower-buttons-container {
-        bottom: 100px; /* ZMIANA: Podniesienie przycisków na mobilnych, z 60px na 100px */
+        bottom: 100px; /* Podniesienie przycisków na mobilnych */
         flex-direction: row; /* Przyciski w rzędzie */
         width: 95%; /* Większa szerokość */
         padding: 5px;
@@ -612,5 +612,10 @@ button:disabled {
 
     .upgrade-category button {
         padding: 6px 12px;
+    }
+
+    /* ZMIANA: Pozycja komunikatów na mobilnych (nad Stonksem) */
+    .knockout-message, .boss-message {
+        top: 35%; /* Przeniesienie wyżej, nad Stonksa */
     }
 }
