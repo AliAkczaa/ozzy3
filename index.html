@@ -12,11 +12,11 @@
         <!-- Zmienione tło, dostosuj obrazek -->
         <img id="animated-background-tractor" src="zdjecie 1 - tlo.jpg" alt="Tło areny walki">
         
-        <!-- NEW: Canvas for Boss-specific effects -->
-        <canvas id="boss-effect-canvas" class="hidden"></canvas>
-
         <div id="quote-images-container"></div>
         
+        <!-- Canvas dla efektów bossa (domyślnie ukryty) -->
+        <canvas id="boss-effect-canvas" class="effect-overlay hidden"></canvas>
+
         <div id="ozzy-container" class="hidden">
             <!-- Używamy zdjecie 2.jpg dla Ozzy'ego -->
             <img id="ozzy-image" src="stonks2.png" alt="stonks do pobicia">
@@ -26,59 +26,54 @@
             </div>
         </div>
 
-        <!-- Kontenery na efekty supermocy -->
+        <!-- Kontenery na efekty supermocy (domyślnie ukryte) -->
         <div id="lightning-effect" class="effect-overlay hidden"></div>
         <div id="freeze-effect" class="effect-overlay hidden"></div>
         <div id="frenzy-effect" class="effect-overlay hidden"></div>
         
+        <!-- Ekran startowy (domyślnie widoczny) -->
         <div id="start-screen">
             <h1>Zajeb Stonksa!</h1>
-            <p>Twoje zadanie: napierdalaj Stonks'a, aż padnie! Im więcej razy ujesz, tym lepiej!</p>
-            <div id="nick-input-container">
-                <label for="nickname-input">Twój Nick:</label>
-                <input type="text" id="nickname-input" placeholder="Wpisz swój nick" maxlength="15">
-            </div>
-            <button id="start-button">Rozpocznij!</button>
-            <button id="show-leaderboard-button">Ranking</button>
+            <p>Twoje zadanie: napierdalaj w Stonksa, zbieraj punkty i ulepszaj swoje umiejętności, aby zniszczyć wszystkich bossów Stonksów!</p>
+            <input type="text" id="nickname-input" placeholder="Twój Ksywka Stonksiarza">
+            <button id="start-button">START GRY!</button>
+            <button id="show-leaderboard-button">🏆 RANKING</button>
         </div>
 
+        <!-- Ekran końca gry (domyślnie ukryty) -->
         <div id="end-screen" class="hidden">
-            <h1>Stonks Znokautowany!</h1>
-            <p id="end-message">Gratulacje! Znokautowałeś Stonks'a!</p>
-            <!-- Zmienione ID na "final-score" dla spójności ze script.js -->
-            <p>Stonks znokautowany: <span id="final-score">0</span> razy!</p>
-            <button id="restart-button">Zagraj Jeszcze Raz!</button>
-            <button id="show-leaderboard-after-game-button">Zobacz Ranking</button>
+            <h2>KONIEC GRY!</h2>
+            <p id="end-message"></p>
+            <p>Twój wynik: <span id="final-score">0</span> znokautowań</p>
+            <button id="restart-button">RESTARTUJ GRĘ</button>
+            <button id="show-leaderboard-after-game-button">🏆 ZOBACZ RANKING</button>
         </div>
 
+        <!-- Ekran rankingu (domyślnie ukryty) -->
         <div id="leaderboard-screen" class="hidden">
-            <h2>Ranking Najlepszych</h2>
+            <h2>Ranking Najlepszych Stonksiarzy</h2>
             <ol id="leaderboard-list"></ol>
-            <button id="back-to-start-button">Wróć do menu</button>
+            <button id="back-to-start-button">⬅️ WRÓĆ DO MENU</button>
         </div>
 
-        <!-- NOWY KONTENER NA INFORMACJE O GRZE (PUNKTY I POZIOM) -->
-        <div id="game-info-container" class="hidden">
-            <div id="score-display">Punkty: <span id="score">0</span></div>
-            <div id="level-display">Poziom: <span id="current-level">0</span></div>
-        </div>
-        
-        <!-- message-display pozostaje samodzielne, bo jest używane globalnie -->
-        <div id="message-display" class="hidden"></div>
-
-        <!-- Kontener na przyciski supermocy -->
+        <!-- Kontenery na przyciski supermocy i info o grze (domyślnie ukryte) -->
         <div id="superpower-buttons-container" class="hidden">
-            <!-- ZMIANA: Dodano span.superpower-text do ukrywania tekstu na mobilnych -->
-            <button id="btn-lightning" class="superpower-button" disabled>⚡<span class="superpower-text"> Piorun Zagłady</span></button>
-            <button id="btn-freeze" class="superpower-button" disabled>❄️<span class="superpower-text"> Lodowy Wybuch</span></button>
-            <button id="btn-frenzy" class="superpower-button" disabled>🔥<span class="superpower-text"> Szał Bojowy</span></button>
+            <button id="btn-lightning" class="superpower-button">⚡ <span class="superpower-text">Piorun Zagłady</span></button>
+            <button id="btn-freeze" class="superpower-button">❄️ <span class="superpower-text">Lodowy Wybuch</span></button>
+            <button id="btn-frenzy" class="superpower-button">🔥 <span class="superpower-text">Szał Bojowy</span></button>
         </div>
 
-        <!-- NEW: Upgrade Shop Screen -->
+        <div id="game-info-container" class="hidden">
+            <p>Wynik: <span id="score">0</span></p>
+            <p>Poziom: <span id="current-level">1</span></p>
+        </div>
+
+        <!-- Nowy ekran sklepu ulepszeń (domyślnie ukryty) -->
         <div id="upgrade-shop-screen" class="hidden">
-            <h2>Sklep Ulepszeń</h2>
+            <h2>SKLEP ULEPSZEŃ</h2>
+            <p>Twoje punkty: <span id="shop-points">0</span></p>
             <div class="upgrade-category">
-                <h3>Obrażenia Podstawowe</h3>
+                <h3>Uderzenie Podstawowe</h3>
                 <p>Poziom: <span id="base-damage-level">1</span></p>
                 <p>Koszt: <span id="base-damage-cost">10</span> points</p>
                 <button id="buy-base-damage">Kup Ulepszenie</button>
@@ -104,7 +99,7 @@
             <button id="close-shop-button">Zamknij Sklep</button>
         </div>
 
-        <!-- NOWY PRZYCISK SKLEPU NA EKRANIE GRY -->
+        <!-- Przycisk SKLEPU na ekranie gry (domyślnie ukryty, pokazywany przy starcie gry) -->
         <button id="shop-button" class="hidden">🛒 SKLEP</button>
     </div>
 
@@ -112,7 +107,7 @@
     <audio id="background-music" src="muzyka.mp3" loop></audio>
     <audio id="punch-sound" src="punch.mp3"></audio>
 
-    <!-- ZMIANA: Usunięto stare skrypty Firebase compat.js. script.js używa modular v9. -->
-    <script src="script.js" type="module"></script>
+    <!-- Import pliku JavaScript -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
