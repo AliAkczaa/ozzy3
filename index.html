@@ -39,9 +39,26 @@
                 <input type="text" id="nickname-input" placeholder="Wpisz swój nick" maxlength="15">
             </div>
             <button id="start-button">Rozpocznij!</button>
+            <button id="select-skin-button">Wybierz skórkę</button>
             <button id="show-leaderboard-button">Ranking</button>
         </div>
 
+        <!-- Ekran wyboru skórki -->
+        <div id="skin-selection-screen" class="screen hidden">
+            <h2>Wybierz skórkę</h2>
+            <div class="skin-options">
+                <button id="select-stonks-skin" class="skin-button">
+                    <img src="stonks.png" alt="Stonks Skin">
+                    <p>Stonks</p>
+                </button>
+                <button id="select-tinu-skin" class="skin-button">
+                    <img src="tinu.png" alt="Tinu Skin Placeholder">
+                    <p>Tinu</p>
+                </button>
+            </div>
+            <button id="close-skin-selection-button">Zamknij</button>
+        </div>
+        
         <div id="end-screen" class="hidden">
             <h1>Stonks cie zabił!</h1>
             <p id="end-message">Gratulacje! Zabiłeś Stonks'a!</p>
