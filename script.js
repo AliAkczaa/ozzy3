@@ -309,23 +309,48 @@ class CanvasParticle {
             
         } else if (this.type === 'painParticle') {
             ctx.fillStyle = this.color;
-            // Rysuje małe trójkąty dla "punktów bólu"
             ctx.beginPath();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
-            ctx.moveTo(0, -this.size);
-            ctx.lineTo(this.size, this.size);
-            ctx.lineTo(-this.size, this.size);
+
+            // Draw a more irregular, spiky shape for pain particles
+            ctx.moveTo(0, -this.size * 0.8); // Top point
+            ctx.lineTo(this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Right-bottom
+            ctx.lineTo(-this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Left-bottom
             ctx.closePath();
             ctx.fill();
         } else if (this.type === 'clawMark') {
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = this.size;
-            ctx.lineCap = 'round';
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // Draw the main filled red shape for claw marks
+            ctx.fillStyle = this.color;
             ctx.beginPath();
-            ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.targetX, this.targetY); // Rysujemy jako linię do celu
-            ctx.stroke();
+            // Start from the "left" relative to the rotated shape
+            ctx.moveTo(-this.size * 1.5, -this.size * 0.3); // Start near top-left
+
+            // Top jagged path
+            for (let i = 0; i <= 5; i++) {
+                const px = -this.size * 1.5 + (i / 5) * (this.size * 3); // X progress along the length
+                const py = (Math.random() - 0.5) * this.size * 0.4; // Vertical jagginess
+                ctx.lineTo(px, py - this.size * 0.2); // Offset slightly up
+            }
+
+            // Bottom jagged path (reversed to close the shape)
+            for (let i = 5; i >= 0; i--) {
+                const px = -this.size * 1.5 + (i / 5) * (this.size * 3);
+                const py = (Math.random() - 0.5) * this.size * 0.4;
+                ctx.lineTo(px, py + this.size * 0.2); // Offset slightly down
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            // Add a subtle darker inner shadow/edge for depth
+            ctx.globalAlpha = Math.max(0, this.alpha * 0.4); // More subtle alpha for the shadow
+            ctx.strokeStyle = `rgba(0, 0, 0, 0.7)`; // Darker outline
+            ctx.lineWidth = 1;
+            ctx.stroke(); // Stroke the same path for the outline
+            ctx.globalAlpha = Math.max(0, this.alpha); // Restore original alpha
         }
 
         ctx.restore();
@@ -620,53 +645,49 @@ function drawScratchEffect(x, y, count, color, baseSize) {
  */
 function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
     const gameContainerRect = gameContainer.getBoundingClientRect(); 
-    // Obszar ataku jest teraz bardziej skoncentrowany na graczu, a nie na całym ekranie.
-    // Skalowanie w oparciu o rozmiar Stonksa dla bardziej lokalnych efektów.
-    const spawnAreaX = ozzyWidth * 0.8; 
-    const spawnAreaY = ozzyHeight * 0.8;
+    // OBSZAR ATAKU - teraz na podstawie całego kontenera gry
+    // Aby pokryć większą część ekranu, ustalamy procentowe rozmiary
+    const spawnAreaWidth = gameContainerRect.width * 0.6; // Np. 60% szerokości ekranu
+    const spawnAreaHeight = gameContainerRect.height * 0.6; // Np. 60% wysokości ekranu
+    // Centrowanie obszaru ataku wokół Stonksa, ale rozciągnięte na ekranie
+    const centerX = x; // Ozzy's center X
+    const centerY = y; // Ozzy's center Y
 
     // --- Efekty pazurów (clawMarks) ---
-    const numClawSets = 2; // Np. 2 zestawy pazurów (po 3-4 kreski każdy)
-    const clawLength = 70; // Długość pojedynczej kreski pazura
-    const clawWidth = 8; // Grubość kreski pazura
-    const clawLife = 700; // Życie kreski pazura w ms (0.7 sekundy)
+    const numClawSets = 3; // Zwiększono liczbę zestawów pazurów
+    const clawLength = 80; // Długość "rozdarcia" pazura
+    const clawLife = 1000; // Życie rozdarcia pazura w ms (1 sekunda)
 
     for (let s = 0; s < numClawSets; s++) {
-        const startPointX = x + (Math.random() - 0.5) * spawnAreaX * 0.5; // Bardziej skupione
-        const startPointY = y + (Math.random() - 0.5) * spawnAreaY * 0.5; // Bardziej skupione
+        // Losowanie punktu startowego wewnątrz nowo zdefiniowanego, większego obszaru
+        const startPointX = centerX + (Math.random() - 0.5) * spawnAreaWidth; 
+        const startPointY = centerY + (Math.random() - 0.5) * spawnAreaHeight; 
         const baseAngle = Math.random() * Math.PI * 2; // Bazowy kąt dla zestawu pazurów
 
-        for (let i = 0; i < 4; i++) { // 4 kreski pazurów
-            // Kąt każdej kreski lekko przesunięty od bazowego kąta zestawu
-            const angleOffset = (i - 1.5) * (Math.PI / 16); // Rozłożenie pazurów
-            const currentAngle = baseAngle + angleOffset;
-
-            const endX = startPointX + Math.cos(currentAngle) * clawLength;
-            const endY = startPointY + Math.sin(currentAngle) * clawLength;
-
-            clawMarks.push(new CanvasParticle(
-                startPointX, startPointY, 0, 0, `rgba(255, 0, 0, ${0.8 + Math.random() * 0.2})`, // Czerwone, z alfa
-                clawWidth, clawLife, 'clawMark', currentAngle, endX, endY
-            ));
-        }
+        // Generuj pojedyncze "rozdarcie" na zestaw, które samo ma ząbkowane krawędzie
+        clawMarks.push(new CanvasParticle(
+            startPointX, startPointY, 0, 0, `rgba(255, 0, 0, ${0.7 + Math.random() * 0.3})`, // Czerwone, z alfa
+            clawLength / 3, // Przekazujemy rozmiar bazowy do obliczeń w draw
+            clawLife, 'clawMark', baseAngle, 0, 0 
+        ));
     }
 
     // --- Punkty bólu (Pain Particles) ---
-    const numPainParticles = Math.floor(Math.random() * 10) + 10; // 10-19 punktów (mniej, ale bardziej skupione)
-    const painParticleLife = 1000; // Życie w ms (1 sekunda)
-    const painParticleSize = Math.random() * 10 + 10; // Mniejsze rozmiary (10-20)
-    const painParticleBaseSpeed = 0.8; // Zmniejszona prędkość bazowa dla punktów bólu
+    const numPainParticles = Math.floor(Math.random() * 15) + 15; // Zwiększono liczbę punktów (15-29)
+    const painParticleLife = 1200; // Życie w ms (1.2 sekundy)
+    const painParticleSize = Math.random() * 8 + 8; // Rozmiary (8-16, nieco większe)
+    const painParticleBaseSpeed = 1.2; // Zwiększona prędkość bazowa
 
     for (let i = 0; i < numPainParticles; i++) {
-        // Losowanie pozycji na mniejszym obszarze, centrowanie na Stonksie
-        const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.5; 
-        const startY = y + (Math.random() - 0.5) * spawnAreaY * 0.5;
+        // Losowanie pozycji na większym obszarze
+        const startX = centerX + (Math.random() - 0.5) * spawnAreaWidth; 
+        const startY = centerY + (Math.random() - 0.5) * spawnAreaHeight;
         const angle = Math.random() * Math.PI * 2; 
         
-        const vx = (Math.random() - 0.5) * painParticleBaseSpeed; 
-        const vy = (Math.random() - 0.5) * painParticleBaseSpeed - 0.2; // Lekkie unoszenie się
+        const vx = (Math.random() - 0.5) * painParticleBaseSpeed * 2; // Szybsze rozpraszanie
+        const vy = (Math.random() - 0.5) * painParticleBaseSpeed * 2 - 0.5; // Większe unoszenie się
 
-        const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; 
+        const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`; 
         
         stonksAttackPainParticles.push(new CanvasParticle(
             startX, startY, vx, vy, color, painParticleSize, painParticleLife, 'painParticle', angle
