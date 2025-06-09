@@ -117,7 +117,7 @@
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
+    const ORIGINAL_OZZY_IMAGE_URL = 'stonks2.png'; // Updated to match index.html
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
     const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -161,6 +161,19 @@
     const originalLightningText = 'Piorun Zagłady';
     const originalFreezeText = 'Lodowy Wybuch';
     const originalFrenzyText = 'Szał Bojowy';
+
+    // --- NEW: Global variables for Canvas effects ---
+    let bossEffectCanvas;
+    let bossEffectCtx;
+    let bossCanvasAnimationId;
+    let bossParticles = []; // For ice shards/flames
+    let isCanvasEffectActive = false;
+    let bossEffectIntervalId; // Interval for generating particles
+
+    // Constants for canvas effects
+    const ICE_SHARD_COUNT = 5;
+    const FLAME_PARTICLE_COUNT = 3;
+    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 200; // How often new particles are generated
 
 
     // --- Leaderboard Functions ---
@@ -579,6 +592,9 @@
         clearInterval(superpowerCooldownIntervalId);
         updateSuperpowerCooldownDisplays(); 
 
+        // Stop Canvas effects when game resets
+        stopBossCanvasEffects();
+
         if (backgroundMusic) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
@@ -704,6 +720,9 @@
 
         endScreen.classList.remove('hidden');
 
+        // Stop Canvas effects when game ends
+        stopBossCanvasEffects();
+
         if (backgroundMusic) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
@@ -730,6 +749,7 @@
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
             // No need to set ozzyHealth and updateHealthBar here, startBossFight handles it.
             // No need for a separate knockout message, startBossFight handles boss message.
+            startBossCanvasEffects(); // NEW: Start canvas effects for boss
         } else {
             // Normal Stonks knockout
             currentLevel = nextLevelCandidate; // Increment level for normal stonks
@@ -742,9 +762,16 @@
             
             // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
             // It's triggered when a normal Stonks appears.
-            if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
+            // ZMIANA: Komunikat "Stonks jest silniejszy!" tylko od poziomu 11
+            if (currentLevel > 1 && (currentLevel -1) % 10 === 0) { 
                 stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
+                showMessage(`Stonks jest silniejszy!`, 2000); 
+            } else if (currentLevel === 1) { // If it's level 1, ensure variant 0
+                stonksVisualVariantIndex = 0;
+            } else { // For levels 2-9, 12-19 etc., keep the current variant (no change in strength message)
+                // no change needed for stonksVisualVariantIndex here, it's already set from previous tier
             }
+
             updateOzzyAppearance(); // Apply the new Stonks variant
 
             bossCurrentTransformX = 0; // Reset position for normal Stonks
@@ -755,12 +782,6 @@
             // Scale normal Ozzy health
             INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
             
-            // "Stonks jest silniejszy!" message: show ONLY after a boss fight (i.e., at level 1, 11, 21, etc. when a normal Stonks spawns)
-            // This ensures it appears consistently when a new "tier" of Stonks health starts.
-            if ((currentLevel -1) % 10 === 0) { // Check if current level is 1, 11, 21 etc.
-                 showMessage(`Stonks jest silniejszy!`, 2000); 
-            }
-            
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
             knockoutMsgElement.textContent = 'Stonks rozjebany!'; 
@@ -769,6 +790,8 @@
             setTimeout(() => {
                 knockoutMsgElement.remove();
             }, 2000); 
+
+            stopBossCanvasEffects(); // NEW: Stop canvas effects when normal Stonks returns
         }
 
         ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
@@ -915,6 +938,159 @@
         }
     }
 
+    // --- NEW: Canvas functions for boss effects ---
+
+    // Function to initialize canvas
+    function initializeBossCanvas() {
+        bossEffectCanvas = document.getElementById('boss-effect-canvas');
+        if (!bossEffectCanvas) {
+            console.error("Canvas element #boss-effect-canvas not found.");
+            return;
+        }
+        bossEffectCtx = bossEffectCanvas.getContext('2d');
+        resizeBossCanvas(); // Set initial size
+        window.addEventListener('resize', resizeBossCanvas); // Make it responsive
+    }
+
+    // Function to resize canvas
+    function resizeBossCanvas() {
+        if (bossEffectCanvas && gameContainer) {
+            bossEffectCanvas.width = gameContainer.offsetWidth;
+            bossEffectCanvas.height = gameContainer.offsetHeight;
+            // Redraw content if necessary after resize
+            if (isCanvasEffectActive) {
+                animateBossCanvasEffects(); // Trigger a redraw
+            }
+        }
+    }
+
+    // Canvas animation loop
+    function animateBossCanvasEffects() {
+        if (!isCanvasEffectActive) return;
+
+        // Clear only the parts that need redrawing, or the whole canvas
+        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+
+        // Update and draw particles
+        for (let i = bossParticles.length - 1; i >= 0; i--) {
+            let p = bossParticles[i];
+            p.x += p.dx;
+            p.y += p.dy;
+            p.alpha -= p.fade;
+
+            if (p.alpha <= 0 || p.y < -p.size || p.x < -p.size || p.x > bossEffectCanvas.width + p.size) {
+                bossParticles.splice(i, 1);
+            } else {
+                if (p.type === 'ice') {
+                    bossEffectCtx.fillStyle = `rgba(173, 216, 230, ${p.alpha})`; // Light blue
+                    drawIceShard(bossEffectCtx, p.x, p.y, p.size, p.angle);
+                } else if (p.type === 'flame') {
+                    const gradient = bossEffectCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                    gradient.addColorStop(0, `rgba(255, 165, 0, ${p.alpha})`); // Orange
+                    gradient.addColorStop(0.5, `rgba(255, 69, 0, ${p.alpha * 0.7})`); // Red-orange
+                    gradient.addColorStop(1, `rgba(255, 0, 0, 0)`); // Transparent red
+                    bossEffectCtx.fillStyle = gradient;
+                    bossEffectCtx.beginPath();
+                    bossEffectCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    bossEffectCtx.fill();
+                }
+            }
+        }
+
+        // Subtle flicker effect (draws a transparent black overlay sometimes)
+        if (Math.random() < 0.03) { // 3% chance per frame to flicker
+            bossEffectCtx.fillStyle = `rgba(0, 0, 0, 0.05)`; // Very subtle black overlay
+            bossEffectCtx.fillRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+        }
+
+        bossCanvasAnimationId = requestAnimationFrame(animateBossCanvasEffects);
+    }
+
+    // Helper to draw an ice shard (simple polygon)
+    function drawIceShard(ctx, x, y, size, angle) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, -size / 2);
+        ctx.lineTo(size / 2, size / 2);
+        ctx.lineTo(-size / 2, size / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // Function to start boss-specific canvas effects
+    function startBossCanvasEffects() {
+        if (isCanvasEffectActive) return; // Avoid starting multiple times
+        isCanvasEffectActive = true;
+        bossEffectCanvas.classList.remove('hidden'); // Ensure canvas is visible
+        bossParticles = []; // Clear any old particles
+
+        // Set initial canvas size just before starting effects
+        resizeBossCanvas();
+
+        // Start generating particles
+        bossEffectIntervalId = setInterval(() => {
+            if (!isBossFight || !isGameActive) { // Stop if boss fight or game ends unexpectedly
+                stopBossCanvasEffects();
+                return;
+            }
+
+            const ozzyRect = ozzyContainer.getBoundingClientRect();
+            const gameContainerRect = gameContainer.getBoundingClientRect();
+
+            // Adjust coordinates to be relative to the canvas's own coordinate system
+            // Canvas origin (0,0) is at the top-left of gameContainer.
+            const ozzyCanvasCenterX = (ozzyRect.left + ozzyRect.width / 2) - gameContainerRect.left;
+            const ozzyCanvasCenterY = (ozzyRect.top + ozzyRect.height / 2) - gameContainerRect.top;
+
+
+            // Generate ice shards (more spread out around Ozzy)
+            for (let i = 0; i < ICE_SHARD_COUNT; i++) {
+                bossParticles.push({
+                    type: 'ice',
+                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 1.5,
+                    y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 1.5,
+                    size: Math.random() * 10 + 5,
+                    alpha: 0.8,
+                    dx: (Math.random() - 0.5) * 3, // Horizontal movement
+                    dy: (Math.random() - 0.5) * 3, // Vertical movement
+                    fade: 0.015,
+                    angle: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Generate flame particles (from bottom of boss, moving up)
+            for (let i = 0; i < FLAME_PARTICLE_COUNT; i++) {
+                bossParticles.push({
+                    type: 'flame',
+                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.5, // More centralized
+                    y: ozzyCanvasCenterY + ozzyRect.height * 0.4, // From bottom part of Ozzy
+                    radius: Math.random() * 20 + 10,
+                    alpha: 0.7,
+                    dx: (Math.random() - 0.5) * 1.5,
+                    dy: -Math.random() * 3 - 0.5, // Move upwards
+                    fade: 0.01
+                });
+            }
+        }, BOSS_EFFECT_PARTICLE_INTERVAL_MS);
+
+        // Start animation loop
+        bossCanvasAnimationId = requestAnimationFrame(animateBossCanvasEffects);
+    }
+
+    // Function to stop boss-specific canvas effects
+    function stopBossCanvasEffects() {
+        if (!isCanvasEffectActive) return;
+        isCanvasEffectActive = false;
+        clearInterval(bossEffectIntervalId);
+        cancelAnimationFrame(bossCanvasAnimationId);
+        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+        bossParticles = []; // Clear particles
+        bossEffectCanvas.classList.add('hidden'); // Hide canvas
+    }
+
 
     console.log("Script.js is running!");
 
@@ -967,6 +1143,9 @@
         buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
         quoteImagesContainer = document.getElementById('quote-images-container'); 
 
+        // NEW: Initialize the boss effect canvas
+        initializeBossCanvas();
+
         // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
         upgradeShopScreen.classList.add('hidden');
 
@@ -976,6 +1155,10 @@
         ozzyContainer.classList.add('hidden');
         gameInfoContainer.classList.add('hidden'); 
         quoteImagesContainer.innerHTML = ''; 
+        
+        // NEW: Hide the canvas effect initially
+        bossEffectCanvas.classList.add('hidden');
+
 
         // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
         resetGame(); 
@@ -1055,6 +1238,9 @@
 
             upgradeShopScreen.classList.remove('hidden'); 
             updateUpgradeShopUI(); 
+
+            // NEW: Stop canvas effects when entering shop
+            stopBossCanvasEffects();
         });
 
         closeShopButton.addEventListener('click', () => {
@@ -1069,6 +1255,8 @@
             isBossMovementPaused = false; 
             if (isBossFight) { 
                 animateBossMovement();
+                // NEW: Restart canvas effects if it's a boss fight when closing shop
+                startBossCanvasEffects();
             }
             clearInterval(superpowerCooldownIntervalId); 
             superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
