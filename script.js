@@ -5,7 +5,7 @@
         apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
         authDomain: "ozzy-14c19.firebaseapp.com",
         projectId: "ozzy-14c19",
-        storageBucket: "ozzy-14c19.firebasestorage.app",
+        storageBucket: "ozzy-14c19.firebaseapp.com",
         messagingSenderId: "668337469201",
         appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
     };
@@ -155,7 +155,6 @@
     const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
 
     // --- Variables for visual variants of Stonks ---
-    // ZMIANA: Zwiększone totalVariants, aby odpowiadały ilości klas w CSS (0-9 to 10 wariantów)
     let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
     const totalStonksVariants = 10;     // Number of available variants (0-9)
     let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
@@ -263,7 +262,7 @@
         // Resize canvas to match gameContainer (do this first for correct drawing)
         gameEffectsCanvas.width = gameContainer.offsetWidth;
         gameEffectsCanvas.height = gameContainer.offsetHeight;
-        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
 
         // Calculate Ozzy's center relative to the canvas
         const ozzyRect = ozzyContainer.getBoundingClientRect();
@@ -376,8 +375,8 @@
                 freezeCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość)
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
                     `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                     Math.random() * 15 + 8, // size (większy)
                     90, // life (dłuższe)
@@ -403,10 +402,10 @@
                 frenzyCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość)
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy
-                    `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`,
-                    Math.random() * 12 + 6, // size (większy)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
+                    `rgba(255, 165, 0, ${0.7 + Math.random() * 0.3})`, // ZMIANA: Kolor na pomarańczowy
+                    (Math.random() * 12 + 6) * 1.25, // ZMIANA: Rozmiar większy o 25%
                     45, // short life, but slightly longer
                     'frenzyPulse'
                 ));
@@ -547,7 +546,7 @@
 
         const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
                              ((now - lastUsedFrenzyTime >= COOLDOWN_DURATION_MS) || lastUsedFrenzyTime === 0) &&
-                             isGameActive; 
+                                 isGameActive; 
 
         btnLightning.disabled = !canUseLightning;
         btnFreeze.disabled = !canUseFreeze;
@@ -958,8 +957,8 @@ function activateLightningStrike() {
         ozzyHealth = INITIAL_OZZY_HEALTH;
         updateHealthBar();
         
-        // Apply initial Stonks appearance for level 1
-        stonksVisualVariantIndex = 0; // Ensure it starts with the first variant
+        // Apply initial Stonks appearance for level 1 (always variant 0)
+        stonksVisualVariantIndex = 0; 
         updateOzzyAppearance(); 
 
         // Start superpower cooldown interval
@@ -1072,14 +1071,21 @@ function activateLightningStrike() {
             
             // Clear all canvas effect particles when transitioning from boss to normal Stonks
             // This is also implicitly handled by animateGameCanvasEffects based on `isBossFight` and `frenzyModeActive`/`freezeModeActive`
-            // ZMIANA: Te tablice będą czyszczone naturalnie przez `animateGameCanvasEffects` po zakończeniu efektu
             // bossCanvasParticles = []; 
             // lightningCanvasParticles = []; 
             // freezeCanvasParticles = []; 
             // frenzyCanvasParticles = [];
             
-            // ZMIANA: Logika wyboru wariantu Stonksa: zmienia się co 10 poziomów (po bossie)
-            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
+            // ZMIANA: Logika wyboru wariantu Stonksa:
+            if (currentLevel >= 1 && currentLevel <= 10) {
+                stonksVisualVariantIndex = 0; // Wariant 0 dla poziomów 1-10
+            } else {
+                // Od poziomu 11, zmieniaj wariant co 11 poziomów, zaczynając od variant-1
+                // (currentLevel - 11) daje 0 dla poziomu 11, 1 dla 12, itd.
+                // Podzielone przez 11 i modulo totalStonksVariants-1 (bo 0 jest specjalny)
+                // Dodajemy 1, żeby zacząć od stonks-variant-1
+                stonksVisualVariantIndex = 1 + (Math.floor((currentLevel - 11) / 11) % (totalStonksVariants - 1));
+            }
             
             if (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL !== 1)) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
                  INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT;
@@ -1235,22 +1241,22 @@ function activateLightningStrike() {
 
             if (upgradeType === 'baseDamage') {
                 PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Obrażenia Podstawowe! Nowe obrażenia: ${PUNCH_DAMAGE}`, 3000); // ZMIANA: Zwiększony czas
+                showMessage(`Ulepszono Obrażenia Podstawowe! Nowe obrażenia: ${PUNCH_DAMAGE}`, 3000); 
             } else if (upgradeType === 'lightningDamage') {
                 const nextLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage -1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Piorun Zagłady! Poziom: ${upgradeLevels.lightningDamage} (Obrażenia: ~${nextLightningDamage})`, 3000); // ZMIANA: Zwiększony czas
+                showMessage(`Ulepszono Piorun Zagłady! Poziom: ${upgradeLevels.lightningDamage} (Obrażenia: ~${nextLightningDamage})`, 3000); 
             } else if (upgradeType === 'freezeDamage') {
                 const nextInitialFreezeDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
                 const nextDotFreezeDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Lodowy Wybuch! Poziom: ${upgradeLevels.freezeDamage} (Obrażenia: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 3000); // ZMIANA: Zwiększony czas
+                showMessage(`Ulepszono Lodowy Wybuch! Poziom: ${upgradeLevels.freezeDamage} (Obrażenia: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 3000); 
             } else if (upgradeType === 'frenzyDamage') {
                 const nextFrenzyDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 3000); // ZMIANA: Zwiększony czas
+                showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 3000); 
             }
 
             updateUpgradeShopUI(); 
         } else {
-            showMessage("Za mało punktów!", 3000); // ZMIANA: Zwiększony czas
+            showMessage("Za mało punktów!", 3000); 
         }
     }
 
