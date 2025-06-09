@@ -616,7 +616,7 @@
         ozzyImage.classList.add('attacking');
         setTimeout(() => {
             ozzyImage.classList.remove('attacking');
-        }, 1000); // Duration of the attack animation
+        }, 1500); // Duration of the attack animation
 
         // ZMIANA: Dodanie wstrząsu ekranu
         gameContainer.classList.add('screen-shake');
