@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js';
+
 
 
 // === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
@@ -761,25 +761,42 @@ function spawnStonksAttackEffects(ozzyX, ozzyY) {
 // --- Leaderboard Functions ---
 async function saveScoreToLeaderboard(nickname, score) {
     console.log("saveScoreToLeaderboard called with nickname:", nickname, "score:", score);
+
+    // Klienckie zabezpieczenie przed nierealistycznymi wynikami.
+    // Pamiętaj, że to zabezpieczenie jest podatne na modyfikację przez gracza.
+    const CLIENT_SIDE_MAX_SCORE = 200; 
     if (score > CLIENT_SIDE_MAX_SCORE) {
         showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000);
         console.warn(`Attempt to save unrealistic score (${score}) by ${nickname}. Blocked client-side.`);
-        setTimeout(resetGame, 3000);
+        setTimeout(resetGame, 3000); // Resetujemy grę po próbie oszustwa
         return;
     }
 
+    // Upewniamy się, że użytkownik jest uwierzytelniony i wynik jest dodatni.
     if (score > 0 && currentUserId) {
         try {
-            const result = await submitScoreFunction({ nickname: nickname, score: score });
-            console.log("Response from Cloud Function:", result.data);
-            showMessage(result.data.message, 2000);
+            // BEZPOŚREDNI ZAPIS DO FIRESTORE
+            // Używamy funkcji addDoc z Firestore SDK, aby dodać nowy dokument
+            // do kolekcji 'leaderboard'. Firestore automatycznie wygeneruje ID dla dokumentu.
+            await addDoc(collection(db, "leaderboard"), {
+                nickname: nickname,
+                score: score,
+                // Używamy serverTimestamp() do uzyskania znacznika czasu z serwera Firestore,
+                // co pomaga w sortowaniu i zapobiega manipulacji czasem przez klienta.
+                timestamp: serverTimestamp(), 
+                userId: currentUserId // Zapisujemy ID anonimowego użytkownika, jeśli zajdzie potrzeba (np. do odfiltrowania wyników danego gracza)
+            });
+
+            showMessage("Wynik zapisany pomyślnie!", 2000);
+            console.log(`Wynik (${score}) przesłany przez ${nickname} (${currentUserId}) i zapisany.`);
+
         } catch (error) {
-            console.error("Error calling Cloud Function:", error.code, error.message);
-            showMessage(`Błąd zapisu: ${error.message}`, 3000);
+            console.error("Error saving score directly to Firestore:", error);
+            showMessage(`Błąd zapisu wyniku: ${error.message}`, 3000);
         }
     } else if (!currentUserId) {
-        console.warn("Cannot save score: User is not authenticated. Check Firebase Auth configuration.");
-        showMessage("Błąd: Brak uwierzytelnień do zapisu wyniku.", 3000);
+        console.warn("Cannot save score: User is not authenticated.");
+        showMessage("Błąd: Brak uwierzytelnień do zapisu wyniku. Spróbuj odświeżyć.", 3000);
     }
 }
 
