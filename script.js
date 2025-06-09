@@ -588,7 +588,7 @@
         isGameActive = false;
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
-        upgradeShopScreen.classList.add('hidden'); 
+        upgradeShopScreen.classList.add('hidden'); // Ensure shop is hidden on reset
         startScreen.classList.remove('hidden'); 
         shopButton.classList.remove('hidden'); 
         superpowerButtonsContainer.classList.add('hidden'); 
@@ -1183,7 +1183,7 @@
         lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
         lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
         buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+        freezeDamageLevelDisplay = document('freeze-damage-level');
         freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
         buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
@@ -1194,21 +1194,8 @@
         // NEW: Initialize the boss effect canvas
         initializeBossCanvas();
 
-        // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
-        upgradeShopScreen.classList.add('hidden');
-
-        // Ensure all screens are initially hidden
-        endScreen.classList.add('hidden');
-        leaderboardScreen.classList.add('hidden');
-        ozzyContainer.classList.add('hidden');
-        gameInfoContainer.classList.add('hidden'); 
-        quoteImagesContainer.innerHTML = ''; 
-        
-        // NEW: Hide the canvas effect initially
-        bossEffectCanvas.classList.add('hidden');
-
-
-        // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
+        // The resetGame function handles hiding all screens, including the shop.
+        // It's crucial to call it AFTER all DOM elements are assigned.
         resetGame(); 
 
         console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
