@@ -166,6 +166,7 @@
     const originalFrenzyText = 'Szał Bojowy';
 
     // === Canvas Particles System ===
+    // === Canvas Particles System ===
     class CanvasParticle {
         constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
             this.x = x;
@@ -173,7 +174,7 @@
             this.vx = vx;
             this.vy = vy;
             this.color = color;
-            this.size = size;
+            this.size = size; // Updated: size can be larger now
             this.life = life; // Total frames/steps to live
             this.currentLife = 0;
             this.alpha = 1;
@@ -268,6 +269,10 @@
         const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
         const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
 
+        // Common multipliers for particle spawn area and speed
+        const spawnAreaMultiplier = isBossFight ? 1.5 : 1.2; // Larger area for boss
+        const baseParticleSpeed = 1; // Base speed, particles will be slower
+        
         // Boss particles (spawn only if boss fight is active)
         if (isBossFight) {
             gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for boss effects
@@ -285,11 +290,11 @@
                     type = 'bossElectricity';
                 }
                 bossCanvasParticles.push(new CanvasParticle(
-                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width,
-                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height,
-                    (Math.random() - 0.5) * 2, // vx
-                    (Math.random() - 0.5) * 2, // vy
-                    color, Math.random() * 5 + 2, 60, type // size, life
+                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * spawnAreaMultiplier, // Zwiększony obszar
+                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * spawnAreaMultiplier, // Zwiększony obszar
+                    (Math.random() - 0.5) * baseParticleSpeed, // vx (zmniejszona prędkość)
+                    (Math.random() - 0.5) * baseParticleSpeed, // vy (zmniejszona prędkość)
+                    color, Math.random() * 8 + 4, 90, type // size (większy), life (dłuższe)
                 ));
             }
         }
@@ -319,13 +324,13 @@
             gameEffectsCanvas.classList.add('active');
             if (freezeCanvasParticles.length < MAX_CANVAS_PARTICLES / 2 && Math.random() < 0.3) {
                 freezeCanvasParticles.push(new CanvasParticle(
-                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8,
-                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8,
-                    (Math.random() - 0.5) * 2, // vx
-                    (Math.random() - 0.5) * 2, // vy
+                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
+                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // vx (jeszcze mniejsza prędkość)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // vy
                     `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
-                    Math.random() * 10 + 5, // size
-                    60, // life
+                    Math.random() * 15 + 8, // size (większy)
+                    90, // life (dłuższe)
                     'iceShard',
                     Math.random() * 360 // random angle
                 ));
@@ -346,13 +351,13 @@
             gameEffectsCanvas.classList.add('active');
             if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.7) { // More frequent for frenzy
                 frenzyCanvasParticles.push(new CanvasParticle(
-                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.7,
-                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.7,
-                    (Math.random() - 0.5) * 1, // vx, small movement
-                    (Math.random() - 0.5) * 1, // vy
+                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
+                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy
                     `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`,
-                    Math.random() * 10 + 5, // size
-                    30, // short life
+                    Math.random() * 12 + 6, // size (większy)
+                    45, // short life, but slightly longer
                     'frenzyPulse'
                 ));
             }
@@ -383,7 +388,6 @@
             cancelAnimationFrame(gameCanvasAnimationFrameId); // Ensure it stops
         }
     }
-
 
     // --- Leaderboard Functions ---
     async function saveScoreToLeaderboard(nickname, score) {
@@ -538,7 +542,7 @@
     }
 
 
-    function activateLightningStrike() {
+function activateLightningStrike() {
         if (!isGameActive || btnLightning.disabled) return;
 
         showMessage("PIORUN ZAGŁADY!", 1500);
@@ -558,23 +562,22 @@
         const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
 
         const numBolts = 5; // Number of lightning segments
-        // lightningCanvasParticles = []; // ZMIANA: Usunięto - cząsteczki znikają naturalnie
 
         lightningEffect.classList.remove('hidden'); // Show the overlay for general flash
         lightningEffect.classList.add('flash-active'); // Add class for animation
 
         // Generate lightning bolts on canvas
         for (let i = 0; i < numBolts; i++) {
-            // Start point near top of Ozzy
-            const startX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.6;
-            const startY = ozzyCanvasY - ozzyRect.height / 2; // Start above Ozzy
+            // Start point near top of Ozzy, spread wider
+            const startX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5; // Zwiększony obszar startowy
+            const startY = ozzyCanvasY - ozzyRect.height * 0.7; // Start wyżej nad Ozzy'm
 
-            // End point slightly below Ozzy, with some randomness
-            const endX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8;
-            const endY = ozzyCanvasY + ozzyRect.height / 2 + Math.random() * 50;
+            // End point below Ozzy, spread wider
+            const endX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8; // Zwiększony obszar końcowy
+            const endY = ozzyCanvasY + ozzyRect.height * 0.8 + Math.random() * 50; // Koniec niżej
 
             const life = 90; // Dłuższe życie dla efektu błyskawicy (ok. 1.5 sekundy przy 60FPS)
-            const size = Math.random() * 5 + 3; // Line width
+            const size = Math.random() * 8 + 5; // Line width (większy)
 
             lightningCanvasParticles.push(new CanvasParticle(
                 startX, startY, 0, 0, // No independent movement for lines, target defines end
@@ -582,17 +585,17 @@
                 size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
             ));
 
-            // Add some small, bright "sparks" around the bolt
+            // Add some small, bright "sparks" around the bolt (larger, slower)
             for (let j = 0; j < 3; j++) {
                 lightningCanvasParticles.push(new CanvasParticle(
-                    startX + (Math.random() - 0.5) * 20,
-                    startY + (Math.random() - 0.5) * 20,
-                    (Math.random() - 0.5) * 5,
-                    (Math.random() - 0.5) * 5,
+                    startX + (Math.random() - 0.5) * 30, // Większe rozproszenie
+                    startY + (Math.random() - 0.5) * 30,
+                    (Math.random() - 0.5) * 2.5, // vx (wolniejsze)
+                    (Math.random() - 0.5) * 2.5, // vy (wolniejsze)
                     `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
-                    Math.random() * 3 + 1,
-                    30, // ZWIĘKSZONO: Życie dla iskier
-                    'bossFire' // Reusing a simple circle particle type
+                    Math.random() * 5 + 3, // size (większy)
+                    45, // ZWIĘKSZONO: Życie dla iskier
+                    'bossFire' 
                 ));
             }
         }
@@ -601,7 +604,7 @@
         setTimeout(() => {
             lightningEffect.classList.remove('flash-active');
             lightningEffect.classList.add('hidden');
-        }, 1500); // Dłuższe opóźnienie dla zniknięcia nakładki (pasuje do życia cząsteczek)
+        }, 1500); 
     }
 
 
