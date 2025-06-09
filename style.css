@@ -1,838 +1,112 @@
-/* Import czcionki z Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-/* --- Podstawowe style globalne --- */
-body {
-    margin: 0;
-    /* Zmienione, aby container gry wypełniał całą przestrzeń niezależnie od flexa */
-    position: relative; /* Dla pozycjonowania message-display */
-    overflow: hidden; /* Zapobiega przewijaniu */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Pełna wysokość viewportu */
-    background: linear-gradient(to bottom, #4a0000, #000000); /* Stonksowe tło */
-    font-family: 'Press Start 2P', cursive;
-    color: #eee;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    user-select: none; /* Zapobiegaj zaznaczaniu tekstu/elementów */
-    -webkit-user-drag: none; /* Zapobiegaj przeciąganiu na WebKit */
-}
-
-/* Klasa do ukrywania elementów */
-.hidden {
-    display: none !important; /* Ważne, aby wymusić ukrycie */
-}
-
-/* Kontener główny gry */
-#game-container {
-    /* ZMIANA: Ustawienie na fixed, aby zawsze wypełniał viewport i nie był przesuwany */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw; /* Pełna szerokość viewportu */
-    height: 100vh; /* Pełna wysokość viewportu */
-    max-width: 1200px; /* Maksymalna szerokość na większych ekranach */
-    max-height: 800px; /* Maksymalna wysokość na większych ekranach */
-    overflow: hidden; /* Upewnij się, że nic nie wykracza poza kontener */
-    border: 5px solid #8B0000; /* Ciemnoczerwona ramka */
-    box-shadow: 0 0 50px rgba(255, 0, 0, 0.5); /* Czerwony cień */
-    background-color: #000; /* Domyślne tło */
-    /* Centrowanie game-container na większych ekranach */
-    /* ZMIANA: Centrowanie z użyciem margin auto i position: fixed */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-sizing: border-box; /* Ważne dla paddingu i borderów */
-}
-
-/* Animacja Stonksa w trakcie ataku */
-#ozzy-image.attacking {
-    /* ZMIANA: Dłuższa animacja ataku */
-    animation: ozzy-attack 1.2s ease-out; /* Było 0.3s, teraz 0.8s */
-}
-
-@keyframes ozzy-attack {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.15) rotate(7deg); } /* Większe odchylenie */
-    50% { transform: scale(0.95) rotate(-7deg); } /* Mniejsze, w drugą stronę */
-    75% { transform: scale(1.1) rotate(4deg); } /* Powrót z lekkim dociągnięciem */
-    100% { transform: scale(1) rotate(0deg); }
-}
-
-#ozzy-image.stonks-attack-effect {
-    animation: stonksAttackFlash 0.2s ease-out; /* Dodaj animację, jeśli chcesz płynniejsze przejście */
-}
-
-@keyframes stonksAttackFlash {
-    0% { filter: brightness(100%) grayscale(0%); }
-    50% { filter: brightness(200%) grayscale(100%); } /* Mocniejszy błysk i odwrócenie */
-    100% { filter: brightness(100%) grayscale(0%); }
-}
-
-/* Animacja wstrząsu ekranu */
-.screen-shake {
-    /* ZMIANA: Jeszcze dłuższy czas trwania wstrząsu */
-    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; /* Było 0.4s, teraz 0.6s */
-    transform: translate(-50%, -50%); 
-    backface-visibility: hidden;
-    perspective: 1000px;
-}
-
-@keyframes shake {
-    10%, 90% {
-        transform: translate(-52%, -50%); /* Lekkie przesunięcie w lewo */
-    }
-    20%, 80% {
-        transform: translate(-48%, -50%); /* Lekkie przesunięcie w prawo */
-    }
-    30%, 70% {
-        transform: translate(-52%, -50%);
-    }
-    40%, 60% {
-        transform: translate(-48%, -50%);
-    }
-    50% {
-        transform: translate(-50%, -50%); /* Powrót do centrum */
-    }
-}
-
-
-/* Animowane tło traktora */
-#animated-background-tractor {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Pokryj cały kontener */
-    z-index: 1; /* Pod warstwami gry */
-    filter: brightness(0.7) grayscale(0.5); /* Ciemniejsze i mniej kolorowe */
-    animation: background-pan 30s linear infinite alternate; /* Dłuższa animacja */
-}
-
-@keyframes background-pan {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.1); } /* Lekkie powiększanie */
-}
-
-/* Canvas dla wszystkich dynamicznych efektów (boss, supermoce) */
-#boss-effect-canvas { /* ID canvasa pozostało 'boss-effect-canvas' */
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 150; /* Nad ozzy-container, ale pod message-display */
-    pointer-events: none;
-    opacity: 0; /* Domyślnie ukryty, pokazywany przez JS */
-    transition: opacity 0.5s ease-in-out;
-}
-
-#boss-effect-canvas.active {
-    opacity: 1; /* Aktywacja */
-}
-
-/* Kontenery na efekty supermocy (tylko tło/pełnoekranowe rozbłyski) */
-.effect-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100; /* Nad wszystkimi elementami gry poza canvasem i komunikatami */
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease-out;
-}
-
-.effect-overlay.active {
-    opacity: 1;
-}
-
-/* Efekty błyskawicy (overlay) */
-#lightning-effect.flash-active {
-    opacity: 1;
-    background: radial-gradient(circle, rgba(255, 255, 0, 0.4) 0%, rgba(255, 140, 0, 0) 70%);
-}
-
-/* Efekty lodu (overlay) */
-#freeze-effect {
-    background-color: transparent; 
-    opacity: 0;
-    transition: background-color 0.5s ease-out, opacity 0.5s ease-out;
-}
-
-#freeze-effect.active {
-    background-color: rgba(173, 216, 230, 0.3);
-    animation: freezeEffectGlow 1s infinite alternate;
-    opacity: 1;
-}
-
-@keyframes freezeEffectGlow {
-    0% { background-color: rgba(173, 216, 230, 0.3); }
-    100% { background-color: rgba(173, 216, 230, 0.6); }
-}
-
-/* Efekty szału bojowego (overlay) */
-#frenzy-effect {
-    background: radial-gradient(circle, rgba(255, 69, 0, 0.3) 0%, rgba(139, 0, 0, 0) 70%);
-}
-
-#frenzy-effect.active {
-    animation: frenzyEffectPulse 0.5s infinite alternate;
-}
-
-@keyframes frenzyEffectPulse {
-    0% { background-color: rgba(255, 69, 0, 0.3); transform: scale(1); }
-    100% { background-color: rgba(255, 69, 0, 0.5); transform: scale(1.02); }
-}
-
-
-/* Kontener na obrazki z cytatami (np. memes) */
-#quote-images-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 15; 
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.quote-image {
-    position: absolute;
-    /* ZMIANA: Responsywne rozmiary dla obrazków cytatów */
-    width: clamp(80px, 15vw, 150px); 
-    height: clamp(80px, 15vw, 150px);
-    object-fit: contain; /* Upewnij się, że obrazek mieści się w ramce */
-    opacity: 0;
-    transform: scale(0.5);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-    z-index: 55; /* Zawsze nad Ozzy'm */
-}
-
-.quote-image.active {
-    opacity: 1;
-    transform: scale(1);
-}
-
-/* Kontener dla Ozzy'ego */
-#ozzy-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Centrowanie */
-    z-index: 20; /* Nad tłem i cytatami, ale pod canvasem efektów */
-    cursor: url('stonks.png'), auto; /* Zmieniony kursor na Stonks */
-    transition: transform 0.1s ease-out; /* Płynne poruszanie */
-    user-select: none; /* Zapobiegaj zaznaczaniu */
-    -webkit-user-drag: none; /* Zapobiegaj przeciąganiu */
-}
-
-#ozzy-image {
-    width: clamp(150px, 40vw, 300px); /* Responsywny rozmiar */
-    height: auto;
-    display: block;
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)); /* Efekt blasku */
-    transition: filter 0.1s ease-out, transform 0.1s ease-out; /* Animacja uderzenia */
-}
-
-/* Efekt trafienia */
-#ozzy-image.hit-effect {
-    filter: brightness(1.5) grayscale(0.5) drop-shadow(0 0 20px yellow);
-    transform: scale(1.05);
-}
-
-/* Animacja pojawiania się Ozzy'ego */
-#ozzy-image.spawn-ozzy {
-    animation: spawn-pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-@keyframes spawn-pop {
-    0% { transform: scale(0.5) rotateY(180deg); opacity: 0; }
-    70% { transform: scale(1.1) rotateY(-10deg); opacity: 1; }
-    100% { transform: scale(1) rotateY(0deg); }
-}
-
-/* Tryb Bossa */
-#ozzy-image.boss-mode {
-    filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); /* Zmiana wyglądu i czerwony cień */
-    transform: scale(1.2); /* Większy rozmiar dla bossa */
-    /* Animacje bossa (pionowe poruszanie, migotanie) */
-    animation: boss-flicker 1s infinite alternate, boss-pulsate 2s infinite infinite alternate;
-}
-
-/* Odwracanie obrazu bossa */
-#ozzy-image.flipped-x {
-    transform: scaleX(-1); /* Odwrócenie w poziomie */
-}
-
-/* Warianty wizualne Stonksa (normalne) */
-#ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny, brak efektów */
-#ozzy-image.stonks-variant-1 { filter: hue-rotate(45deg) brightness(1.2) saturate(1.8); } /* ZMIANA: Wyraźniejszy hue-rotate i nasycenie */
-#ozzy-image.stonks-variant-2 { filter: hue-rotate(120deg) saturate(1.8) brightness(1.1) contrast(1.2) drop-shadow(0 0 5px rgba(0,255,0,0.5)); } /* ZMIANA: Wyraźny zielonkawy, więcej detali */
-#ozzy-image.stonks-variant-3 { filter: invert(100%) hue-rotate(270deg) saturate(1.5) brightness(1.3) drop-shadow(0 0 5px rgba(128,0,128,0.5)); } /* ZMIANA: Fioletowy inwersja, wyraźny */
-#ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); } /* Pozostaje, skoro działał */
-#ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
-#ozzy-image.stonks-variant-6 { filter: drop-shadow(0 0 8px #00FF00) brightness(1.3); }
-#ozzy-image.stonks-variant-7 { filter: sepia(70%) contrast(150%) brightness(1.1); }
-#ozzy-image.stonks-variant-8 { filter: hue-rotate(270deg) saturate(180%) drop-shadow(0 0 10px #FF00FF); }
-#ozzy-image.stonks-variant-9 { filter: brightness(0.7) contrast(200%); }
-
-/* Warianty wizualne Bossa (zmodyfikowane - bardziej dynamiczne) */
-#ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); } /* Czerwony, bazowy */
-#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(50deg) brightness(1.5) saturate(200%) contrast(1.3) drop-shadow(0 0 45px #FFA500); } /* Sepia/Pomarańczowy, mocniejszy */
-#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(200%) brightness(1.1) blur(0.8px) contrast(1.5) drop-shadow(0 0 50px #00FFFF); } /* Inwersja / Cyjan Glitch mocniejszy */
-#ozzy-image.boss-mode-variant-3 { filter: grayscale(90%) contrast(250%) brightness(0.7) hue-rotate(60deg) drop-shadow(0 0 55px #808080); } /* Szary Metaliczny z mocniejszym kontrastem i odcieniem */
-#ozzy-image.boss-mode-variant-4 { filter: blur(2px) hue-rotate(280deg) saturate(400%) contrast(1.8) drop-shadow(0 0 60px #FF00FF); } /* Rozmyty Purpurowy Glitch bardzo intensywny */
-#ozzy-image.boss-mode-variant-5 { filter: brightness(3.0) contrast(0.4) invert(30%) hue-rotate(20deg) drop-shadow(0 0 65px #FFFFFF); } /* Błysk / Biały Ghost z wyraźniejszą inwersją i odcieniem */
-#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(100deg) saturate(300%) brightness(1.5) contrast(1.8) drop-shadow(0 0 70px #00FF00); } /* Bardzo Intensywny Zielony */
-#ozzy-image.boss-mode-variant-7 { filter: sepia(90%) invert(60%) brightness(1.3) saturate(200%) contrast(1.5) drop-shadow(0 0 75px #FFFF00); } /* Połączenie Sepia/Inwersja / Żółty, jeszcze mocniejszy */
-#ozzy-image.boss-mode-variant-8 { filter: contrast(400%) brightness(0.4) hue-rotate(150deg) drop-shadow(0 0 80px #0000FF); } /* Ekstremalny Kontrast / Głęboki Niebieski */
-#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(320deg) saturate(200%) blur(1.2px) brightness(1.1) drop-shadow(0 0 85px #FF007F); } /* Magentowy / Różowy z wyraźnym rozmyciem i blaskiem */
-
-
-@keyframes boss-flicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; } /* Lekkie migotanie */
-}
-
-@keyframes boss-pulsate {
-    0%, 100% { transform: scale(1.2); }
-    50% { transform: scale(1.25); } /* Lekkie pulsowanie */
-}
-
-
-/* Pasek zdrowia */
-#health-bar-container {
-    width: 80%;
-    height: 25px; /* Grubszy pasek */
-    background-color: #333;
-    border: 3px solid #eee;
-    border-radius: 10px;
-    margin: 10px auto 0;
-    overflow: hidden;
-    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-    transform: translateY(-5px); /* Lekko w górę */
-}
-
-#health-bar-fill {
-    height: 100%;
-    width: 100%;
-    background-color: limegreen;
-    transition: width 0.3s ease-out, background-color 0.3s ease-out;
-    border-radius: 7px;
-}
-
-/* NOWE: Pasek życia gracza (domyślnie na desktop) */
-#player-health-container {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 2px solid #00BFFF; /* Niebieska ramka dla gracza */
-    z-index: 30;
-    font-size: clamp(0.7em, 2.5vw, 1em);
-    color: #00BFFF; /* Niebieski tekst */
-    box-shadow: 0 0 15px rgba(0, 191, 255, 0.5); /* Niebieski cień */
-    width: clamp(200px, 30vw, 350px); /* Responsywna szerokość */
-    text-align: center;
-}
-
-#player-health-container p {
-    margin: 5px 0;
-}
-
-#player-health-bar-bg {
-    width: 100%; 
-    height: 20px; /* Grubość paska życia */
-    background-color: #333;
-    border: 2px solid #00BFFF;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-top: 5px;
-}
-
-#player-health-bar-fill {
-    height: 100%;
-    width: 100%;
-    background-color: #00BFFF; /* Kolor niebieski dla życia gracza */
-    transition: width 0.3s ease-out, background-color 0.3s ease-out;
-    border-radius: 3px;
-}
-
-/* Ekrany gry (start, koniec, ranking, sklep, wybór skórki) - Poprawione pozycjonowanie */
-#start-screen, #end-screen, #leaderboard-screen, #upgrade-shop-screen, #skin-selection-screen {
-    position: absolute;
-    top: 50%; /* Centrowanie pionowe */
-    left: 50%; /* Centrowanie poziome */
-    transform: translate(-50%, -50%); /* Dokładne centrowanie */
-    width: 80%; /* Zachowaj responsywność */
-    max-width: 500px; /* Maksymalna szerokość */
-    background: rgba(0, 0, 0, 0.9); /* Półprzezroczyste tło */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    z-index: 1000; /* Zawsze na wierzchu */
-    padding: 30px; /* Zwiększony padding dla lepszych marginesów wewnętrznych */
-    box-sizing: border-box; /* padding wewnątrz szerokości/wysokości */
-    max-height: 95vh; /* Mniejszy max-height dla przestrzeni od góry/dołu */
-    overflow-y: auto; /* Zapewnij przewijanie, jeśli zawartość przekroczy wysokość */
-}
-
-
-#start-screen h1, #end-screen h2, #leaderboard-screen h2, #upgrade-shop-screen h2, #skin-selection-screen h2 {
-    font-size: clamp(1.5em, 6vw, 3em); /* Responsywny rozmiar tekstu */
-    color: #FFD700; /* Złoty kolor */
-    margin-bottom: 20px;
-    text-shadow: 4px 4px 8px rgba(255, 165, 0, 0.8);
-}
-
-#start-screen p, #end-screen p, #leaderboard-screen ol, #upgrade-shop-screen p, #skin-selection-screen p {
-    font-size: clamp(0.8em, 3vw, 1.2em);
-    margin-bottom: 15px;
-}
-
-#nickname-input {
-    padding: 10px 15px;
-    font-size: clamp(0.8em, 3.5vw, 1.2em);
-    margin-bottom: 20px;
-    border: 3px solid #FFD700;
-    background-color: #333;
-    color: #eee;
-    border-radius: 8px;
-    text-align: center;
-    font-family: 'Press Start 2P', cursive;
-    max-width: 80%; /* Ograniczenie szerokości */
-}
-
-/* Globalne style przycisków */
-button {
-    background-color: #8B0000; /* Ciemnoczerwony */
-    color: #FFD700; /* Złoty tekst */
-    padding: 12px 25px;
-    margin: 10px;
-    border: 3px solid #FFD700;
-    border-radius: 8px;
-    font-family: 'Press Start 2P', cursive;
-    font-size: clamp(0.7em, 3vw, 1em);
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s, transform 0.1s;
-    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.5); /* Czerwony cień */
-}
-
-button:hover {
-    background-color: #FF4500; /* Pomarańczowoczerwony */
-    color: #FFF;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 69, 0, 0.7);
-}
-
-button:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(255, 0, 0, 0.5);
-}
-
-button:disabled {
-    background-color: #555;
-    color: #aaa;
-    border-color: #777;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
-
-/* Ranking */
-#leaderboard-list {
-    list-style: none;
-    padding: 0;
-    max-height: 60vh; /* Ograniczenie wysokości */
-    overflow-y: auto; /* Przewijanie dla długiej listy */
-    width: clamp(250px, 90vw, 500px);
-    margin-top: 20px;
-    background-color: rgba(50, 0, 0, 0.8);
-    border-radius: 10px;
-    padding: 15px;
-    border: 2px solid #FFD700;
-}
-
-#leaderboard-list li {
-    padding: 10px;
-    border-bottom: 1px dashed #777;
-    font-size: clamp(0.7em, 2.8vw, 1.1em);
-    color: #eee;
-}
-
-#leaderboard-list li:last-child {
-    border-bottom: none;
-}
-
-/* Info o grze (wynik, poziom) */
-#game-info-container {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 2px solid #FFD700;
-    z-index: 30;
-    font-size: clamp(0.7em, 2.5vw, 1em);
-}
-
-#game-info-container p {
-    margin: 5px 0;
-}
-
-/* Przyciski supermocy */
-#superpower-buttons-container {
-    position: absolute;
-    bottom: 10px; /* Domyślna pozycja na desktopie */
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 30;
-}
-
-.superpower-button {
-    background-color: #004d00; /* Ciemnozielony */
-    border-color: #00FF00; /* Zielony */
-    color: #FFF;
-    padding: 10px 15px;
-    font-size: clamp(0.7em, 2.5vw, 1em);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: nowrap; /* Zapobiega łamaniu tekstu */
-    width: auto; /* Automatyczna szerokość */
-}
-
-.superpower-button:hover {
-    background-color: #008000; /* Jaśniejszy zielony */
-    border-color: #7FFF00;
-}
-
-.superpower-button span {
-    white-space: nowrap; /* Zapobiega zawijaniu tekstu */
-}
-
-/* Wiadomości dynamiczne */
-.knockout-message, .boss-message {
-    position: absolute;
-    left: 50%; 
-    transform: translate(-50%, -50%); 
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 20px 30px; 
-    border-radius: 10px;
-    border: 4px solid #FFD700;
-    font-size: clamp(1em, 3.5vw, 2em); 
-    text-align: center;
-    color: #FFD700;
-    z-index: 1000;
-    animation: message-pop-fade 2s ease-out forwards;
-    white-space: normal; 
-    word-break: break-word; 
-    max-width: 90%; 
-    box-sizing: border-box; 
-}
-
-.boss-message {
-    border-color: #FF0000;
-    color: #FF0000;
-    text-shadow: 0 0 10px #FF4500;
-    animation: message-pop-fade-boss 2.5s ease-out forwards;
-}
-
-@keyframes message-pop-fade {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    10% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-}
-
-@keyframes message-pop-fade-boss {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-    10% { transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
-    20% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
-    30% { transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
-    90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-}
-
-
-/* Styl dla przycisku sklepu */
-#shop-button {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    background-color: #4CAF50; /* Zielony */
-    border-color: #8BC34A; /* Jasnozielony */
-    color: white;
-    padding: 10px 15px; /* Ujednolicone z game-info-container */
-    font-size: clamp(0.7em, 2.5vw, 1em); /* Ujednolicone z game-info-container */
-    z-index: 30; /* Nad innymi elementami gry */
-}
-
-#shop-button:hover {
-    background-color: #66BB6A; /* Jaśniejszy zielony */
-}
-
-/* Sklep ulepszeń */
-#upgrade-shop-screen {
-    background: rgba(0, 0, 0, 0.95); /* Ciemniejsze tło sklepu */
-    border: 5px solid #FFD700; /* Złota ramka */
-    border-radius: 15px;
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 80%; /* Zachowaj responsywność */
-    max-width: 500px; /* Maksymalna szerokość */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-height: 95vh; /* Daje więcej miejsca na górze/dołu */
-    overflow-y: auto; /* Przewijanie, jeśli zawartość jest długa */
-}
-
-#upgrade-shop-screen #shop-points {
-    color: #FFD700;
-    font-size: clamp(0.9em, 3.5vw, 1.3em);
-    margin-bottom: 20px;
-}
-
-.upgrade-category {
-    background-color: rgba(50, 0, 0, 0.8); /* Ciemnoczerwone tło dla kategorii */
-    border: 2px solid #FFD700;
-    border-radius: 10px;
-    padding: 15px 20px;
-    margin-bottom: 10px;
-    text-align: left;
-    width: clamp(250px, 80vw, 450px); /* Responsywna szerokość */
-}
-
-.upgrade-category h3 {
-    font-size: clamp(0.9em, 3.5vw, 1.5em);
-    color: #FFD700;
-    margin-top: 0; /* Zapewnia, że nagłówek nie ma dodatkowego marginesu */
-    margin-bottom: 10px;
-}
-
-.upgrade-category p {
-    margin: 5px 0;
-    font-size: clamp(0.7em, 3vw, 1.1em);
-}
-
-.upgrade-category button {
-    margin-top: 10px;
-    width: 100%; /* Przycisk na całą szerokość kategorii */
-}
-
-#close-shop-button {
-    background-color: #B22222; /* Ognista czerwień */
-    border-color: #FF6347; /* Jasnoczerwony */
-    margin-top: 20px;
-    font-size: clamp(0.8em, 3.5vw, 1.2em);
-}
-
-/* NOWE: Style dla ekranu wyboru skórki */
-#skin-selection-screen {
-    background: rgba(0, 0, 0, 0.95);
-    border: 5px solid #00BFFF; /* Niebieska ramka */
-    box-shadow: 0 0 40px rgba(0, 191, 255, 0.7);
-    padding: 30px;
-    border-radius: 15px;
-    gap: 20px;
-}
-
-#skin-selection-screen h2 {
-    color: #00BFFF; /* Niebieski nagłówek */
-    text-shadow: 4px 4px 8px rgba(0, 191, 255, 0.8);
-}
-
-.skin-options {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    flex-wrap: wrap; /* Zapewnia, że przyciski będą się zawijać na mniejszych ekranach */
-}
-
-.skin-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #333;
-    border: 3px solid #00BFFF;
-    color: #eee;
-    padding: 15px;
-    border-radius: 10px;
-    transition: all 0.2s;
-    cursor: pointer;
-    width: clamp(120px, 25vw, 180px); /* Responsywna szerokość przycisku skórki */
-    box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3);
-}
-
-.skin-button:hover {
-    background-color: #005f7f; /* Ciemniejszy niebieski po najechaniu */
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 191, 255, 0.5);
-}
-
-.skin-button img {
-    width: 100px; /* Stała szerokość obrazka w przycisku */
-    height: 100px; /* Stała wysokość obrazka w przycisku */
-    object-fit: contain;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
-.skin-button p {
-    margin: 0;
-    font-size: clamp(0.8em, 3vw, 1.1em);
-}
-
-#close-skin-selection-button {
-    background-color: #B22222;
-    border-color: #FF6347;
-    margin-top: 20px;
-}
-
-/* --- Responsywność dla urządzeń mobilnych --- */
-@media (max-width: 768px) {
-    #game-container {
-        /* Użyj 100dvh aby poprawnie wypełnić ekran na mobilnych */
-        height: 100dvh; 
-        min-height: unset; /* Usuń minimalną wysokość, aby nie wymuszać przewijania */
-        max-height: unset; /* Usuń ograniczenie max-height */
-        border: none;
-        box-shadow: none;
-    }
-
-    #ozzy-image {
-        width: clamp(100px, 50vw, 250px); /* Mniejszy rozmiar Stonksa */
-    }
-
-    #health-bar-container {
-        height: 20px; /* Mniejszy pasek zdrowia */
-    }
-
-    /* Pasek życia gracza na mobilnych - umieszczony niżej */
-    #player-health-container {
-        top: unset; 
-        bottom: 75px; /* PRZESUNIĘTO NIŻEJ */
-        left: 50%;
-        transform: translateX(-50%);
-        width: clamp(100px, 45vw, 200px); /* ZMNIEJSZONO szerokość (ok. 50%) */
-        padding: 8px 12px;
-        font-size: clamp(0.6em, 2.5vw, 1em);
-    }
-    #player-health-bar-bg {
-        height: 10px; /* ZMNIEJSZONO wysokość paska (ok. 50%) */
-    }
-
-    /* Przyciski supermocy na mobilnych - na samym dole */
-    #superpower-buttons-container {
-        top: unset; 
-        bottom: 5px; /* ODROBINĘ OBNIŻONO */
-        left: 50%;
-        transform: translateX(-50%);
-        flex-direction: row; /* Przyciski w rzędzie */
-        width: 95%; /* Większa szerokość */
-        padding: 5px;
-        justify-content: space-around;
-        gap: 5px; /* Upewnij się, że gap jest zdefiniowany */
-    }
-
-    .superpower-button {
-        flex: 1; /* Rozciągnij, aby wypełnić dostępną przestrzeń */
-        padding: 8px; /* Kwadratowe przyciski, wystarczające na emoji */
-        font-size: 1.5em; /* Zwiększ rozmiar czcionki dla emoji */
-        width: 50px; /* Stała szerokość */
-        height: 50px; /* Stała wysokość, aby były kwadratowe */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .superpower-button .superpower-text {
-        display: none; /* Ukryj tekstową część przycisku na mobilnych */
-    }
-
-
-    /* Informacje o grze (punkty, poziom) - górny lewy róg na mobilnych */
-    #game-info-container {
-        top: 10px;
-        left: 10px;
-        right: unset;
-        bottom: unset;
-    }
-
-    /* Przycisk sklepu - górny prawy róg na mobilnych */
-    #shop-button {
-        top: 2px;
-        right: 3px;
-        left: unset;
-        bottom: unset;
-        /* UJEDNOLICENIE dla lepszego wyrównania z game-info-container */
-        padding: 10px 15px; /* Dopasowanie do game-info-container padding */
-        font-size: clamp(0.7em, 2.5vw, 1em); /* Dopasowanie do game-info-container font-size */
-    }
-
-    /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
-    .knockout-message, .boss-message {
-        top: 30%; /* Przesunięcie wyżej, nad Stonksem, poniżej info/sklepu */
-        transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
-        font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
-        padding: 12px 18px; /* Zmniejszony padding */
-    }
-
-    .upgrade-category {
-        width: clamp(200px, 80vw, 400px);
-        padding: 10px 15px;
-    }
-
-    .upgrade-category h3 {
-        font-size: clamp(0.8em, 3vw, 1.2em);
-    }
-
-    .upgrade-category p {
-        font-size: clamp(0.6em, 2.5vw, 0.9em);
-    }
-
-    .upgrade-category button {
-        padding: 6px 12px;
-    }
-
-    /* Dopasowanie przycisków skórki na mobilnych */
-    .skin-options {
-        flex-direction: column; /* Ułóż przyciski w kolumnie */
-        align-items: center;
-    }
-
-    .skin-button {
-        width: clamp(150px, 40vw, 250px); /* Większa szerokość przycisków skórek na mobilnych */
-    }
-}
-
-/* Sekcja: Media query dla DESKTOP - wiadomości niżej */
-@media (min-width: 769px) {
-    .knockout-message, .boss-message {
-        /* ZMIANA: Niższe położenie na desktopie, by nie kolidować z paskiem życia gracza */
-        top: 80%; /* Ustawione na 80% zgodnie z życzeniem */
-        transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
-    }
-}
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');body{margin:0;position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(to bottom,#4a0000,#000000);font-family:'Press Start 2P',cursive;color:#eee;text-shadow:2px 2px 4px rgba(0,0,0,0.7);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;user-select:none;-webkit-user-drag:none}.hidden{display:none!important}
+#game-container{position:fixed;top:0;left:0;width:100vw;height:100vh;max-width:1200px;max-height:800px;overflow:hidden;border:5px solid #8B0000;box-shadow:0 0 50px rgba(255,0,0,0.5);background-color:#000;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box}
+#ozzy-image.attacking{animation:ozzy-attack 1.2s ease-out}
+@keyframes ozzy-attack{0%{transform:scale(1)}
+25%{transform:scale(1.15)rotate(7deg)}
+50%{transform:scale(0.95)rotate(-7deg)}
+75%{transform:scale(1.1)rotate(4deg)}
+100%{transform:scale(1)rotate(0deg)}}
+#ozzy-image.stonks-attack-effect{animation:stonksAttackFlash 0.2s ease-out}
+@keyframes stonksAttackFlash{0%{filter:brightness(100%)grayscale(0%)}
+50%{filter:brightness(200%)grayscale(100%)}
+100%{filter:brightness(100%)grayscale(0%)}}.screen-shake{animation:shake 0.6s cubic-bezier(.36,.07,.19,.97)both;transform:translate(-50%,-50%);backface-visibility:hidden;perspective:1000px}
+@keyframes shake{10%,90%{transform:translate(-52%,-50%)}
+20%,80%{transform:translate(-48%,-50%)}
+30%,70%{transform:translate(-52%,-50%)}
+40%,60%{transform:translate(-48%,-50%)}
+50%{transform:translate(-50%,-50%)}}
+#animated-background-tractor{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.7)grayscale(0.5);animation:background-pan 30s linear infinite alternate}
+@keyframes background-pan{0%{transform:scale(1)}
+100%{transform:scale(1.1)}}
+#boss-effect-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:150;pointer-events:none;opacity:0;transition:opacity 0.5s ease-in-out}
+#boss-effect-canvas.active{opacity:1}.effect-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;pointer-events:none;opacity:0;transition:opacity 0.3s ease-out}.effect-overlay.active{opacity:1}
+#lightning-effect.flash-active{opacity:1;background:radial-gradient(circle,rgba(255,255,0,0.4)0%,rgba(255,140,0,0)70%)}
+#freeze-effect{background-color:transparent;opacity:0;transition:background-color 0.5s ease-out,opacity 0.5s ease-out}
+#freeze-effect.active{background-color:rgba(173,216,230,0.3);animation:freezeEffectGlow 1s infinite alternate;opacity:1}
+@keyframes freezeEffectGlow{0%{background-color:rgba(173,216,230,0.3)}
+100%{background-color:rgba(173,216,230,0.6)}}
+#frenzy-effect{background:radial-gradient(circle,rgba(255,69,0,0.3)0%,rgba(139,0,0,0)70%)}
+#frenzy-effect.active{animation:frenzyEffectPulse 0.5s infinite alternate}
+@keyframes frenzyEffectPulse{0%{background-color:rgba(255,69,0,0.3);transform:scale(1)}
+100%{background-color:rgba(255,69,0,0.5);transform:scale(1.02)}}
+#quote-images-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:hidden}.quote-image{position:absolute;width:clamp(80px,15vw,150px);height:clamp(80px,15vw,150px);object-fit:contain;opacity:0;transform:scale(0.5);transition:opacity 0.3s ease-out,transform 0.3s ease-out;z-index:55}.quote-image.active{opacity:1;transform:scale(1)}
+#ozzy-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;cursor:url('stonks.png'),auto;transition:transform 0.1s ease-out;user-select:none;-webkit-user-drag:none}
+#ozzy-image{width:clamp(150px,40vw,300px);height:auto;display:block;filter:drop-shadow(0 0 15px rgba(255,255,255,0.5));transition:filter 0.1s ease-out,transform 0.1s ease-out}
+#ozzy-image.hit-effect{filter:brightness(1.5)grayscale(0.5)drop-shadow(0 0 20px yellow);transform:scale(1.05)}
+#ozzy-image.spawn-ozzy{animation:spawn-pop 0.5s cubic-bezier(0.68,-0.55,0.27,1.55)}
+@keyframes spawn-pop{0%{transform:scale(0.5)rotateY(180deg);opacity:0}
+70%{transform:scale(1.1)rotateY(-10deg);opacity:1}
+100%{transform:scale(1)rotateY(0deg)}}
+#ozzy-image.boss-mode{filter:brightness(1.2)contrast(1.2)hue-rotate(180deg)drop-shadow(0 0 30px #FF0000);transform:scale(1.2);animation:boss-flicker 1s infinite alternate,boss-pulsate 2s infinite infinite alternate}
+#ozzy-image.flipped-x{transform:scaleX(-1)}
+#ozzy-image.stonks-variant-0{filter:none}
+#ozzy-image.stonks-variant-1{filter:hue-rotate(45deg)brightness(1.2)saturate(1.8)}
+#ozzy-image.stonks-variant-2{filter:hue-rotate(120deg)saturate(1.8)brightness(1.1)contrast(1.2)drop-shadow(0 0 5px rgba(0,255,0,0.5))}
+#ozzy-image.stonks-variant-3{filter:invert(100%)hue-rotate(270deg)saturate(1.5)brightness(1.3)drop-shadow(0 0 5px rgba(128,0,128,0.5))}
+#ozzy-image.stonks-variant-4{filter:contrast(180%)brightness(0.9)hue-rotate(100deg)}
+#ozzy-image.stonks-variant-5{filter:blur(0.3px)saturate(150%)hue-rotate(200deg)}
+#ozzy-image.stonks-variant-6{filter:drop-shadow(0 0 8px #00FF00)brightness(1.3)}
+#ozzy-image.stonks-variant-7{filter:sepia(70%)contrast(150%)brightness(1.1)}
+#ozzy-image.stonks-variant-8{filter:hue-rotate(270deg)saturate(180%)drop-shadow(0 0 10px #FF00FF)}
+#ozzy-image.stonks-variant-9{filter:brightness(0.7)contrast(200%)}
+#ozzy-image.boss-mode-variant-0{filter:brightness(1.2)contrast(1.2)hue-rotate(180deg)drop-shadow(0 0 30px #FF0000)}
+#ozzy-image.boss-mode-variant-1{filter:sepia(100%)hue-rotate(50deg)brightness(1.5)saturate(200%)contrast(1.3)drop-shadow(0 0 45px #FFA500)}
+#ozzy-image.boss-mode-variant-2{filter:invert(100%)saturate(200%)brightness(1.1)blur(0.8px)contrast(1.5)drop-shadow(0 0 50px #00FFFF)}
+#ozzy-image.boss-mode-variant-3{filter:grayscale(90%)contrast(250%)brightness(0.7)hue-rotate(60deg)drop-shadow(0 0 55px #808080)}
+#ozzy-image.boss-mode-variant-4{filter:blur(2px)hue-rotate(280deg)saturate(400%)contrast(1.8)drop-shadow(0 0 60px #FF00FF)}
+#ozzy-image.boss-mode-variant-5{filter:brightness(3.0)contrast(0.4)invert(30%)hue-rotate(20deg)drop-shadow(0 0 65px #FFFFFF)}
+#ozzy-image.boss-mode-variant-6{filter:hue-rotate(100deg)saturate(300%)brightness(1.5)contrast(1.8)drop-shadow(0 0 70px #00FF00)}
+#ozzy-image.boss-mode-variant-7{filter:sepia(90%)invert(60%)brightness(1.3)saturate(200%)contrast(1.5)drop-shadow(0 0 75px #FFFF00)}
+#ozzy-image.boss-mode-variant-8{filter:contrast(400%)brightness(0.4)hue-rotate(150deg)drop-shadow(0 0 80px #0000FF)}
+#ozzy-image.boss-mode-variant-9{filter:hue-rotate(320deg)saturate(200%)blur(1.2px)brightness(1.1)drop-shadow(0 0 85px #FF007F)}
+@keyframes boss-flicker{0%,100%{opacity:1}
+50%{opacity:0.8}}
+@keyframes boss-pulsate{0%,100%{transform:scale(1.2)}
+50%{transform:scale(1.25)}}
+#health-bar-container{width:80%;height:25px;background-color:#333;border:3px solid #eee;border-radius:10px;margin:10px auto 0;overflow:hidden;box-shadow:0 0 15px rgba(0,255,0,0.5);transform:translateY(-5px)}
+#health-bar-fill{height:100%;width:100%;background-color:limegreen;transition:width 0.3s ease-out,background-color 0.3s ease-out;border-radius:7px}
+#player-health-container{position:absolute;top:10px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,0.7);padding:10px 15px;border-radius:8px;border:2px solid #00BFFF;z-index:30;font-size:clamp(0.7em,2.5vw,1em);color:#00BFFF;box-shadow:0 0 15px rgba(0,191,255,0.5);width:clamp(200px,30vw,350px);text-align:center}
+#player-health-container p{margin:5px 0}
+#player-health-bar-bg{width:100%;height:20px;background-color:#333;border:2px solid #00BFFF;border-radius:5px;overflow:hidden;margin-top:5px}
+#player-health-bar-fill{height:100%;width:100%;background-color:#00BFFF;transition:width 0.3s ease-out,background-color 0.3s ease-out;border-radius:3px}
+#start-screen,#end-screen,#leaderboard-screen,#upgrade-shop-screen,#skin-selection-screen{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:500px;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1000;padding:30px;box-sizing:border-box;max-height:95vh;overflow-y:auto}
+#start-screen h1,#end-screen h2,#leaderboard-screen h2,#upgrade-shop-screen h2,#skin-selection-screen h2{font-size:clamp(1.5em,6vw,3em);color:#FFD700;margin-bottom:20px;text-shadow:4px 4px 8px rgba(255,165,0,0.8)}
+#start-screen p,#end-screen p,#leaderboard-screen ol,#upgrade-shop-screen p,#skin-selection-screen p{font-size:clamp(0.8em,3vw,1.2em);margin-bottom:15px}
+#nickname-input{padding:10px 15px;font-size:clamp(0.8em,3.5vw,1.2em);margin-bottom:20px;border:3px solid #FFD700;background-color:#333;color:#eee;border-radius:8px;text-align:center;font-family:'Press Start 2P',cursive;max-width:80%}
+button{background-color:#8B0000;color:#FFD700;padding:12px 25px;margin:10px;border:3px solid #FFD700;border-radius:8px;font-family:'Press Start 2P',cursive;font-size:clamp(0.7em,3vw,1em);cursor:pointer;transition:background-color 0.2s,color 0.2s,transform 0.1s;box-shadow:0 5px 15px rgba(255,0,0,0.5)}
+button:hover{background-color:#FF4500;color:#FFF;transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,69,0,0.7)}
+button:active{transform:translateY(0);box-shadow:0 3px 10px rgba(255,0,0,0.5)}
+button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-allowed;box-shadow:none;transform:none}
+#leaderboard-list{list-style:none;padding:0;max-height:60vh;overflow-y:auto;width:clamp(250px,90vw,500px);margin-top:20px;background-color:rgba(50,0,0,0.8);border-radius:10px;padding:15px;border:2px solid #FFD700}
+#leaderboard-list li{padding:10px;border-bottom:1px dashed #777;font-size:clamp(0.7em,2.8vw,1.1em);color:#eee}
+#leaderboard-list li:last-child{border-bottom:none}
+#game-info-container{position:absolute;top:10px;left:10px;background-color:rgba(0,0,0,0.7);padding:10px 15px;border-radius:8px;border:2px solid #FFD700;z-index:30;font-size:clamp(0.7em,2.5vw,1em)}
+#game-info-container p{margin:5px 0}
+#superpower-buttons-container{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:30}.superpower-button{background-color:#004d00;border-color:#00FF00;color:#FFF;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em);display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;width:auto}.superpower-button:hover{background-color:#008000;border-color:#7FFF00}.superpower-button span{white-space:nowrap}.knockout-message,.boss-message{position:absolute;left:50%;transform:translate(-50%,-50%);background-color:rgba(0,0,0,0.8);padding:20px 30px;border-radius:10px;border:4px solid #FFD700;font-size:clamp(1em,3.5vw,2em);text-align:center;color:#FFD700;z-index:1000;animation:message-pop-fade 2s ease-out forwards;white-space:normal;word-break:break-word;max-width:90%;box-sizing:border-box}.boss-message{border-color:#FF0000;color:#FF0000;text-shadow:0 0 10px #FF4500;animation:message-pop-fade-boss 2.5s ease-out forwards}
+@keyframes message-pop-fade{0%{opacity:0;transform:translate(-50%,-50%)scale(0.8)}
+10%{opacity:1;transform:translate(-50%,-50%)scale(1.1)}
+90%{opacity:1;transform:translate(-50%,-50%)scale(1)}
+100%{opacity:0;transform:translate(-50%,-50%)scale(0.9)}}
+@keyframes message-pop-fade-boss{0%{opacity:0;transform:translate(-50%,-50%)scale(0.7)}
+10%{transform:translate(-50%,-50%)scale(1.2)rotate(-5deg)}
+20%{transform:translate(-50%,-50%)scale(1.1)rotate(5deg)}
+30%{transform:translate(-50%,-50%)scale(1.2)rotate(-5deg)}
+90%{opacity:1;transform:translate(-50%,-50%)scale(1)}
+100%{opacity:0;transform:translate(-50%,-50%)scale(0.8)}}
+#shop-button{position:absolute;top:3px;right:3px;background-color:#4CAF50;border-color:#8BC34A;color:white;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em);z-index:30}
+#shop-button:hover{background-color:#66BB6A}
+#upgrade-shop-screen{background:rgba(0,0,0,0.95);border:5px solid #FFD700;border-radius:15px;box-shadow:0 0 40px rgba(255,215,0,0.7);padding:30px;display:flex;flex-direction:column;gap:15px;width:80%;max-width:500px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-height:95vh;overflow-y:auto}
+#upgrade-shop-screen #shop-points{color:#FFD700;font-size:clamp(0.9em,3.5vw,1.3em);margin-bottom:20px}.upgrade-category{background-color:rgba(50,0,0,0.8);border:2px solid #FFD700;border-radius:10px;padding:15px 20px;margin-bottom:10px;text-align:left;width:clamp(250px,80vw,450px)}.upgrade-category h3{font-size:clamp(0.9em,3.5vw,1.5em);color:#FFD700;margin-top:0;margin-bottom:10px}.upgrade-category p{margin:5px 0;font-size:clamp(0.7em,3vw,1.1em)}.upgrade-category button{margin-top:10px;width:100%}
+#close-shop-button{background-color:#B22222;border-color:#FF6347;margin-top:20px;font-size:clamp(0.8em,3.5vw,1.2em)}
+#skin-selection-screen{background:rgba(0,0,0,0.95);border:5px solid #00BFFF;box-shadow:0 0 40px rgba(0,191,255,0.7);padding:30px;border-radius:15px;gap:20px}
+#skin-selection-screen h2{color:#00BFFF;text-shadow:4px 4px 8px rgba(0,191,255,0.8)}.skin-options{display:flex;justify-content:center;gap:20px;margin-top:20px;flex-wrap:wrap}.skin-button{display:flex;flex-direction:column;align-items:center;background-color:#333;border:3px solid #00BFFF;color:#eee;padding:15px;border-radius:10px;transition:all 0.2s;cursor:pointer;width:clamp(120px,25vw,180px);box-shadow:0 5px 15px rgba(0,191,255,0.3)}.skin-button:hover{background-color:#005f7f;transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,191,255,0.5)}.skin-button img{width:100px;height:100px;object-fit:contain;margin-bottom:10px;border-radius:5px}.skin-button p{margin:0;font-size:clamp(0.8em,3vw,1.1em)}
+#close-skin-selection-button{background-color:#B22222;border-color:#FF6347;margin-top:20px}
+@media(max-width:768px){#game-container{height:100dvh;min-height:unset;max-height:unset;border:none;box-shadow:none}
+#ozzy-image{width:clamp(100px,50vw,250px)}
+#health-bar-container{height:20px}
+#player-health-container{top:unset;bottom:75px;left:50%;transform:translateX(-50%);width:clamp(100px,45vw,200px);padding:8px 12px;font-size:clamp(0.6em,2.5vw,1em)}
+#player-health-bar-bg{height:10px}
+#superpower-buttons-container{top:unset;bottom:5px;left:50%;transform:translateX(-50%);flex-direction:row;width:95%;padding:5px;justify-content:space-around;gap:5px}.superpower-button{flex:1;padding:8px;font-size:1.5em;width:50px;height:50px;display:flex;justify-content:center;align-items:center}.superpower-button.superpower-text{display:none}
+#game-info-container{top:10px;left:10px;right:unset;bottom:unset}
+#shop-button{top:2px;right:3px;left:unset;bottom:unset;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em)}.knockout-message,.boss-message{top:30%;transform:translate(-50%,-50%);font-size:clamp(0.7em,3vw,1.2em);padding:12px 18px}.upgrade-category{width:clamp(200px,80vw,400px);padding:10px 15px}.upgrade-category h3{font-size:clamp(0.8em,3vw,1.2em)}.upgrade-category p{font-size:clamp(0.6em,2.5vw,0.9em)}.upgrade-category button{padding:6px 12px}.skin-options{flex-direction:column;align-items:center}.skin-button{width:clamp(150px,40vw,250px)}}
+@media(min-width:769px){.knockout-message,.boss-message{top:80%;transform:translate(-50%,-50%)}}
