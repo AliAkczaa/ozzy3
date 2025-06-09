@@ -537,8 +537,8 @@ button:disabled {
     background-color: #4CAF50; /* Zielony */
     border-color: #8BC34A; /* Jasnozielony */
     color: white;
-    padding: 10px 20px;
-    font-size: clamp(0.7em, 3vw, 1.1em);
+    padding: 10px 20px; /* Domyślny padding dla desktopu */
+    font-size: clamp(0.7em, 3vw, 1.1em); /* Domyślny font-size dla desktopu */
     z-index: 30; /* Nad innymi elementami gry */
 }
 
@@ -632,15 +632,18 @@ button:disabled {
         bottom: 70px; /* Pozycja nad przyciskami supermocy */
         left: 50%;
         transform: translateX(-50%);
-        width: 90%; /* Szerszy na mobilnych */
+        width: clamp(100px, 45vw, 200px); /* ZMNIEJSZONO szerokość (ok. 50%) */
         padding: 8px 12px;
         font-size: clamp(0.6em, 2.5vw, 1em);
+    }
+    #player-health-bar-bg {
+        height: 10px; /* ZMNIEJSZONO wysokość paska (ok. 50%) */
     }
 
     /* Przyciski supermocy na mobilnych - na samym dole */
     #superpower-buttons-container {
         top: unset; 
-        bottom: 10px;
+        bottom: 5px; /* ODROBINĘ OBNIŻONO */
         left: 50%;
         transform: translateX(-50%);
         flex-direction: row; /* Przyciski w rzędzie */
@@ -680,6 +683,9 @@ button:disabled {
         right: 10px;
         left: unset;
         bottom: unset;
+        /* UJEDNOLICENIE dla lepszego wyrównania z game-info-container */
+        padding: 10px 15px; /* Dopasowanie do game-info-container padding */
+        font-size: clamp(0.7em, 2.5vw, 1em); /* Dopasowanie do game-info-container font-size */
     }
 
     /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
@@ -712,7 +718,7 @@ button:disabled {
 @media (min-width: 769px) {
     .knockout-message, .boss-message {
         /* ZMIANA: Niższe położenie na desktopie, by nie kolidować z paskiem życia gracza */
-        top: 80%; /* Poniżej Stonksa (ok. 50%), nad przyciskami supermocy (bottom 10px) */
+        top: 80%; /* Ustawione na 80% zgodnie z życzeniem */
         transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
     }
 }
