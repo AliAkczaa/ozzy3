@@ -231,6 +231,22 @@ class CanvasParticle {
         } else if (this.type === 'clawMark') { 
             this.alpha = 1 - (this.currentLifeTime / this.life); // Fade out
             // No movement, static mark
+        } else if (this.type === 'frenzyFlame') { // Nowy typ dla Szału Bojowego
+            this.vy += 0.05 * dtRatio; // Lekka grawitacja, aby płomienie opadały
+            this.vx *= (1 - 0.01 * dtRatio); // Nieznaczne spowolnienie
+            this.size = this.startSize * (1 - (this.currentLifeTime / this.life) * 0.5); // Zmniejszaj rozmiar o 50%
+        } else if (this.type === 'bossFire') { // Ulepszona dynamika ognia bossa
+            this.vy -= 0.1 * dtRatio; // Unosi się szybciej
+            this.vx *= (1 - 0.03 * dtRatio); // Mocniejsze spowolnienie boczne
+            this.size = this.startSize * (0.8 + 0.5 * (this.currentLifeTime / this.life)); // Rozszerza się
+            this.alpha = 1 - Math.pow(this.currentLifeTime / this.life, 2); // Szybkie zanikanie
+        } else if (this.type === 'bossIce') { // Ulepszona dynamika lodu bossa
+            this.vy += 0.02 * dtRatio; // Lekka grawitacja
+            this.vx *= (1 - 0.01 * dtRatio); // Lekkie spowolnienie
+            this.angle += 0.1 * dtRatio; // Powolna rotacja
+            this.size = this.startSize * (1 - (this.currentLifeTime / this.life) * 0.7); // Zmniejsza się
+        } else if (this.type === 'bossElectricity') { // Ulepszona dynamika elektryczności bossa
+             // Bardzo krótkie życie i brak znaczącego ruchu po spawnie
         }
     }
 
@@ -241,10 +257,28 @@ class CanvasParticle {
         if (this.type.startsWith('boss') || this.type === 'lightningSpark') {
             ctx.fillStyle = this.color;
             ctx.beginPath();
-            if (this.type === 'bossElectricity' || this.type === 'lightningSpark') {
-                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
-            } else {
+            if (this.type === 'bossElectricity') { // Specjalne rysowanie dla elektryczności
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size / 4); // Cienkie, ostre prostokąty
+            } else if (this.type === 'lightningSpark') {
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (this.type === 'bossFire') { // Rysowanie dla ognia
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(0, -this.size);
+                ctx.quadraticCurveTo(this.size / 2, -this.size / 2, this.size / 2, this.size / 2);
+                ctx.quadraticCurveTo(0, this.size / 4, -this.size / 2, this.size / 2);
+                ctx.quadraticCurveTo(-this.size / 2, -this.size / 2, 0, -this.size);
+                ctx.fill();
+            } else if (this.type === 'bossIce') { // Rysowanie dla lodu
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size / 2, this.size / 2);
+                ctx.lineTo(-this.size / 2, this.size / 2);
+                ctx.closePath();
                 ctx.fill();
             }
         } else if (this.type === 'lightningLine') {
@@ -265,13 +299,20 @@ class CanvasParticle {
             ctx.lineTo(-this.size / 2, this.size / 2);
             ctx.closePath();
             ctx.fill();
-        } else if (this.type === 'frenzyPulse') {
+        } else if (this.type === 'frenzyPulse') { // Poprzedni efekt, dla bezpieczeństwa zostawiam
             ctx.strokeStyle = this.color;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
             ctx.stroke();
-        } else if (this.type === 'scratch') {
+        } else if (this.type === 'frenzyFlame') { // Rysowanie dla Szału Bojowego (płomienie)
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            // Można dodać bardziej złożony kształt płomienia, na razie to jest prosty okrąg
+        }
+        else if (this.type === 'scratch') {
             ctx.strokeStyle = this.color;
             ctx.lineWidth = this.size;
             ctx.lineCap = 'round';
@@ -381,25 +422,39 @@ function animateGameCanvasEffects(currentTime) {
     if (isBossFight) {
         gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for boss effects
         gameEffectsCanvas.classList.add('active'); // Add active class for transition
-        if (bossCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.5) {
-            let color, type;
+        // ZMIANA: Bardziej dynamiczne cząsteczki bossa
+        if (bossCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.6) { // Zwiększona szansa na spawn
+            let color, type, size, life, vx, vy;
+            const spawnRadius = Math.min(ozzyRect.width, ozzyRect.height) * 0.8; // Większy promień spawnu wokół bossa
+            const angle = Math.random() * Math.PI * 2;
+            const spawnDistance = Math.random() * spawnRadius;
+
+            const startX = ozzyCanvasX + Math.cos(angle) * spawnDistance;
+            const startY = ozzyCanvasY + Math.sin(angle) * spawnDistance;
+
             if (bossVisualVariantIndex === 0) { // Red/fiery boss
-                color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, 0.7)`;
+                color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossFire';
-            } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss
-                color = `rgba(0, ${Math.floor(Math.random() * 100) + 155}, 255, 0.7)`;
+                size = Math.random() * 15 + 10; // Większe płomienie
+                life = 1000 + Math.random() * 500; // Dłuższe życie
+                vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.3); // Wolniejsze ruchy boczne
+                vy = -(Math.random() * baseParticleSpeed * 0.5) - 0.5; // Unosi się do góry
+            } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss (Ice)
+                color = `rgba(${Math.floor(Math.random() * 50) + 100}, ${Math.floor(Math.random() * 50) + 200}, 255, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossIce';
-            } else { // Purple/intense boss
-                color = `rgba(${Math.floor(Math.random() * 100) + 155}, 0, ${Math.floor(Math.random() * 100) + 155}, 0.7)`;
+                size = Math.random() * 10 + 5; // Rozmiar odłamków
+                life = 800 + Math.random() * 400;
+                vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.8); // Szybkie rozproszenie
+                vy = (Math.random() - 0.5) * (baseParticleSpeed * 0.8);
+            } else { // Purple/intense boss (Electricity)
+                color = `rgba(${Math.floor(Math.random() * 50) + 200}, 0, ${Math.floor(Math.random() * 50) + 200}, ${0.8 + Math.random() * 0.2})`;
                 type = 'bossElectricity';
+                size = Math.random() * 20 + 10; // Długość iskry
+                life = 200 + Math.random() * 100; // Bardzo krótkie życie
+                vx = 0; // Brak ruchu
+                vy = 0;
             }
-            bossCanvasParticles.push(new CanvasParticle(
-                ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * spawnAreaMultiplier, // Zwiększony obszar
-                ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * spawnAreaMultiplier, // Zwiększony obszar
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vx (zmniejszona prędkość o 75%, ale bazowo większa)
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vy (zmniejszona prędkość o 75%, ale bazowo większa)
-                color, Math.random() * 12 + 6, 1500, type // size (większy o 25%), life (teraz w ms, 1.5s)
-            ));
+            bossCanvasParticles.push(new CanvasParticle(startX, startY, vx, vy, color, size, life, type, Math.random() * Math.PI * 2));
         }
     }
     // Update and draw boss particles (and remove dead ones)
@@ -501,8 +556,8 @@ function animateGameCanvasEffects(currentTime) {
             freezeCanvasParticles.push(new CanvasParticle(
                 ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                 ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vx (zmniejszona prędkość o 75%, ale bazowo większa)
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vy (zmniejszona prędkość o 75%, ale bazowo większa)
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
                 `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                 Math.random() * 15 + 8, // size (większy)
                 1200, // life in ms (1.2 seconds)
@@ -524,16 +579,21 @@ function animateGameCanvasEffects(currentTime) {
     if (frenzyModeActive) {
         gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for frenzy effects
         gameEffectsCanvas.classList.add('active');
-        if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.7) { // More frequent for frenzy
+        if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.8) { // Zwiększona częstotliwość dla szału
+            const initialParticleX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8; // Start bliżej ozzy'ego
+            const initialParticleY = ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8;
+
+            const speed = (Math.random() * 3 + 2); // Szybsze cząsteczki (2-5)
+            const angle = Math.random() * Math.PI * 2;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+
             frenzyCanvasParticles.push(new CanvasParticle(
-                ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
-                ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
-                `rgba(255, 100, 0, ${0.7 + Math.random() * 0.3})`, // ZMIANA: Bardziej intensywny pomarańczowy, mniej czerwony
-                (Math.random() * 15 + 10) * 1.25, // ZMIANA: Rozmiar większy o 25% i większa baza
-                800, // life in ms (0.8 seconds)
-                'frenzyPulse'
+                initialParticleX, initialParticleY, vx, vy, 
+                `rgba(255, ${Math.floor(Math.random() * 80)}, 0, ${0.9 + Math.random() * 0.1})`, // Intensywny czerwono-pomarańczowy
+                Math.random() * 8 + 4, // Rozmiar cząsteczek (4-12)
+                500 + Math.random() * 300, // Krótkie życie (0.5-0.8s)
+                'frenzyFlame' // Nowy typ
             ));
         }
     }
