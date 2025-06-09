@@ -691,7 +691,7 @@ button:disabled {
 
     /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
     .knockout-message, .boss-message {
-        top: 30%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
+        top: 20%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
         transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
         font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
         padding: 12px 18px; /* Zmniejszony padding */
