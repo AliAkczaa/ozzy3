@@ -178,6 +178,12 @@
     const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza (KONSTANTNIE 2 sekundy)
     let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
+    // ZMIANA: Zmienne do monitorowania FPS
+    let lastFrameTimeMs = 0;
+    let currentFPS = 60; // Domyślna wartość FPS, używana do skalowania animacji
+    let fpsLogIntervalId;
+
+
     // === Canvas Particles System ===
     class CanvasParticle {
         constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
@@ -197,32 +203,35 @@
         }
 
         update() {
-            this.x += this.vx;
-            this.y += this.vy;
+            // Skalowanie ruchów i zanikania z FPS
+            const fpsRatio = 60 / currentFPS; // Stosunek do idealnego 60 FPS
+
+            this.x += this.vx * fpsRatio;
+            this.y += this.vy * fpsRatio;
             this.currentLife++;
             this.alpha = 1 - (this.currentLife / this.life); // Linear fade out
 
             // Type-specific physics
             if (this.type === 'iceShard') {
-                this.vy -= 0.05; // Float upwards
+                this.vy -= 0.05 * fpsRatio; // Float upwards
             } else if (this.type === 'frenzyPulse') {
-                this.size *= 1.02; // Grow slightly
-                this.alpha -= 0.05; // Fade faster for quick pulse
+                this.size *= (1 + (0.02 * fpsRatio)); // Grow slightly
+                this.alpha -= 0.05 * fpsRatio; // Fade faster for quick pulse
             } else if (this.type === 'lightningLine') {
                 // Lightning lines are static after creation, they just fade
             } else if (this.type === 'scratch') {
-                this.alpha -= 0.02; // Fade out slowly
-                this.vx *= 0.98; // Slow down
-                this.vy *= 0.98; // Slow down
+                this.alpha -= 0.02 * fpsRatio; // Fade out slowly
+                this.vx *= (1 - (0.02 * fpsRatio)); // Slow down
+                this.vy *= (1 - (0.02 * fpsRatio)); // Slow down
             } else if (this.type === 'stonksClaw') {
-                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu
-                this.alpha -= 1 / this.life; // Znika liniowo w całym czasie życia
-                this.size *= (1 - (0.002 * (60 / FPS))); // Wolne zmniejszanie, skalowane z FPS
+                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu, skalowane z FPS
+                this.alpha -= (1 / this.life) * fpsRatio; 
+                this.size *= (1 - (0.002 * fpsRatio)); // Wolne zmniejszanie
             } else if (this.type === 'painParticle') {
-                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu
-                this.vy += 0.01 * (60 / FPS); // Grawitacja skalowana z FPS
-                this.alpha -= 1 / this.life; // Znika liniowo w całym czasie życia
-                this.size *= (1 - (0.001 * (60 / FPS))); // Wolne zmniejszanie, skalowane z FPS
+                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu, skalowane z FPS
+                this.vy += 0.01 * fpsRatio; // Grawitacja skalowana z FPS
+                this.alpha -= (1 / this.life) * fpsRatio; 
+                this.size *= (1 - (0.001 * fpsRatio)); // Wolne zmniejszanie
             }
         }
 
@@ -302,6 +311,9 @@
                     }
                 }
                 
+                // Przejście na dolną krawędź (z lekkim przesunięciem na koniec)
+                ctx.lineTo(halfLength, 0);
+
                 // Dolna poszarpana krawędź
                 for (let j = segmentCount; j >= 0; j--) {
                     const xOffset = j / segmentCount * halfLength * 2;
@@ -367,14 +379,8 @@
 
     let gameCanvasAnimationFrameId;
 
-    // ZMIANA: Zmienne do monitorowania FPS
-    let lastFrameTimeMs = 0;
-    let fps = 0;
-    let fpsCounter = 0;
-    let fpsLogIntervalId;
-
     function animateGameCanvasEffects(timestamp) {
-        // ZMIANA: Logowanie FPS
+        // ZMIANA: Obliczanie FPS
         if (!lastFrameTimeMs) {
             lastFrameTimeMs = timestamp;
         }
@@ -382,13 +388,13 @@
         lastFrameTimeMs = timestamp;
 
         if (delta > 0) {
-            fps = Math.round(1000 / delta);
+            currentFPS = 1000 / delta; // Aktualizuj globalną zmienną currentFPS
         }
 
-        // Możesz logować co sekundę, żeby nie zaśmiecać konsoli
+        // Logowanie co sekundę, żeby nie zaśmiecać konsoli
         if (!fpsLogIntervalId) {
             fpsLogIntervalId = setInterval(() => {
-                console.log(`FPS: ${fps}, Particles (Claw: ${stonksAttackClawParticles.length}, Pain: ${stonksAttackPainParticles.length}, Boss: ${bossCanvasParticles.length})`);
+                console.log(`[FPS Monitor] Level: ${currentLevel}, FPS: ${currentFPS.toFixed(1)}, Particles (Claw: ${stonksAttackClawParticles.length}, Pain: ${stonksAttackPainParticles.length}, Total: ${stonksAttackClawParticles.length + stonksAttackPainParticles.length + bossCanvasParticles.length + lightningCanvasParticles.length + freezeCanvasParticles.length + frenzyCanvasParticles.length + scratchCanvasParticles.length})`);
             }, 1000);
         }
 
@@ -460,7 +466,7 @@
                     const nextY = currentY + (Math.random() * 100); // Segment length, generally downwards (increased)
 
                     const life = 45 + Math.random() * 45; // Longer life for individual segments (1.5 seconds)
-                    const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
+                    const size = Math.random() * 8 + 5; // Line width (większy)
 
                     lightningCanvasParticles.push(new CanvasParticle(
                         currentX, currentY, 0, 0, // No independent movement for lines, target defines end
@@ -793,7 +799,7 @@
 
         const now = Date.now();
         const actualInterval = now - lastAttackTime;
-        console.log(`[STONKS ATTACK LOG] Level: ${currentLevel}, Actual Interval: ${actualInterval}ms`);
+        console.log(`[STONKS ATTACK LOG] Level: ${currentLevel}, Actual Interval: ${actualInterval}ms (Expected: ${STONKS_ATTACK_INTERVAL_MS}ms)`);
         lastAttackTime = now; // ZMIANA: Aktualizuj czas ostatniego ataku
 
         // Apply visual attack animation to Stonks
@@ -1514,6 +1520,7 @@ function activateLightningStrike() {
         bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); 
 
         // Activate boss canvas effects
+        lastFrameTimeMs = 0; // ZMIANA: Resetuj czas dla FPS przy starcie bossa
         gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // ZMIANA: Upewnij się, że animacja canvasa startuje dla bossa
         gameEffectsCanvas.classList.remove('hidden');
         gameEffectsCanvas.classList.add('active');
