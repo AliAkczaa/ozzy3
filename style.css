@@ -251,6 +251,7 @@ button:disabled {
     -webkit-user-drag: none; /* Zapobiegaj przeciąganiu obrazu */
     image-rendering: pixelated; /* Zachowaj pikselowy wygląd */
     animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: filter 0.5s ease-out, transform 0.1s ease-out; /* Dodano transition dla filter */
 }
 
 /* Animacja pojawiania się Ozzy'ego */
@@ -572,7 +573,7 @@ button:disabled {
     border: 5px solid red;
     box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
     image-rendering: pixelated;
-    filter: brightness(1.2) contrast(1.2);
+    filter: brightness(1.2) contrast(1.2); /* Domyślne filtry dla bossa */
     /* Dodaj animację pulsu dla bossa, jeśli chcesz */
     animation: bossPulse 1s ease-in-out infinite alternate;
 }
@@ -671,6 +672,39 @@ button:disabled {
 }
 
 
+/* --- Warianty wizualne Stonksa (regularny) --- */
+/* Domyślny wygląd (variant-0) nie potrzebuje specjalnych filtrów, ponieważ jest to bazowy wygląd obrazka */
+#ozzy-image.stonks-variant-0 {
+    filter: none;
+}
+
+#ozzy-image.stonks-variant-1 {
+    filter: hue-rotate(120deg) brightness(1.1) saturate(1.2); /* Zielonkawy, lekko jaśniejszy */
+}
+
+#ozzy-image.stonks-variant-2 {
+    filter: sepia(100%) saturate(2) brightness(0.9); /* Efekt starego zdjęcia */
+}
+
+#ozzy-image.stonks-variant-3 {
+    filter: contrast(1.8) brightness(0.7) saturate(1.5); /* Wysoki kontrast, ciemniejszy */
+}
+
+/* --- Warianty wizualne Stonksa (BOSS MODE - nakładane na wariant Stonksa) --- */
+/* Te filtry są dodawane do istniejących filtrów .boss-mode, jeśli są */
+#ozzy-image.boss-mode-variant-0 {
+    filter: drop-shadow(0 0 15px red) brightness(1.3) hue-rotate(0deg); /* Ognista, czerwona aura */
+}
+
+#ozzy-image.boss-mode-variant-1 {
+    filter: invert(100%) hue-rotate(90deg) saturate(2) drop-shadow(0 0 10px blue); /* Odwrócony, glitchowy, niebieski */
+}
+
+#ozzy-image.boss-mode-variant-2 {
+    filter: saturate(3) brightness(1.5) drop-shadow(0 0 20px purple); /* Intensywny, purpurowy blask */
+}
+
+
 /* --- Responsywność --- */
 @media (max-width: 768px) {
     #game-container {
@@ -724,7 +758,7 @@ button:disabled {
         flex-wrap: wrap; /* Złam linię, jeśli za mało miejsca */
         justify-content: center; /* Wyśrodkuj je */
         gap: 8px; /* Mniejszy odstęp między przyciskami */
-        bottom: 60px; /* ZMIANA: Zwiększono pozycję 'bottom', aby podnieść przyciski */
+        bottom: 60px; /* PODNIESIONO: Aby nie wyjeżdżały poza ekran */
         left: 50%; /* Ustaw lewą krawędź na środku */
         transform: translateX(-50%); /* Przesuń o połowę swojej szerokości w lewo, aby wyśrodkować */
         width: 100%; /* Zajmij pełną szerokość kontenera */
