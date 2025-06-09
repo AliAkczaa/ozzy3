@@ -1097,7 +1097,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = 'STONKS RIP - +1 to respect!'; 
+            knockoutMsgElement.textContent = '+1 to respect!'; 
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
