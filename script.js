@@ -299,8 +299,7 @@
                     ctx.lineTo(startOffset + Math.cos(splinterAngleOffset) * splinterLength,
                                 Math.sin(splinterAngleOffset) * splinterLength);
                     ctx.stroke();
-                }
-            } 
+                } 
             } else if (this.type === 'painParticle') {
                 ctx.fillStyle = this.color;
                 // Rysuje małe trójkąty dla "punktów bólu"
