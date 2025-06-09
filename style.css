@@ -74,8 +74,9 @@ body {
 }
 
 /* Efekty błyskawicy */
-#lightning-effect {
-    /* Background gradient will be applied when active to ensure full screen effect */
+#lightning-effect.flash-active {
+    opacity: 1;
+    background: radial-gradient(circle, rgba(255, 255, 0, 0.4) 0%, rgba(255, 140, 0, 0) 70%);
 }
 
 .lightning-segment {
