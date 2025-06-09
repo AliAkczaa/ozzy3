@@ -63,7 +63,7 @@
     let lightningDamageLevelDisplay;
     let lightningDamageCostDisplay;
     let buyLightningDamageButton;
-    let freezeDamageLevelDisplay;
+    let freezeDamageLevelDisplay; // Corrected
     let freezeDamageCostDisplay;
     let buyFreezeDamageButton;
     let frenzyDamageLevelDisplay;
@@ -514,8 +514,9 @@
         // If it's a boss fight, the boss-mode class takes precedence for core appearance
         if (!isBossFight) {
              ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
-        } else {
-            // If it's a boss fight, apply specific boss variant on top of default boss styling
+        }
+        // If it's a boss fight, apply specific boss variant on top of default boss styling
+        else {
             ozzyImage.classList.add('boss-mode'); 
             ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
         }
@@ -766,7 +767,7 @@
             currentLevelDisplay.textContent = currentLevel; // Update display
 
             isBossFight = false;
-            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
+            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
@@ -1183,7 +1184,7 @@
         lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
         lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
         buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level'); // Corrected line
         freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
         buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
