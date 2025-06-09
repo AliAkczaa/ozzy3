@@ -188,17 +188,20 @@ class CanvasParticle {
         this.life = life; // Total life in milliseconds
         this.currentLifeTime = 0; // Current elapsed time in milliseconds
         this.alpha = 1;
-        this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch', 'stonksClaw', 'painParticle', 'lightningSpark'
+        this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch', 'stonksClaw', 'painParticle', 'lightningSpark', 'clawMark'
         this.angle = angle; // For rotation of some shapes
         this.targetX = targetX;
         this.targetY = targetY;
+        this.startSize = size; // Store initial size for scaling
     }
 
     update(deltaTime) { // Przyjmujemy deltaTime
         // Move particle based on velocity and deltaTime, normalized to 60 FPS base
         const baseFps = 1000 / 60; // Approximate milliseconds per frame at 60 FPS
-        this.x += this.vx * (deltaTime / baseFps);
-        this.y += this.vy * (deltaTime / baseFps);
+        const dtRatio = deltaTime / baseFps;
+
+        this.x += this.vx * dtRatio;
+        this.y += this.vy * dtRatio;
         
         this.currentLifeTime += deltaTime; // Zwiększamy upłyniony czas
 
@@ -207,23 +210,26 @@ class CanvasParticle {
 
         // Type-specific physics
         if (this.type === 'iceShard') {
-            this.vy -= 0.05 * (deltaTime / baseFps); // Float upwards, scaled by deltaTime
+            this.vy -= 0.05 * dtRatio; // Float upwards, scaled by deltaTime
         } else if (this.type === 'frenzyPulse') {
-            this.size *= (1 + 0.02 * (deltaTime / baseFps)); // Grow slightly, scaled by deltaTime
-            this.alpha -= 0.05 * (deltaTime / baseFps); // Fade faster for quick pulse, scaled by deltaTime
+            this.size = this.startSize * (1 + 0.02 * (this.currentLifeTime / this.life)); // Grow slightly, scaled by deltaTime
+            this.alpha -= 0.05 * dtRatio; // Fade faster for quick pulse, scaled by deltaTime
         } else if (this.type === 'lightningLine') {
             // Lightning lines are static after creation, they just fade
         } else if (this.type === 'scratch') {
-            this.alpha -= 0.02 * (deltaTime / baseFps); // Fade out slowly, scaled by deltaTime
-            this.vx *= (1 - 0.02 * (deltaTime / baseFps)); // Slow down, scaled by deltaTime
-            this.vy *= (1 - 0.02 * (deltaTime / baseFps)); // Slow down, scaled by deltaTime
+            this.alpha -= 0.02 * dtRatio; // Fade out slowly, scaled by deltaTime
+            this.vx *= (1 - 0.02 * dtRatio); // Slow down, scaled by deltaTime
+            this.vy *= (1 - 0.02 * dtRatio); // Slow down, scaled by deltaTime
         } else if (this.type === 'stonksClaw') {
-            this.alpha -= 0.005 * (deltaTime / baseFps); // Szybkie zanikanie, skalowane
-            this.size *= (1 - 0.002 * (deltaTime / baseFps)); // Lekkie zmniejszenie rozmiaru, skalowane
+            this.alpha -= 0.005 * dtRatio; // Szybkie zanikanie, skalowane
+            this.size = this.startSize * (1 - 0.002 * (this.currentLifeTime / this.life)); // Lekkie zmniejszenie rozmiaru, skalowane
         } else if (this.type === 'painParticle') {
-            this.vy += 0.02 * (deltaTime / baseFps); // Grawitacja, skalowana
-            this.alpha -= 0.008 * (deltaTime / baseFps); // Szybkie zanikanie, skalowane
-            this.size *= (1 - 0.001 * (deltaTime / baseFps)); // Zmniejszaj rozmiar, skalowane
+            this.vy += 0.02 * dtRatio; // Grawitacja, skalowana
+            this.alpha -= 0.008 * dtRatio; // Szybkie zanikanie, skalowane
+            this.size = this.startSize * (1 - 0.001 * (this.currentLifeTime / this.life)); // Zmniejszaj rozmiar, skalowane
+        } else if (this.type === 'clawMark') { // Nowy typ dla pazurów
+            this.alpha = 1 - (this.currentLifeTime / this.life); // Fade out
+            // No movement, static mark
         }
     }
 
@@ -312,6 +318,14 @@ class CanvasParticle {
             ctx.lineTo(-this.size, this.size);
             ctx.closePath();
             ctx.fill();
+        } else if (this.type === 'clawMark') {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.targetX, this.targetY); // Rysujemy jako linię do celu
+            ctx.stroke();
         }
 
         ctx.restore();
@@ -332,6 +346,8 @@ let scratchCanvasParticles = [];
 // NOWE: Tablice na cząsteczki ataku Stonksa
 let stonksAttackClawParticles = [];
 let stonksAttackPainParticles = [];
+let clawMarks = []; // Nowa tablica na efekty pazurów
+
 
 const MAX_CANVAS_PARTICLES = 200; // General limit for performance
 let lightningModeActive = false; // New state variable for lightning storm
@@ -535,6 +551,17 @@ function animateGameCanvasEffects(currentTime) {
         }
     }
 
+    // NOWE: Update and draw Claw Marks
+    for (let i = clawMarks.length - 1; i >= 0; i--) {
+        clawMarks[i].update(deltaTime);
+        if (clawMarks[i].isDead()) {
+            clawMarks.splice(i, 1);
+        } else {
+            clawMarks[i].draw(gameEffectsCtx);
+        }
+    }
+
+
     // Determine if there are *any* active particles or if game is active to keep canvas visible
     const anyParticlesActive = bossCanvasParticles.length > 0 ||
                                lightningCanvasParticles.length > 0 ||
@@ -542,7 +569,8 @@ function animateGameCanvasEffects(currentTime) {
                                frenzyCanvasParticles.length > 0 ||
                                scratchCanvasParticles.length > 0 ||
                                stonksAttackClawParticles.length > 0 || // NOWE
-                               stonksAttackPainParticles.length > 0;   // NOWE
+                               stonksAttackPainParticles.length > 0 ||  // NOWE
+                               clawMarks.length > 0; // NOWE
 
     // Only request next frame if game is active OR there are still particles to animate
     if (isGameActive || anyParticlesActive) {
@@ -585,58 +613,63 @@ function drawScratchEffect(x, y, count, color, baseSize) {
 
 /**
  * NOWE: Funkcja do tworzenia dynamicznych efektów ataku Stonksa (szpony, rozprysk bólu)
- * @param {number} x Pozycja X Stonksa na canvasie
- * @param {number} y Pozycja Y Stonksa na canvasie
+ * @param {number} x Pozycja X Stonksa na canvasie (środek)
+ * @param {number} y Pozycja Y Stonksa na canvasie (środek)
  * @param {number} ozzyWidth Szerokość obrazka Stonksa
  * @param {number} ozzyHeight Wysokość obrazka Stonksa
  */
 function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
     const gameContainerRect = gameContainer.getBoundingClientRect(); 
-    // Obszar ataku pokrywa prawie cały ekran (90% szerokości/wysokości kontenera gry)
-    const spawnAreaX = gameContainerRect.width * 0.9; 
-    const spawnAreaY = gameContainerRect.height * 0.9;
+    // Obszar ataku jest teraz bardziej skoncentrowany na graczu, a nie na całym ekranie.
+    // Skalowanie w oparciu o rozmiar Stonksa dla bardziej lokalnych efektów.
+    const spawnAreaX = ozzyWidth * 0.8; 
+    const spawnAreaY = ozzyHeight * 0.8;
 
-    // Ilość cięć (szponów)
-    const numClaws = Math.floor(Math.random() * 6) + 6; // 6-11 cięć (więcej, by wypełnić większy obszar)
-    for (let i = 0; i < numClaws; i++) {
-        // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
-        const startX = x + (Math.random() - 0.5) * spawnAreaX;
-        const startY = y + (Math.random() - 0.5) * spawnAreaY;
-        
-        // Kierunek cięcia: od Stonksa w stronę gracza (lub po prostu losowy dla rozległości)
-        // Możemy sprawić, żeby cięcia "rozchodziły się" od Stonksa
-        let angle = Math.atan2(startY - y, startX - x) + (Math.random() - 0.5) * Math.PI * 0.4; // Kąt w radianach, z lekkim rozrzutem
-        
-        // ZMIANA: Jeszcze większy rozmiar bazowy (z 40-70 na 60-100)
-        const size = Math.random() * 40 + 60; 
-        // ZMIANA: Znacznie wydłużony czas życia (teraz w ms, ok. 4-6.6 sekundy)
-        const life = 4000 + Math.random() * 2600; 
-        // Odcienie czerwieni, jak na obrazku, z lekkimi wariacjami
-        const color = `rgba(${255}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`;
-        
-        stonksAttackClawParticles.push(new CanvasParticle(
-            startX, startY, 0, 0, color, size, life, 'stonksClaw', angle
-        ));
+    // --- Efekty pazurów (clawMarks) ---
+    const numClawSets = 2; // Np. 2 zestawy pazurów (po 3-4 kreski każdy)
+    const clawLength = 70; // Długość pojedynczej kreski pazura
+    const clawWidth = 8; // Grubość kreski pazura
+    const clawLife = 700; // Życie kreski pazura w ms (0.7 sekundy)
+
+    for (let s = 0; s < numClawSets; s++) {
+        const startPointX = x + (Math.random() - 0.5) * spawnAreaX * 0.5; // Bardziej skupione
+        const startPointY = y + (Math.random() - 0.5) * spawnAreaY * 0.5; // Bardziej skupione
+        const baseAngle = Math.random() * Math.PI * 2; // Bazowy kąt dla zestawu pazurów
+
+        for (let i = 0; i < 4; i++) { // 4 kreski pazurów
+            // Kąt każdej kreski lekko przesunięty od bazowego kąta zestawu
+            const angleOffset = (i - 1.5) * (Math.PI / 16); // Rozłożenie pazurów
+            const currentAngle = baseAngle + angleOffset;
+
+            const endX = startPointX + Math.cos(currentAngle) * clawLength;
+            const endY = startPointY + Math.sin(currentAngle) * clawLength;
+
+            clawMarks.push(new CanvasParticle(
+                startPointX, startPointY, 0, 0, `rgba(255, 0, 0, ${0.8 + Math.random() * 0.2})`, // Czerwone, z alfa
+                clawWidth, clawLife, 'clawMark', currentAngle, endX, endY
+            ));
+        }
     }
 
-    // Ilość "punktów bólu"
-    const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 punktów (więcej)
+    // --- Punkty bólu (Pain Particles) ---
+    const numPainParticles = Math.floor(Math.random() * 10) + 10; // 10-19 punktów (mniej, ale bardziej skupione)
+    const painParticleLife = 1000; // Życie w ms (1 sekunda)
+    const painParticleSize = Math.random() * 10 + 10; // Mniejsze rozmiary (10-20)
+    const painParticleBaseSpeed = 0.8; // Zmniejszona prędkość bazowa dla punktów bólu
+
     for (let i = 0; i < numPainParticles; i++) {
-        // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
-        const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.8; 
-        const startY = y + (Math.random() - 0.5) * spawnAreaY * 0.8;
+        // Losowanie pozycji na mniejszym obszarze, centrowanie na Stonksie
+        const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.5; 
+        const startY = y + (Math.random() - 0.5) * spawnAreaY * 0.5;
         const angle = Math.random() * Math.PI * 2; 
-        // ZMIANA: Jeszcze większy rozmiar bazowy (z 15-30 na 20-40)
-        const size = Math.random() * 20 + 20; 
-        // ZMIANA: Znacznie wydłużony czas życia (teraz w ms, ok. 5-8.3 sekundy)
-        const life = 5000 + Math.random() * 3300;
-        // ZMIANA: Prędkości zredukowane o kolejne 50%
-        const vx = (Math.random() - 0.5) * 1.5; // Zwiększyłem prędkość bazową dla większej dynamiki (przed skalowaniem deltaTime)
-        const vy = (Math.random() - 0.5) * 1.5 - 0.5; // Zwiększyłem prędkość bazową i przesunięcie w górę
+        
+        const vx = (Math.random() - 0.5) * painParticleBaseSpeed; 
+        const vy = (Math.random() - 0.5) * painParticleBaseSpeed - 0.2; // Lekkie unoszenie się
+
         const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; 
         
         stonksAttackPainParticles.push(new CanvasParticle(
-            startX, startY, vx, vy, color, size, life, 'painParticle', angle
+            startX, startY, vx, vy, color, painParticleSize, painParticleLife, 'painParticle', angle
         ));
     }
 }
@@ -743,29 +776,39 @@ function stonksAttack() {
         return;
     }
 
-    // Apply visual attack animation to Stonks
-    ozzyImage.classList.add('attacking');
+    // 1. Efekt wizualny na postaci Stonksa
+    // Użyjemy klasy CSS do szybkiego zastosowania filtra (np. invert lub brightness)
+    ozzyImage.classList.add('attacking'); // Klasa do animacji ruchu (już jest)
+    ozzyImage.classList.add('stonks-attack-effect'); // NOWA klasa dla efektu wizualnego
+
+    // Usuń klasę efektu wizualnego po krótkim czasie
+    setTimeout(() => {
+        ozzyImage.classList.remove('stonks-attack-effect');
+    }, 200); // Krótki błysk/efekt trwający 200ms
+
+    // Apply visual attack animation to Stonks (już jest)
     setTimeout(() => {
         ozzyImage.classList.remove('attacking');
     }, 800); // Duration of the attack animation
 
-    // ZMIANA: Dodanie wstrząsu ekranu
+    // ZMIANA: Dodanie wstrząsu ekranu (już jest)
     gameContainer.classList.add('screen-shake');
     setTimeout(() => {
         gameContainer.classList.remove('screen-shake');
     }, 400); // Czas trwania wstrząsu, dopasowany do animacji CSS
 
-    // Apply damage to player
+    // Apply damage to player (już jest)
     playerHealth -= STONKS_ATTACK_DAMAGE;
     playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
     updatePlayerHealthUI();
 
-    // NOWE: Wywołanie NOWEGO efektu ataku Stonksa na canvasie
+    // Wywołanie NOWEGO efektu ataku Stonksa na canvasie (zmienione)
     const ozzyRect = ozzyContainer.getBoundingClientRect();
     const gameRect = gameContainer.getBoundingClientRect();
     const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
     const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
     
+    // Używamy nowej funkcji do generowania ulepszonych efektów
     spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY, ozzyRect.width, ozzyRect.height);
 
     if (playerHealth <= 0) {
@@ -1073,6 +1116,7 @@ function resetGame() {
     ozzyImage.classList.remove('boss-mode');
     ozzyImage.classList.remove('flipped-x'); 
     ozzyImage.classList.remove('attacking'); // NOWE: Usuń klasę ataku
+    ozzyImage.classList.remove('stonks-attack-effect'); // NOWE: Usuń klasę efektu ataku Stonksa
     gameContainer.classList.remove('screen-shake'); // NOWE: Usuń klasę wstrząsu
 
     // Reset visual variants
@@ -1128,6 +1172,7 @@ function resetGame() {
     scratchCanvasParticles = [];
     stonksAttackClawParticles = []; // NOWE
     stonksAttackPainParticles = [];   // NOWE
+    clawMarks = []; // NOWE: Wyczyść ślady pazurów
     if (gameEffectsCtx) {
         gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
     }
@@ -1306,6 +1351,7 @@ function endGame(message) {
     scratchCanvasParticles = [];
     stonksAttackClawParticles = []; // NOWE
     stonksAttackPainParticles = [];   // NOWE
+    clawMarks = []; // NOWE: Wyczyść ślady pazurów
     if (gameEffectsCtx) {
         gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
     }
@@ -1717,6 +1763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         scratchCanvasParticles = [];
         stonksAttackClawParticles = []; // NOWE
         stonksAttackPainParticles = [];   // NOWE
+        clawMarks = []; // NOWE: Wyczyść ślady pazurów
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
