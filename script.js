@@ -188,16 +188,12 @@ const originalFrenzyText = 'Szał Bojowy';
 let playerHealth = 100;
 const MAX_PLAYER_HEALTH = 100;
 
-// ZMIANA: Stała dla zwiększenia obrażeń Stonksa na poziom
-const STONKS_DAMAGE_PER_LEVEL_INCREMENT = 3; 
+// ZMIANA: Stała dla zwiększenia obrażeń Stonksa PO POKONANIU BOSSA
+const STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE = 3; 
 
-// Funkcja pomocnicza do obliczania bazowych obrażeń Stonksa (nie bossa) na danym poziomie
-function calculateBaseStonksDamage(level) {
-    // Poziom 1 zaczyna się od 5 obrażeń, potem rośnie o STONKS_DAMAGE_PER_LEVEL_INCREMENT za każdy kolejny poziom
-    return 5 + (level - 1) * STONKS_DAMAGE_PER_LEVEL_INCREMENT;
-}
+let baseStonksDamage = 5; // Bazowe obrażenia Stonksa, które rosną po każdym bossie
+let STONKS_ATTACK_DAMAGE = baseStonksDamage; // Aktualne obrażenia zadawane przez Stonksa (może być modyfikowane przez bossa)
 
-let STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(1); // Inicjalizacja bazowych obrażeń Stonksa na start gry
 const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza
 let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
@@ -1289,7 +1285,8 @@ function resetGame() {
         gameOverSound.pause();
         gameOverSound.currentTime = 0;
     }
-    STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(1); // Reset to base level 1 damage
+    baseStonksDamage = 5; // Resetuj bazowe obrażenia Stonksa do wartości początkowej
+    STONKS_ATTACK_DAMAGE = baseStonksDamage; // Ustaw aktualne obrażenia na bazowe
 }
 
 function showMessage(message, duration = 1500) {
@@ -1376,7 +1373,7 @@ function startGame() {
     updatePlayerHealthUI();
     playerHealthContainer.classList.remove('hidden');
     clearInterval(playerAttackIntervalId); // Clear any previous interval first
-    STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(currentLevel); // Ustaw bazowe obrażenia na start
+    STONKS_ATTACK_DAMAGE = baseStonksDamage; // Ustaw aktualne obrażenia na bazowe dla poziomu 1
     playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Stonks zaczyna atakować
 
     if (backgroundMusic) {
@@ -1477,16 +1474,20 @@ function handleOzzyKnockout() {
         currentLevel = nextLevelCandidate; // Set currentLevel to the boss level (e.g., 10, 20)
         currentLevelDisplay.textContent = currentLevel; // Update display
         isBossFight = true; // Set boss flag 
-        startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
         
-        // Obrażenia Stonksa w trybie bossa są ustawiane w startBossFight
+        // ZWIĘKSZ BAZOWE OBRAŻENIA STONKSA PO POKONANIU POPRZEDNIEGO BOSSA
+        baseStonksDamage += STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE;
+        console.log(`Bazowe obrażenia Stonksa zwiększone do ${baseStonksDamage} po cyklu bossa.`);
+
+        startBossFight(); // Ta funkcja ustawi obrażenia dla bossa
+        
         clearInterval(playerAttackIntervalId); // Zatrzymaj obecny interwał
         playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restartuj z nowymi obrażeniami
     } else {
         // Normal Stonks knockout
         currentLevel = nextLevelCandidate; // Increment level for normal stonks
         currentLevelDisplay.textContent = currentLevel; // Update display
-        console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
+        console.log(`Normalny nokaut Stonksa. Nowy poziom: ${currentLevel}`);
 
         isBossFight = false;
         // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
@@ -1501,14 +1502,14 @@ function handleOzzyKnockout() {
             // Dla poziomów 11 i wyżej, zmieniaj wariant co 10 poziomów, zapętlając się przez 0-9
             stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
         }
-        console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
+        console.log(`Wariant wizualny Stonksa ustawiony na: stonks-variant-${stonksVisualVariantIndex} dla poziomu ${currentLevel}`);
         
         // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
         // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
         // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
         const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
-        console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
+        console.log(`HP normalnego Stonksa ustawione na: ${INITIAL_OZZY_HEALTH} (na podstawie ${bossCyclesCompletedForNormalStonks} ukończonych cykli bossów)`);
 
         updateOzzyAppearance(); // Apply the new Stonks variant
 
@@ -1526,9 +1527,9 @@ function handleOzzyKnockout() {
             knockoutMsgElement.remove();
         }, 2000); 
 
-        // ZMIANA: Oblicz obrażenia normalnego Stonksa dla aktualnego poziomu
-        STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(currentLevel);
-        console.log(`Normal Stonks attack damage set to: ${STONKS_ATTACK_DAMAGE} for level ${currentLevel}`);
+        // ZMIANA: Obrażenia normalnego Stonksa to po prostu bazowe obrażenia
+        STONKS_ATTACK_DAMAGE = baseStonksDamage;
+        console.log(`Obrażenia ataku normalnego Stonksa ustawione na: ${STONKS_ATTACK_DAMAGE} dla poziomu ${currentLevel}`);
     }
 
     ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
@@ -1570,10 +1571,9 @@ function startBossFight() {
     const bossMessageText = currentSkin === 'stonks' ? "UWAGA! BOSS STONKS! ROZPIERDOL GO!" : "UWAGA! BOSS TINU! ROZPIERDOL GO!";
     showBossMessage(bossMessageText, 2500); 
 
-    // ZMIANA: Oblicz obrażenia normalnego Stonksa na aktualnym poziomie, a następnie zwiększ je o 25% dla bossa
-    const baseDamageForThisLevel = calculateBaseStonksDamage(currentLevel);
-    STONKS_ATTACK_DAMAGE = Math.ceil(baseDamageForThisLevel * 1.25); // Zastosuj 25% zwiększenie, zaokrąglaj w górę
-    console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}, Attack Damage: ${STONKS_ATTACK_DAMAGE}`);
+    // ZMIANA: Oblicz obrażenia bossa: bazowe obrażenia + 25%
+    STONKS_ATTACK_DAMAGE = Math.ceil(baseStonksDamage * 1.25); // Zastosuj 25% zwiększenie, zaokrąglaj w górę
+    console.log(`BOSS SPAWN! Poziom: ${currentLevel}, Spotkanie: ${bossEncounterCount}, Zdrowie: ${INITIAL_OZZY_HEALTH}, Obrażenia ataku: ${STONKS_ATTACK_DAMAGE}`);
 
 
     // ZMIANA: Logika wyboru wariantu Bossa: zmienia się dla każdego kolejnego bossa
@@ -1767,7 +1767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     baseDamageCostDisplay = document.getElementById('base-damage-cost');
     buyBaseDamageButton = document.getElementById('buy-base-damage');
     lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
-    lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
+    lightningDamageCostDisplay = document = document.getElementById('lightning-damage-cost');
     buyLightningDamageButton = document.getElementById('buy-lightning-damage');
     freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
     freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
@@ -1778,7 +1778,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     quoteImagesContainer = document.getElementById('quote-images-container'); 
     gameEffectsCanvas = document.getElementById('boss-effect-canvas'); // Reusing this canvas for all effects
     gameEffectsCtx = gameEffectsCanvas.getContext('2d'); // Get 2D context
-    // ZMIANA: Przypisanie zmiennych DOM dla paska życia gracza (już istnieją)
+    // ZMIANA: Zmienne DOM dla paska życia gracza (już istnieją, tylko dla jasności)
     playerHealthContainer = document.getElementById('player-health-container');
     playerHealthDisplay = document.getElementById('player-health-display');
     playerHealthBarBg = document.getElementById('player-health-bar-bg');
