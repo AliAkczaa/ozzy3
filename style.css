@@ -4,6 +4,8 @@
 /* --- Podstawowe style globalne --- */
 body {
     margin: 0;
+    /* Zmienione, aby container gry wypełniał całą przestrzeń niezależnie od flexa */
+    position: relative; /* Dla pozycjonowania message-display */
     overflow: hidden; /* Zapobiega przewijaniu */
     display: flex;
     justify-content: center;
@@ -15,7 +17,6 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    position: relative; /* Dla pozycjonowania message-display */
     user-select: none; /* Zapobiegaj zaznaczaniu tekstu/elementów */
     -webkit-user-drag: none; /* Zapobiegaj przeciąganiu na WebKit */
 }
@@ -27,15 +28,20 @@ body {
 
 /* Kontener główny gry */
 #game-container {
+    /* ZMIANA: Ustawienie na fixed, aby zawsze wypełniał viewport i nie był przesuwany */
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw; /* Pełna szerokość viewportu */
     height: 100vh; /* Pełna wysokość viewportu */
     max-width: 1200px; /* Maksymalna szerokość na większych ekranach */
     max-height: 800px; /* Maksymalna wysokość na większych ekranach */
-    position: relative;
     overflow: hidden; /* Upewnij się, że nic nie wykracza poza kontener */
     border: 5px solid #8B0000; /* Ciemnoczerwona ramka */
     box-shadow: 0 0 50px rgba(255, 0, 0, 0.5); /* Czerwony cień */
     background-color: #000; /* Domyślne tło */
+    /* Centrowanie game-container na większych ekranach */
+    margin: auto; 
 }
 
 /* Animowane tło traktora */
@@ -604,11 +610,12 @@ button:disabled {
 /* --- Responsywność dla urządzeń mobilnych --- */
 @media (max-width: 768px) {
     #game-container {
-        border: none; /* Usuń ramkę na małych ekranach */
+        /* Użyj 100dvh aby poprawnie wypełnić ekran na mobilnych */
+        height: 100dvh; 
+        min-height: unset; /* Usuń minimalną wysokość, aby nie wymuszać przewijania */
+        max-height: unset; /* Usuń ograniczenie max-height */
+        border: none;
         box-shadow: none;
-        height: 100dvh; /* Użyj dynamicznego viewportu dla lepszego dopasowania */
-        min-height: 500px; /* Minimalna wysokość, aby wszystkie elementy się zmieściły */
-        max-height: unset; /* Usuń ograniczenie max-height z desktopu */
     }
 
     #ozzy-image {
@@ -621,8 +628,8 @@ button:disabled {
 
     /* Pasek życia gracza na mobilnych - umieszczony nad przyciskami supermocy */
     #player-health-container {
-        top: unset; /* Usuń ustawienie top z desktopu */
-        bottom: 70px; /* Kalkulacja: 10px (bottom superpower) + 50px (wysokość przycisku) + 10px (margines) = 70px */
+        top: unset; 
+        bottom: 70px; /* Pozycja nad przyciskami supermocy */
         left: 50%;
         transform: translateX(-50%);
         width: 90%; /* Szerszy na mobilnych */
@@ -632,7 +639,7 @@ button:disabled {
 
     /* Przyciski supermocy na mobilnych - na samym dole */
     #superpower-buttons-container {
-        top: unset; /* Usuń potencjalne ustawienie top */
+        top: unset; 
         bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
@@ -640,28 +647,45 @@ button:disabled {
         width: 95%; /* Większa szerokość */
         padding: 5px;
         justify-content: space-around;
+        gap: 5px; /* Upewnij się, że gap jest zdefiniowany */
     }
+
+    .superpower-button {
+        flex: 1; /* Rozciągnij, aby wypełnić dostępną przestrzeń */
+        padding: 8px; /* Kwadratowe przyciski, wystarczające na emoji */
+        font-size: 1.5em; /* Zwiększ rozmiar czcionki dla emoji */
+        width: 50px; /* Stała szerokość */
+        height: 50px; /* Stała wysokość, aby były kwadratowe */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .superpower-button .superpower-text {
+        display: none; /* Ukryj tekstową część przycisku na mobilnych */
+    }
+
 
     /* Informacje o grze (punkty, poziom) - górny lewy róg na mobilnych */
     #game-info-container {
         top: 10px;
         left: 10px;
-        right: unset; /* Upewnij się, że nie koliduje z right */
-        bottom: unset; /* Upewnij się, że nie koliduje z bottom */
+        right: unset;
+        bottom: unset;
     }
 
     /* Przycisk sklepu - górny prawy róg na mobilnych */
     #shop-button {
         top: 10px;
         right: 10px;
-        left: unset; /* Upewnij się, że nie koliduje z left */
-        bottom: unset; /* Upewnij się, że nie koliduje z bottom */
+        left: unset;
+        bottom: unset;
     }
 
-    /* Komunikaty (knockout/boss) - wyśrodkowane pionowo na mobilnych */
+    /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
     .knockout-message, .boss-message {
-        top: 50%; /* Centruj pionowo na mobilnych */
-        transform: translate(-50%, -50%);
+        top: 30%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
+        transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
         font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
         padding: 12px 18px; /* Zmniejszony padding */
     }
@@ -681,5 +705,14 @@ button:disabled {
 
     .upgrade-category button {
         padding: 6px 12px;
+    }
+}
+
+/* Sekcja: Media query dla DESKTOP - wiadomości niżej */
+@media (min-width: 769px) {
+    .knockout-message, .boss-message {
+        /* ZMIANA: Niższe położenie na desktopie, by nie kolidować z paskiem życia gracza */
+        top: 65%; /* Poniżej Stonksa (ok. 50%), nad przyciskami supermocy (bottom 10px) */
+        transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
     }
 }
