@@ -212,7 +212,7 @@ body {
 /* Warianty wizualne Stonksa (normalne) */
 #ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny */
 #ozzy-image.stonks-variant-1 { filter: hue-rotate(30deg) brightness(1.1); }
-#ozzy-image.stonks-variant-2 { filter: grayscale(40%) brightness(1.2) contrast(1.1); } /* ZMIANA: Lepszy filtr dla szarego wariantu */
+#ozzy-image.stonks-variant-2 { filter: grayscale(40%) brightness(1.2) contrast(1.1) hue-rotate(15deg); } /* ZMIANA: Lepszy filtr dla szarego wariantu */
 #ozzy-image.stonks-variant-3 { filter: invert(50%) saturate(120%); }
 #ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); }
 #ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
@@ -222,16 +222,16 @@ body {
 #ozzy-image.stonks-variant-9 { filter: brightness(0.7) contrast(200%); }
 
 /* Warianty wizualne Bossa (zmodyfikowane) */
-#ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); }
-#ozzy-image.boss-mode-variant-1 { filter: brightness(1.3) contrast(1.3) hue-rotate(200deg) drop-shadow(0 0 35px #FF4500); }
-#ozzy-image.boss-mode-variant-2 { filter: brightness(1.4) contrast(1.4) hue-rotate(220deg) drop-shadow(0 0 40px #FFA500); }
-#ozzy-image.boss-mode-variant-3 { filter: brightness(1.5) contrast(1.5) hue-rotate(240deg) drop-shadow(0 0 45px #FFD700); }
-#ozzy-image.boss-mode-variant-4 { filter: brightness(1.6) contrast(1.6) hue-rotate(260deg) drop-shadow(0 0 50px #FFFF00); }
-#ozzy-image.boss-mode-variant-5 { filter: brightness(1.7) contrast(1.7) hue-rotate(280deg) drop-shadow(0 0 55px #7FFF00); }
-#ozzy-image.boss-mode-variant-6 { filter: brightness(1.8) contrast(1.8) hue-rotate(300deg) drop-shadow(0 0 60px #00FF00); }
-#ozzy-image.boss-mode-variant-7 { filter: brightness(1.9) contrast(1.9) hue-rotate(320deg) drop-shadow(0 0 65px #00FFFF); }
-#ozzy-image.boss-mode-variant-8 { filter: brightness(2.0) contrast(2.0) hue-rotate(340deg) drop-shadow(0 0 70px #0000FF); }
-#ozzy-image.boss-mode-variant-9 { filter: brightness(2.1) contrast(2.1) hue-rotate(0deg) drop-shadow(0 0 75px #8A2BE2); }
+#ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); } /* Czerwony */
+#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(50deg) brightness(1.5) drop-shadow(0 0 40px #FFA500); } /* Sepia/Pomarańczowy */
+#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(200%) brightness(1.1) drop-shadow(0 0 45px #00FFFF); } /* Inwersja / Cyjan */
+#ozzy-image.boss-mode-variant-3 { filter: grayscale(80%) contrast(200%) brightness(0.8) drop-shadow(0 0 50px #808080); } /* Szary Metaliczny */
+#ozzy-image.boss-mode-variant-4 { filter: blur(1px) hue-rotate(250deg) saturate(300%) drop-shadow(0 0 55px #FF00FF); } /* Rozmyty Purpurowy Glitch */
+#ozzy-image.boss-mode-variant-5 { filter: brightness(2.0) contrast(0.5) hue-rotate(0deg) drop-shadow(0 0 60px #FFFFFF); } /* Błysk / Biały Ghost */
+#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(90deg) saturate(250%) brightness(1.3) contrast(1.3) drop-shadow(0 0 65px #00FF00); } /* Intensywny Zielony */
+#ozzy-image.boss-mode-variant-7 { filter: sepia(50%) invert(50%) brightness(1.2) drop-shadow(0 0 70px #FFFF00); } /* Połączenie Sepia/Inwersja / Żółty */
+#ozzy-image.boss-mode-variant-8 { filter: contrast(300%) brightness(0.5) drop-shadow(0 0 75px #0000FF); } /* Super Kontrast / Ciemnoniebieski */
+#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(300deg) saturate(180%) drop-shadow(0 0 80px #FF007F); } /* Magentowy / Różowy */
 
 
 @keyframes boss-flicker {
@@ -461,7 +461,7 @@ button:disabled {
 
 @keyframes message-pop-fade-boss {
     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-    10% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
+    10% { transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
     20% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
     30% { transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
     90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
