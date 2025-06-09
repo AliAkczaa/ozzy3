@@ -16,7 +16,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative; /* Dla pozycjonowania message-display */
-    user-select: none; /* Zapobiegaj zaznaczaniu tekstu/elementów */
+    user-select: none; /* Zapobiegaj zaznacza   niu tekstu/elementów */
     -webkit-user-drag: none; /* Zapobiegaj przeciąganiu na WebKit */
 }
 
@@ -46,7 +46,7 @@ body {
     height: 100%;
     object-fit: cover; /* Pokrywa cały kontener, przycinając jeśli trzeba */
     opacity: 0.7; /* Lekko przyciemnij tło */
-    z-index: 0;
+    z-index: 0; /* Najniższa warstwa */
     /* Animacja subtelnego ruchu traktorowego tła */
     animation: backgroundPan 60s linear infinite alternate;
     user-select: none;
@@ -61,6 +61,18 @@ body {
         transform: scale(1.1); /* Delikatne powiększanie */
     }
 }
+
+/* NEW: Canvas for Boss effects */
+#boss-effect-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Pomiędzy tłem a Ozzym */
+    pointer-events: none; /* Nie blokuje kliknięć */
+}
+
 
 /* Ukrycie ekranów */
 .hidden {
@@ -231,7 +243,7 @@ button:disabled {
     left: 50%;
     transform: translate(-50%, -50%); /* Centruj Ozzy'ego */
     cursor: pointer;
-    z-index: 10;
+    z-index: 10; /* Powyżej Canvasa */
     width: clamp(150px, 40vw, 300px); /* Responsywna szerokość */
     height: auto;
     display: flex;
@@ -318,7 +330,7 @@ button:disabled {
     border-radius: 10px;
     border: 2px solid #ffcc00;
     box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
-    z-index: 20;
+    z-index: 20; /* Powyżej Ozzy'ego i Canvasa */
     font-size: clamp(0.7em, 2vw, 1em);
     user-select: none;
     -webkit-user-drag: none;
@@ -368,7 +380,7 @@ button:disabled {
     bottom: 20px;
     display: flex;
     gap: 15px;
-    z-index: 20;
+    z-index: 20; /* Powyżej Ozzy'ego i Canvasa */
     pointer-events: auto; /* Pozwól na klikanie */
     user-select: none;
     -webkit-user-drag: none;
