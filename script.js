@@ -215,15 +215,12 @@
                 this.vx *= 0.98; // Slow down
                 this.vy *= 0.98; // Slow down
             } else if (this.type === 'stonksClaw') {
-                this.alpha -= 0.007; // Szybkie zanikanie
-                this.size *= 0.995; // Lekkie zmniejszenie rozmiaru
-                if (this.currentLife % 5 === 0) { // Co kilka klatek lekko zmieniaj kąt
-                    this.angle += (Math.random() - 0.5) * 0.1; // Dodaj trochę "chwiejności"
-                }
+                this.alpha -= 0.005; // Szybkie zanikanie
+                this.size *= 0.998; // Lekkie zmniejszenie rozmiaru
             } else if (this.type === 'painParticle') {
-                this.vy += 0.03; // Grawitacja
-                this.alpha -= 0.01; // Szybkie zanikanie
-                this.size *= 0.998; // Zmniejszaj rozmiar
+                this.vy += 0.02; // Grawitacja
+                this.alpha -= 0.008; // Szybkie zanikanie
+                this.size *= 0.999; // Zmniejszaj rozmiar
             }
         }
 
@@ -274,32 +271,34 @@
                 ctx.stroke();
             } else if (this.type === 'stonksClaw') {
                 ctx.strokeStyle = this.color;
-                ctx.lineWidth = this.size * 0.8; // Zmniejszona grubość głównej linii (np. 80% size)
+                ctx.lineWidth = this.size * 0.4; // Zmniejszona grubość głównej linii (40% size)
                 ctx.lineCap = 'round';
-                ctx.beginPath();
+                
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
 
-                // Główna, nieco zakrzywiona linia "pazura"
-                ctx.moveTo(-this.size * 1.5, -this.size * 0.2); // Start nieco w górę
-                ctx.quadraticCurveTo(0, this.size * 0.5, this.size * 1.5, -this.size * 0.2); // Lekkie zakrzywienie
+                // Rysowanie poszarpanego pazura - główne cięcie z nieregularnymi krawędziami
+                ctx.beginPath();
+                // Górna krawędź
+                ctx.moveTo(-this.size * 2, 0);
+                ctx.lineTo(-this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
+                ctx.lineTo(-this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.1);
+                ctx.lineTo(-this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.2);
+                ctx.lineTo(0 + Math.random() * this.size * 0.5, this.size * 0.3);
+                ctx.lineTo(this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.1);
+                ctx.lineTo(this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.2);
+                ctx.lineTo(this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
+                ctx.lineTo(this.size * 2, 0);
+
                 ctx.stroke();
 
-                // Dodaj mniejsze, nieregularne "odpryski" od głównej linii
-                const numSplinters = Math.floor(Math.random() * 3) + 2; // 2-4 odpryski
-                for (let j = 0; j < numSplinters; j++) {
-                    const splinterLength = this.size * (0.3 + Math.random() * 0.7); // Losowa długość odprysku
-                    const splinterThickness = this.size * (0.1 + Math.random() * 0.2); // Bardzo cienkie
-                    const splinterAngleOffset = (Math.random() - 0.5) * 0.8; // Losowe odchylenie kąta
-                    const startOffset = this.size * (Math.random() * 2 - 1); // Losowy punkt startu na głównej linii
-
-                    ctx.lineWidth = splinterThickness;
-                    ctx.beginPath();
-                    ctx.moveTo(startOffset, 0); // Start z punktu na głównej linii
-                    ctx.lineTo(startOffset + Math.cos(splinterAngleOffset) * splinterLength,
-                                Math.sin(splinterAngleOffset) * splinterLength);
-                    ctx.stroke();
-                } 
+                // Dodaj delikatny cień, aby nadać głębię
+                ctx.globalAlpha = Math.max(0, this.alpha * 0.3); // Mniej widoczny cień
+                ctx.lineWidth = this.size * 0.2; // Cień jest cieńszy
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'; // Ciemny kolor cienia
+                ctx.stroke(); // Rysuj cień
+                ctx.globalAlpha = Math.max(0, this.alpha); // Przywróć pełną alfa dla głównego kształtu
+                
             } else if (this.type === 'painParticle') {
                 ctx.fillStyle = this.color;
                 // Rysuje małe trójkąty dla "punktów bólu"
@@ -584,20 +583,28 @@
      * @param {number} ozzyHeight Wysokość obrazka Stonksa
      */
     function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
-        // Oblicz obszar wokół Stonksa, gdzie będą pojawiać się efekty
-        const gameContainerRect = gameContainer.getBoundingClientRect(); // Pobierz rozmiary kontenera gry
-        const spawnAreaX = gameContainerRect.width * 0.8; // 80% szerokości kontenera
-        const spawnAreaY = gameContainerRect.height * 0.8; // 80% wysokości kontenera
+        const gameContainerRect = gameContainer.getBoundingClientRect(); 
+        // Obszar ataku pokrywa prawie cały ekran (90% szerokości/wysokości kontenera gry)
+        const spawnAreaX = gameContainerRect.width * 0.9; 
+        const spawnAreaY = gameContainerRect.height * 0.9;
 
         // Ilość cięć (szponów)
-        const numClaws = Math.floor(Math.random() * 4) + 4; // 3-5 cięć
+        const numClaws = Math.floor(Math.random() * 6) + 6; // 6-11 cięć (więcej, by wypełnić większy obszar)
         for (let i = 0; i < numClaws; i++) {
+            // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
             const startX = x + (Math.random() - 0.5) * spawnAreaX;
             const startY = y + (Math.random() - 0.5) * spawnAreaY;
-            const angle = Math.random() * Math.PI * 2; // Losowy kąt cięcia
-            const size = Math.random() * 30 + 40; // Większa szerokość cięcia (10-18)
-            const life = 160 + Math.random() * 80; // Krótkie życie (20-30 klatek)
-            const color = `rgba(${255 - Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`; // Odcienie czerwieni
+            
+            // Kierunek cięcia: od Stonksa w stronę gracza (lub po prostu losowy dla rozległości)
+            // Możemy sprawić, żeby cięcia "rozchodziły się" od Stonksa
+            let angle = Math.atan2(startY - y, startX - x) + (Math.random() - 0.5) * Math.PI * 0.4; // Kąt w radianach, z lekkim rozrzutem
+            
+            // ZMIANA: Jeszcze większy rozmiar bazowy (z 40-70 na 60-100)
+            const size = Math.random() * 40 + 60; 
+            // ZMIANA: Znacznie wydłużony czas życia (z 160-240 na 250-400 klatek, czyli ok. 4-6.6 sekundy)
+            const life = 250 + Math.random() * 150; 
+            // Odcienie czerwieni, jak na obrazku, z lekkimi wariacjami
+            const color = `rgba(${255}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`;
             
             stonksAttackClawParticles.push(new CanvasParticle(
                 startX, startY, 0, 0, color, size, life, 'stonksClaw', angle
@@ -605,20 +612,20 @@
         }
 
         // Ilość "punktów bólu"
-        const numPainParticles = Math.floor(Math.random() * 8) + 8; // 8-15 punktów (więcej)
+        const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 punktów (więcej)
         for (let i = 0; i < numPainParticles; i++) {
-            // ZMIANA: Losowanie pozycji na większym obszarze, centrowanie na Stonksie
-            const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.8; // Bliżej centrum ataku, ale nadal duży obszar
+            // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
+            const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.8; 
             const startY = y + (Math.random() - 0.5) * spawnAreaY * 0.8;
-            const angle = Math.random() * Math.PI * 2; // Losowy kąt lotu
-            // ZMIANA: Zwiększony rozmiar punktów bólu o 100% (z 5-10 na 10-20)
-            const size = Math.random() * 15 + 15; // Min size 10, max 20
-            // ZMIANA: Znacznie wydłużony czas życia (z 60-90 na 120-180 klatek)
-            const life = 240 + Math.random() * 120;
+            const angle = Math.random() * Math.PI * 2; 
+            // ZMIANA: Jeszcze większy rozmiar bazowy (z 15-30 na 20-40)
+            const size = Math.random() * 20 + 20; 
+            // ZMIANA: Znacznie wydłużony czas życia (z 240-360 na 300-500 klatek, czyli ok. 5-8.3 sekundy)
+            const life = 300 + Math.random() * 200;
             // ZMIANA: Prędkości zredukowane o kolejne 50%
-            const vx = (Math.random() - 0.5) * 0.6; // Zmieniono z 2.5 na 1.25
-            const vy = (Math.random() - 0.5) * 0.6 - 0.2; // Zmieniono z 2.5 na 1.25 i z -1 na -0.5
-            const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; // Czerwień/pomarańcz
+            const vx = (Math.random() - 0.5) * 0.3; 
+            const vy = (Math.random() - 0.5) * 0.3 - 0.1; 
+            const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; 
             
             stonksAttackPainParticles.push(new CanvasParticle(
                 startX, startY, vx, vy, color, size, life, 'painParticle', angle
