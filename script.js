@@ -155,10 +155,11 @@
     const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
 
     // --- Variables for visual variants of Stonks ---
+    // ZMIANA: Zwiększone totalVariants, aby odpowiadały ilości klas w CSS (0-9 to 10 wariantów)
     let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
-    const totalStonksVariants = 4;     // Number of available variants (0, 1, 2, 3)
+    const totalStonksVariants = 10;     // Number of available variants (0-9)
     let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
-    const totalBossVariants = 3;       // Number of available Boss variants (0, 1, 2)
+    const totalBossVariants = 10;       // Number of available Boss variants (0-9)
 
     // Original superpower button texts (for display when not on cooldown)
     const originalLightningText = 'Piorun Zagłady';
@@ -866,7 +867,7 @@ function activateLightningStrike() {
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
         if (gameEffectsCtx) {
-            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
 
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
@@ -1023,7 +1024,7 @@ function activateLightningStrike() {
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
         if (gameEffectsCtx) {
-            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
 
         document.getElementById('end-message').textContent = message;
@@ -1079,10 +1080,10 @@ function activateLightningStrike() {
             
             // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
             // It's triggered when a normal Stonks appears.
-            if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
-                stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
-                // ZMIANA: Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie)
-                INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
+            // ZMIANA: Wybieraj wariant z całej puli (0-9) zamiast tylko 0-3
+            stonksVisualVariantIndex = (currentLevel - 1) % totalStonksVariants; 
+            if (currentLevel > 1 && (currentLevel - 1) % BOSS_LEVEL_INTERVAL !== 0) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
+                 INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT;
             }
             updateOzzyAppearance(); // Apply the new Stonks variant
 
@@ -1093,7 +1094,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // ZMIANA: Usunięto "Stonks jest silniejszy!"
+            knockoutMsgElement.textContent = 'Stonks rozjebany!'; 
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
@@ -1140,7 +1141,8 @@ function activateLightningStrike() {
         showBossMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); 
 
         // Increment boss visual variant for each fight
-        bossVisualVariantIndex = (bossVisualVariantIndex + 1) % totalBossVariants;
+        // ZMIANA: Wybieraj wariant z całej puli (0-9) zamiast tylko 0-2
+        bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
         updateOzzyAppearance(); // Apply the new boss variant
 
         cancelAnimationFrame(bossMovementAnimationFrameId); 
@@ -1235,22 +1237,22 @@ function activateLightningStrike() {
 
             if (upgradeType === 'baseDamage') {
                 PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Obrażenia Podstawowe! Nowe obrażenia: ${PUNCH_DAMAGE}`, 3000);
+                showMessage(`Ulepszono Obrażenia Podstawowe! Nowe obrażenia: ${PUNCH_DAMAGE}`, 3000); // ZMIANA: Zwiększony czas
             } else if (upgradeType === 'lightningDamage') {
                 const nextLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage -1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Piorun Zagłady! Poziom: ${upgradeLevels.lightningDamage} (Obrażenia: ~${nextLightningDamage})`, 3000);
+                showMessage(`Ulepszono Piorun Zagłady! Poziom: ${upgradeLevels.lightningDamage} (Obrażenia: ~${nextLightningDamage})`, 3000); // ZMIANA: Zwiększony czas
             } else if (upgradeType === 'freezeDamage') {
                 const nextInitialFreezeDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
                 const nextDotFreezeDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Lodowy Wybuch! Poziom: ${upgradeLevels.freezeDamage} (Obrażenia: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 3000);
+                showMessage(`Ulepszono Lodowy Wybuch! Poziom: ${upgradeLevels.freezeDamage} (Obrażenia: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 3000); // ZMIANA: Zwiększony czas
             } else if (upgradeType === 'frenzyDamage') {
                 const nextFrenzyDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
-                showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 3000);
+                showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 3000); // ZMIANA: Zwiększony czas
             }
 
             updateUpgradeShopUI(); 
         } else {
-            showMessage("Za mało punktów!", 2000);
+            showMessage("Za mało punktów!", 3000); // ZMIANA: Zwiększony czas
         }
     }
 
@@ -1408,7 +1410,7 @@ function activateLightningStrike() {
             freezeCanvasParticles = [];
             frenzyCanvasParticles = [];
             if (gameEffectsCtx) {
-                gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+                gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             }
 
             // Also hide CSS overlays
