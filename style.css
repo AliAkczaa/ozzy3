@@ -537,8 +537,9 @@ button:disabled {
     background-color: #4CAF50; /* Zielony */
     border-color: #8BC34A; /* Jasnozielony */
     color: white;
-    padding: 10px 20px; /* Domyślny padding dla desktopu */
-    font-size: clamp(0.7em, 3vw, 1.1em); /* Domyślny font-size dla desktopu */
+    /* ZMIANA: Dopasowanie padding i font-size do game-info-container dla wyrównania */
+    padding: 10px 15px;
+    font-size: clamp(0.7em, 2.5vw, 1em); 
     z-index: 30; /* Nad innymi elementami gry */
 }
 
@@ -629,7 +630,7 @@ button:disabled {
     /* Pasek życia gracza na mobilnych - umieszczony nad przyciskami supermocy */
     #player-health-container {
         top: unset; 
-        bottom: 70px; /* Pozycja nad przyciskami supermocy */
+        bottom: 50px; /* ZMNIEJSZONO BOTTOM - PRZESUNIĘCIE NIŻEJ */
         left: 50%;
         transform: translateX(-50%);
         width: clamp(100px, 45vw, 200px); /* ZMNIEJSZONO szerokość (ok. 50%) */
@@ -690,7 +691,7 @@ button:disabled {
 
     /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
     .knockout-message, .boss-message {
-        top: 20%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
+        top: 30%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
         transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
         font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
         padding: 12px 18px; /* Zmniejszony padding */
