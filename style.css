@@ -622,7 +622,7 @@ button:disabled {
 /* Nowa sekcja: Media query dla DESKTOP - wiadomości niżej */
 @media (min-width: 769px) {
     .knockout-message, .boss-message {
-        top: 75%; /* Przesunięcie niżej, pod Stonksa */
+        top: 80%; /* Przesunięcie niżej, pod Stonksa */
         /* Transformacja pozostaje translate(-50%, -50%) aby nadal centrować */
     }
 }
