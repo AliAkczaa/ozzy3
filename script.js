@@ -266,7 +266,7 @@
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
                 // Rysuje linię pod kątem z określoną długością
-                ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 5, this.y + Math.sin(this.angle) * this.size * 5);
+                ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 8, this.y + Math.sin(this.angle) * this.size * 8);
                 ctx.stroke();
             }
 
@@ -639,7 +639,7 @@
                           ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8, 
                           Math.floor(Math.random() * 3) + 2, // 2-4 zadrapania
                           'rgba(255, 0, 0, 0.8)', // Czerwone zadrapania
-                          10 // ZMIANA: Bazowy rozmiar linii zadrapania zwiększony o 100% (z 5 na 10)
+                          7 // ZMIANA: Bazowy rozmiar linii zadrapania zwiększony o 100% (z 5 na 10)
         );
 
         if (playerHealth <= 0) {
