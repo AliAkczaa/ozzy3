@@ -5,7 +5,7 @@
         apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
         authDomain: "ozzy-14c19.firebaseapp.com",
         projectId: "ozzy-14c19",
-        storageBucket: "ozzy-14c19.firebaseapp.com",
+        storageBucket: "ozzy-14c19.firebasestorage.app",
         messagingSenderId: "668337469201",
         appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
     };
@@ -54,6 +54,7 @@
     let frenzyEffect;    // Still used for full-screen tint/glow
     let backgroundMusic;
     let punchSound;
+    let gameOverSound; // Now a global DOM variable
     let shopButton;
     let upgradeShopScreen;
     let closeShopButton;
@@ -72,6 +73,11 @@
     let quoteImagesContainer; 
     let gameEffectsCanvas; // Canvas for all dynamic effects
     let gameEffectsCtx;    // 2D rendering context for the effects canvas
+    // NOWE: Zmienne DOM dla paska życia gracza
+    let playerHealthContainer;
+    let playerHealthDisplay;
+    let playerHealthBarBg;
+    let playerHealthBarFill;
 
     // --- Other global variables (not directly related to DOM), with immediate assignments ---
     let playerNickname = "Gracz";
@@ -164,6 +170,13 @@
     const originalLightningText = 'Piorun Zagłady';
     const originalFreezeText = 'Lodowy Wybuch';
     const originalFrenzyText = 'Szał Bojowy';
+
+    // NOWE: Zmienne dla życia gracza i ataków Stonksa
+    let playerHealth = 100;
+    const MAX_PLAYER_HEALTH = 100;
+    let STONKS_ATTACK_DAMAGE = 5; // Bazowe obrażenia zadawane przez Stonksa graczowi
+    const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza
+    let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
     // === Canvas Particles System ===
     class CanvasParticle {
@@ -532,6 +545,46 @@
         }
     }
 
+    // NOWE: Funkcja Stonksa do ataku gracza
+    function stonksAttack() {
+        if (!isGameActive) {
+            clearInterval(playerAttackIntervalId); // Stop attacking if game is inactive
+            return;
+        }
+
+        // Apply visual attack animation to Stonks
+        ozzyImage.classList.add('attacking');
+        setTimeout(() => {
+            ozzyImage.classList.remove('attacking');
+        }, 300); // Duration of the attack animation
+
+        // Apply damage to player
+        playerHealth -= STONKS_ATTACK_DAMAGE;
+        playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
+        updatePlayerHealthUI();
+
+        if (playerHealth <= 0) {
+            endGame("ZGINĄŁEŚ W WALCE ZE STONKSEM!"); // Game over if player health reaches 0
+        }
+    }
+
+    // NOWE: Funkcja do aktualizacji UI paska życia gracza
+    function updatePlayerHealthUI() {
+        playerHealthDisplay.textContent = `${playerHealth}/${MAX_PLAYER_HEALTH}`;
+        const healthPercentage = (playerHealth / MAX_PLAYER_HEALTH) * 100;
+        playerHealthBarFill.style.width = `${healthPercentage}%`;
+
+        // Zmiana koloru paska zdrowia gracza
+        if (healthPercentage > 60) {
+            playerHealthBarFill.style.backgroundColor = '#00BFFF'; // Niebieski
+        } else if (healthPercentage > 30) {
+            playerHealthBarFill.style.backgroundColor = '#FFD700'; // Złoty/Żółty
+        } else {
+            playerHealthBarFill.style.backgroundColor = '#FF0000'; // Czerwony
+        }
+    }
+
+
     // --- Superpower Functions ---
     function updateSuperpowerButtons() {
         const now = Date.now();
@@ -637,7 +690,7 @@ function activateLightningStrike() {
             const size = Math.random() * 8 + 5; // Line width (większy)
 
             lightningCanvasParticles.push(new CanvasParticle(
-                currentX, currentY, 0, 0, // No independent movement for lines, target defines end
+                startX, startY, 0, 0, // No independent movement for lines, target defines end
                 `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter, yellower
                 size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
             ));
@@ -814,7 +867,8 @@ function activateLightningStrike() {
         ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
         ozzyImage.classList.remove('boss-mode');
         ozzyImage.classList.remove('flipped-x'); 
-        
+        ozzyImage.classList.remove('attacking'); // NOWE: Usuń klasę ataku
+
         // Reset visual variants
         stonksVisualVariantIndex = 0;
         bossVisualVariantIndex = 0;
@@ -872,6 +926,11 @@ function activateLightningStrike() {
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
+        // NOWE: Zresetuj życie gracza i ukryj pasek
+        playerHealth = MAX_PLAYER_HEALTH;
+        updatePlayerHealthUI();
+        playerHealthContainer.classList.add('hidden');
+        clearInterval(playerAttackIntervalId); // Zatrzymaj atak Stonksa
 
         isGameActive = false;
         endScreen.classList.add('hidden');
@@ -889,6 +948,10 @@ function activateLightningStrike() {
         if (backgroundMusic) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
+        }
+        if (gameOverSound) { // NOWE: Zatrzymaj dźwięk game over
+            gameOverSound.pause();
+            gameOverSound.currentTime = 0;
         }
     }
 
@@ -971,6 +1034,12 @@ function activateLightningStrike() {
         gameEffectsCanvas.classList.remove('hidden'); // ZMIANA: Upewnij się, że canvas jest widoczny
         gameEffectsCanvas.classList.add('active');
 
+        // NOWE: Ustaw życie gracza, pokaż pasek i rozpocznij atak Stonksa
+        playerHealth = MAX_PLAYER_HEALTH;
+        updatePlayerHealthUI();
+        playerHealthContainer.classList.remove('hidden');
+        clearInterval(playerAttackIntervalId); // Clear any previous interval first
+        playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Stonks zaczyna atakować
 
         if (backgroundMusic) {
             backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
@@ -983,6 +1052,7 @@ function activateLightningStrike() {
         ozzyContainer.classList.add('hidden'); 
         
         gameInfoContainer.classList.add('hidden');
+        playerHealthContainer.classList.add('hidden'); // NOWE: Ukryj pasek życia gracza
         
         quoteImagesContainer.innerHTML = ''; 
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
@@ -1011,6 +1081,7 @@ function activateLightningStrike() {
         updateSuperpowerButtons(); 
 
         clearInterval(superpowerCooldownIntervalId);
+        clearInterval(playerAttackIntervalId); // NOWE: Zatrzymaj atak Stonksa
         cancelAnimationFrame(bossMovementAnimationFrameId);
         isBossMovementPaused = false; 
 
@@ -1026,7 +1097,7 @@ function activateLightningStrike() {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
 
-        document.getElementById('end-message').textContent = message;
+        document.getElementById('end-message').textContent = message; // Komunikat o zakończeniu gry
         document.getElementById('final-score').textContent = score; 
 
         saveScoreToLeaderboard(playerNickname, score);
@@ -1036,6 +1107,9 @@ function activateLightningStrike() {
         if (backgroundMusic) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
+        }
+        if (gameOverSound) { // NOWE: Odtwórz dźwięk game over
+            gameOverSound.play().catch(e => console.error("Error playing gameOverSound:", e));
         }
     }
 
@@ -1048,6 +1122,10 @@ function activateLightningStrike() {
 
         ozzyContainer.classList.add('hidden');
 
+        // NOWE: Regeneracja życia gracza po pokonaniu Stonksa
+        playerHealth = Math.min(MAX_PLAYER_HEALTH, playerHealth + 20); // Regeneracja 20 HP
+        updatePlayerHealthUI();
+
         // Determine if the *next* level is a boss level
         const nextLevelCandidate = currentLevel + 1; // Temporary variable to check for boss
         
@@ -1057,6 +1135,10 @@ function activateLightningStrike() {
             currentLevelDisplay.textContent = currentLevel; // Update display
             isBossFight = true; // Set boss flag 
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
+            // Zwiększ obrażenia Stonksa w trybie bossa
+            STONKS_ATTACK_DAMAGE += 5; // Zwiększ obrażenia zadawane przez Stonksa
+            clearInterval(playerAttackIntervalId); // Zatrzymaj obecny interwał
+            playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restartuj z nowymi obrażeniami
         } else {
             // Normal Stonks knockout
             currentLevel = nextLevelCandidate; // Increment level for normal stonks
@@ -1071,7 +1153,7 @@ function activateLightningStrike() {
             // ZMIANA: Logika wyboru wariantu Stonksa:
             // Wariant 0 dla poziomów 1-10.
             // Dla poziomów 11-20, variant-1, dla 21-30, variant-2, itd.
-            // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
+            // (currentLevel - 1) / BOSS_LEVEL_INTERVAL daje 0 dla 1-10, 1 dla 11-20 itd.
             const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
             stonksVisualVariantIndex = bossCyclesCompletedForNormalStonks % totalStonksVariants;
             
@@ -1079,7 +1161,6 @@ function activateLightningStrike() {
             
             // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
             // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
-            // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
             INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
             console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
 
@@ -1092,7 +1173,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = '+1 to respect!'; // Przywrócono oryginalny tekst
+            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // Przywrócono oryginalny tekst
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
@@ -1202,6 +1283,9 @@ function activateLightningStrike() {
     }
 
     function updateUpgradeShopUI() {
+        // NOWE: Zaktualizuj wyświetlanie punktów w sklepie
+        document.getElementById('current-score-shop').textContent = score;
+
         baseDamageLevelDisplay.textContent = upgradeLevels.baseDamage;
         const nextBaseDamageCost = calculateUpgradeCost(upgradeLevels.baseDamage);
         baseDamageCostDisplay.textContent = nextBaseDamageCost;
@@ -1288,6 +1372,7 @@ function activateLightningStrike() {
         frenzyEffect = document.getElementById('frenzy-effect');
         backgroundMusic = document.getElementById('background-music');
         punchSound = document.getElementById('punch-sound');
+        gameOverSound = document.getElementById('game-over-sound'); // NOWE: Przypisanie elementu audio
         shopButton = document.getElementById('shop-button');
         upgradeShopScreen = document.getElementById('upgrade-shop-screen');
         closeShopButton = document.getElementById('close-shop-button');
@@ -1306,6 +1391,12 @@ function activateLightningStrike() {
         quoteImagesContainer = document.getElementById('quote-images-container'); 
         gameEffectsCanvas = document.getElementById('boss-effect-canvas'); // Reusing this canvas for all effects
         gameEffectsCtx = gameEffectsCanvas.getContext('2d'); // Get 2D context
+        // NOWE: Przypisanie zmiennych DOM dla paska życia gracza
+        playerHealthContainer = document.getElementById('player-health-container');
+        playerHealthDisplay = document.getElementById('player-health-display');
+        playerHealthBarBg = document.getElementById('player-health-bar-bg');
+        playerHealthBarFill = document.getElementById('player-health-bar-fill');
+
 
         // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
         upgradeShopScreen.classList.add('hidden');
@@ -1355,6 +1446,7 @@ function activateLightningStrike() {
             superpowerButtonsContainer.classList.add('hidden'); 
             ozzyContainer.classList.add('hidden'); 
             gameInfoContainer.classList.add('hidden'); 
+            playerHealthContainer.classList.add('hidden'); // NOWE: Ukryj pasek gracza przy przejściu do rankingu
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -1377,6 +1469,7 @@ function activateLightningStrike() {
             superpowerButtonsContainer.classList.add('hidden'); 
             ozzyContainer.classList.add('hidden'); 
             gameInfoContainer.classList.add('hidden'); 
+            playerHealthContainer.classList.add('hidden'); // NOWE: Ukryj pasek gracza przy przejściu do rankingu
             leaderboardScreen.classList.remove('hidden');
             fetchAndDisplayLeaderboard();
         });
@@ -1396,6 +1489,7 @@ function activateLightningStrike() {
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = true; 
             clearInterval(superpowerCooldownIntervalId); 
+            clearInterval(playerAttackIntervalId); // NOWE: Zatrzymaj atak Stonksa w sklepie
 
             // Stop all canvas effects when going to shop
             cancelAnimationFrame(gameCanvasAnimationFrameId); // ZMIANA: Anuluj animację canvasa
@@ -1423,6 +1517,7 @@ function activateLightningStrike() {
             superpowerButtonsContainer.classList.add('hidden'); 
             shopButton.classList.add('hidden'); 
             gameInfoContainer.classList.add('hidden'); 
+            playerHealthContainer.classList.add('hidden'); // NOWE: Ukryj pasek gracza w sklepie
 
             upgradeShopScreen.classList.remove('hidden'); 
             updateUpgradeShopUI(); 
@@ -1435,6 +1530,8 @@ function activateLightningStrike() {
             superpowerButtonsContainer.classList.remove('hidden'); 
             shopButton.classList.remove('hidden'); 
             gameInfoContainer.classList.remove('hidden'); 
+            playerHealthContainer.classList.remove('hidden'); // NOWE: Pokaż pasek gracza po wyjściu ze sklepu
+
 
             isGameActive = true; 
             isBossMovementPaused = false; 
@@ -1450,6 +1547,11 @@ function activateLightningStrike() {
             clearInterval(superpowerCooldownIntervalId); 
             superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
             updateSuperpowerButtons(); 
+
+            // NOWE: Wznów atak Stonksa po wyjściu ze sklepu
+            clearInterval(playerAttackIntervalId);
+            playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS);
+
 
             if (freezeModeActive) { // If freeze mode was active, re-activate CSS overlay and particles
                 freezeEffect.classList.remove('hidden');
