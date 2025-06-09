@@ -1,11 +1,11 @@
-    // === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
+// === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
     // Przejdź do Firebase Console -> Twój Projekt -> Ustawienia projektu (zębatka) -> Dodaj aplikację (ikona </> dla web)
     // Skopiuj obiekt firebaseConfig i wklej go tutaj:
     const firebaseConfig = {
         apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
         authDomain: "ozzy-14c19.firebaseapp.com",
         projectId: "ozzy-14c19",
-        storageBucket: "ozzy-14c19.firebaseapp.com",
+        storageBucket: "ozzy-14c19.firebasestorage.app",
         messagingSenderId: "668337469201",
         appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
     };
@@ -175,7 +175,7 @@
     let playerHealth = 100;
     const MAX_PLAYER_HEALTH = 100;
     let STONKS_ATTACK_DAMAGE = 5; // Bazowe obrażenia zadawane przez Stonksa graczowi
-    const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza
+    const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza (KONSTANTNIE 2 sekundy)
     let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
     // === Canvas Particles System ===
@@ -215,12 +215,14 @@
                 this.vx *= 0.98; // Slow down
                 this.vy *= 0.98; // Slow down
             } else if (this.type === 'stonksClaw') {
-                this.alpha -= 0.005; // Szybkie zanikanie
-                this.size *= 0.998; // Lekkie zmniejszenie rozmiaru
+                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu
+                this.alpha -= 1 / this.life; // Znika liniowo w całym czasie życia
+                this.size *= (1 - (0.002 * (60 / FPS))); // Wolne zmniejszanie, skalowane z FPS
             } else if (this.type === 'painParticle') {
-                this.vy += 0.02; // Grawitacja
-                this.alpha -= 0.008; // Szybkie zanikanie
-                this.size *= 0.999; // Zmniejszaj rozmiar
+                // ZMIANA: Parametry zanikania i kurczenia się dla nowego efektu
+                this.vy += 0.01 * (60 / FPS); // Grawitacja skalowana z FPS
+                this.alpha -= 1 / this.life; // Znika liniowo w całym czasie życia
+                this.size *= (1 - (0.001 * (60 / FPS))); // Wolne zmniejszanie, skalowane z FPS
             }
         }
 
@@ -270,8 +272,7 @@
                 ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 8, this.y + Math.sin(this.angle) * this.size * 8);
                 ctx.stroke();
             } else if (this.type === 'stonksClaw') {
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = this.size * 0.4; // Zmniejszona grubość głównej linii (40% size)
+                ctx.fillStyle = this.color; // Wypełnij, aby uzyskać solidny kształt
                 ctx.lineCap = 'round';
                 
                 ctx.translate(this.x, this.y);
@@ -279,26 +280,56 @@
 
                 // Rysowanie poszarpanego pazura - główne cięcie z nieregularnymi krawędziami
                 ctx.beginPath();
-                // Górna krawędź
-                ctx.moveTo(-this.size * 2, 0);
-                ctx.lineTo(-this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
-                ctx.lineTo(-this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.1);
-                ctx.lineTo(-this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.2);
-                ctx.lineTo(0 + Math.random() * this.size * 0.5, this.size * 0.3);
-                ctx.lineTo(this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.1);
-                ctx.lineTo(this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.2);
-                ctx.lineTo(this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
-                ctx.lineTo(this.size * 2, 0);
+                // Naśladowanie obrazka z "poszarpanymi" krawędziami
+                const segmentCount = 6; // Więcej segmentów dla płynności
+                const halfLength = this.size * 1.5; // Całkowita długość cięcia
+                const halfWidth = this.size * 0.4; // Szerokość cięcia
 
-                ctx.stroke();
+                ctx.moveTo(-halfLength, 0); // Początek lewej krawędzi
 
-                // Dodaj delikatny cień, aby nadać głębię
-                ctx.globalAlpha = Math.max(0, this.alpha * 0.3); // Mniej widoczny cień
-                ctx.lineWidth = this.size * 0.2; // Cień jest cieńszy
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'; // Ciemny kolor cienia
-                ctx.stroke(); // Rysuj cień
-                ctx.globalAlpha = Math.max(0, this.alpha); // Przywróć pełną alfa dla głównego kształtu
+                // Górna poszarpana krawędź
+                for (let j = 0; j <= segmentCount; j++) {
+                    const xOffset = j / segmentCount * halfLength * 2;
+                    const yJitter = (Math.random() - 0.5) * halfWidth * 0.6; // Losowe odchylenie
+                    const curveOffset = (Math.random() - 0.5) * halfLength * 0.1; // Losowe zakrzywienie
+                    if (j < segmentCount) {
+                        ctx.quadraticCurveTo(
+                            -halfLength + xOffset + curveOffset, -halfWidth + yJitter,
+                            -halfLength + (j + 0.5) / segmentCount * halfLength * 2, (Math.random() - 0.5) * halfWidth * 0.3
+                        );
+                    } else {
+                        ctx.lineTo(halfLength, 0);
+                    }
+                }
                 
+                // Dolna poszarpana krawędź
+                for (let j = segmentCount; j >= 0; j--) {
+                    const xOffset = j / segmentCount * halfLength * 2;
+                    const yJitter = (Math.random() - 0.5) * halfWidth * 0.6;
+                    const curveOffset = (Math.random() - 0.5) * halfLength * 0.1;
+                    if (j > 0) {
+                        ctx.quadraticCurveTo(
+                            -halfLength + xOffset + curveOffset, halfWidth + yJitter,
+                            -halfLength + (j - 0.5) / segmentCount * halfLength * 2, (Math.random() - 0.5) * halfWidth * 0.3
+                        );
+                    } else {
+                        ctx.lineTo(-halfLength, 0);
+                    }
+                }
+                
+                ctx.closePath(); 
+                ctx.fill(); // Wypełnij kształt
+
+                // Dodaj cień pod "rozdarciem"
+                ctx.globalAlpha = Math.max(0, this.alpha * 0.3); // Mniej widoczny cień
+                ctx.lineWidth = 1; // Bardzo cienki obrys cienia
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'; // Ciemny kolor cienia
+                ctx.shadowBlur = this.size * 0.1; // Lekkie rozmycie cienia
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                ctx.stroke(); // Rysuj obrys cienia
+                ctx.shadowBlur = 0; // Resetuj shadow blur
+                ctx.globalAlpha = Math.max(0, this.alpha); // Przywróć pełną alfa dla głównego kształtu
+
             } else if (this.type === 'painParticle') {
                 ctx.fillStyle = this.color;
                 // Rysuje małe trójkąty dla "punktów bólu"
@@ -336,7 +367,31 @@
 
     let gameCanvasAnimationFrameId;
 
-    function animateGameCanvasEffects() {
+    // ZMIANA: Zmienne do monitorowania FPS
+    let lastFrameTimeMs = 0;
+    let fps = 0;
+    let fpsCounter = 0;
+    let fpsLogIntervalId;
+
+    function animateGameCanvasEffects(timestamp) {
+        // ZMIANA: Logowanie FPS
+        if (!lastFrameTimeMs) {
+            lastFrameTimeMs = timestamp;
+        }
+        const delta = timestamp - lastFrameTimeMs;
+        lastFrameTimeMs = timestamp;
+
+        if (delta > 0) {
+            fps = Math.round(1000 / delta);
+        }
+
+        // Możesz logować co sekundę, żeby nie zaśmiecać konsoli
+        if (!fpsLogIntervalId) {
+            fpsLogIntervalId = setInterval(() => {
+                console.log(`FPS: ${fps}, Particles (Claw: ${stonksAttackClawParticles.length}, Pain: ${stonksAttackPainParticles.length}, Boss: ${bossCanvasParticles.length})`);
+            }, 1000);
+        }
+
         // Resize canvas to match gameContainer (do this first for correct drawing)
         gameEffectsCanvas.width = gameContainer.offsetWidth;
         gameEffectsCanvas.height = gameContainer.offsetHeight;
@@ -545,6 +600,8 @@
             gameEffectsCanvas.classList.remove('active');
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             cancelAnimationFrame(gameCanvasAnimationFrameId); // Ensure it stops
+            clearInterval(fpsLogIntervalId); // Stop logging FPS
+            fpsLogIntervalId = null;
         }
     }
 
@@ -589,22 +646,20 @@
         const spawnAreaY = gameContainerRect.height * 0.9;
 
         // Ilość cięć (szponów)
-        const numClaws = Math.floor(Math.random() * 6) + 6; // 6-11 cięć (więcej, by wypełnić większy obszar)
+        const numClaws = Math.floor(Math.random() * 5) + 5; // 5-9 cięć (nieco mniej, by nie obciążać tak bardzo)
         for (let i = 0; i < numClaws; i++) {
             // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
             const startX = x + (Math.random() - 0.5) * spawnAreaX;
             const startY = y + (Math.random() - 0.5) * spawnAreaY;
             
-            // Kierunek cięcia: od Stonksa w stronę gracza (lub po prostu losowy dla rozległości)
-            // Możemy sprawić, żeby cięcia "rozchodziły się" od Stonksa
-            let angle = Math.atan2(startY - y, startX - x) + (Math.random() - 0.5) * Math.PI * 0.4; // Kąt w radianach, z lekkim rozrzutem
+            let angle = Math.random() * Math.PI * 2; // Całkowicie losowy kąt dla rozległości
             
-            // ZMIANA: Jeszcze większy rozmiar bazowy (z 40-70 na 60-100)
-            const size = Math.random() * 40 + 60; 
-            // ZMIANA: Znacznie wydłużony czas życia (z 160-240 na 250-400 klatek, czyli ok. 4-6.6 sekundy)
-            const life = 250 + Math.random() * 150; 
-            // Odcienie czerwieni, jak na obrazku, z lekkimi wariacjami
-            const color = `rgba(${255}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`;
+            // ZMIANA: Rozmiar cięć (dostosowany do nowego rysowania)
+            const size = Math.random() * 30 + 50; // Rozmiar bazowy 50-80
+            // ZMIANA: Znacznie wydłużony czas życia (ok. 5-8.3 sekundy przy 60FPS)
+            const life = 300 + Math.random() * 200; 
+            
+            const color = `rgba(${255}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.8 + Math.random() * 0.2})`; // Bardziej nasycona czerwień
             
             stonksAttackClawParticles.push(new CanvasParticle(
                 startX, startY, 0, 0, color, size, life, 'stonksClaw', angle
@@ -612,7 +667,7 @@
         }
 
         // Ilość "punktów bólu"
-        const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 punktów (więcej)
+        const numPainParticles = Math.floor(Math.random() * 10) + 10; // 10-19 punktów (nieco mniej)
         for (let i = 0; i < numPainParticles; i++) {
             // Losowanie pozycji na większym obszarze, centrowanie na Stonksie
             const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.8; 
@@ -620,11 +675,11 @@
             const angle = Math.random() * Math.PI * 2; 
             // ZMIANA: Jeszcze większy rozmiar bazowy (z 15-30 na 20-40)
             const size = Math.random() * 20 + 20; 
-            // ZMIANA: Znacznie wydłużony czas życia (z 240-360 na 300-500 klatek, czyli ok. 5-8.3 sekundy)
+            // ZMIANA: Znacznie wydłużony czas życia (ok. 5-8.3 sekundy przy 60FPS)
             const life = 300 + Math.random() * 200;
-            // ZMIANA: Prędkości zredukowane o kolejne 50%
-            const vx = (Math.random() - 0.5) * 0.3; 
-            const vy = (Math.random() - 0.5) * 0.3 - 0.1; 
+            // ZMIANA: Prędkości zredukowane, aby były bardzo wolne i subtelne
+            const vx = (Math.random() - 0.5) * 0.2; 
+            const vy = (Math.random() - 0.5) * 0.2 - 0.05; 
             const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; 
             
             stonksAttackPainParticles.push(new CanvasParticle(
@@ -729,11 +784,17 @@
     }
 
     // NOWE: Funkcja Stonksa do ataku gracza
+    let lastAttackTime = 0; // ZMIANA: Dodano zmienną do śledzenia czasu ostatniego ataku
     function stonksAttack() {
         if (!isGameActive) {
             clearInterval(playerAttackIntervalId); // Stop attacking if game is inactive
             return;
         }
+
+        const now = Date.now();
+        const actualInterval = now - lastAttackTime;
+        console.log(`[STONKS ATTACK LOG] Level: ${currentLevel}, Actual Interval: ${actualInterval}ms`);
+        lastAttackTime = now; // ZMIANA: Aktualizuj czas ostatniego ataku
 
         // Apply visual attack animation to Stonks
         ozzyImage.classList.add('attacking');
@@ -887,24 +948,26 @@ function activateLightningStrike() {
             const size = Math.random() * 8 + 5; // Line width (większy)
 
             lightningCanvasParticles.push(new CanvasParticle(
-                startX, startY, 0, 0, // No independent movement for lines, target defines end
-                `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter yellow
+                currentX, currentY, 0, 0, // No independent movement for lines, target defines end
+                `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
                 size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
             ));
+            currentX = endX; // Upewnij się, że segmenty łączą się
+            currentY = endY; // Upewnij się, że segmenty łączą się
+        }
 
-            // Add some small, bright "sparks" around the bolt (larger, slower)
-            for (let j = 0; j < 3; j++) {
-                lightningCanvasParticles.push(new CanvasParticle(
-                    startX + (Math.random() - 0.5) * 30, // Większe rozproszenie
-                    startY + (Math.random() - 0.5) * 30,
-                    (Math.random() - 0.5) * 2.5, // vx (wolniejsze)
-                    (Math.random() - 0.5) * 2.5, // vy (wolniejsze)
-                    `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
-                    Math.random() * 5 + 3, // size (większy)
-                    45, // ZWIĘKSZONO: Życie dla iskier
-                    'bossFire' 
-                ));
-            }
+        // Add some small, bright "sparks" around the bolt (larger, slower)
+        for (let j = 0; j < Math.random() * 2 + 1; j++) { // 1-2 sparks per bolt
+            lightningCanvasParticles.push(new CanvasParticle(
+                ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8, // Wider spawn area for sparks
+                ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.8,
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // Slower sparks (reduced by 30%)
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.7),
+                `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
+                Math.random() * 8 + 4, // size (larger)
+                60, // life (longer)
+                'lightningSpark' // Specific type for lightning sparks
+            ));
         }
 
         // Hide CSS flash and clear canvas particles after animation
@@ -1118,11 +1181,14 @@ function activateLightningStrike() {
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
         scratchCanvasParticles = [];
-        stonksAttackClawParticles = []; // NOWE
-        stonksAttackPainParticles = [];   // NOWE
+        stonksAttackClawParticles = []; 
+        stonksAttackPainParticles = [];   
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
+        clearInterval(fpsLogIntervalId); // ZMIANA: Zatrzymaj logowanie FPS przy resecie
+        fpsLogIntervalId = null;
+
 
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
@@ -1231,6 +1297,7 @@ function activateLightningStrike() {
         updateSuperpowerButtons(); 
 
         // Start the main canvas animation loop
+        lastFrameTimeMs = 0; // ZMIANA: Resetuj czas dla FPS przy starcie gry
         gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // ZMIANA: Upewnij się, że animacja canvasa startuje
         gameEffectsCanvas.classList.remove('hidden'); // ZMIANA: Upewnij się, że canvas jest widoczny
         gameEffectsCanvas.classList.add('active');
@@ -1296,11 +1363,13 @@ function activateLightningStrike() {
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
         scratchCanvasParticles = [];
-        stonksAttackClawParticles = []; // NOWE
-        stonksAttackPainParticles = [];   // NOWE
+        stonksAttackClawParticles = []; 
+        stonksAttackPainParticles = [];   
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
+        clearInterval(fpsLogIntervalId); // ZMIANA: Zatrzymaj logowanie FPS przy końcu gry
+        fpsLogIntervalId = null;
 
         document.getElementById('end-message').textContent = message; // Komunikat o zakończeniu gry
         document.getElementById('final-score').textContent = score; 
@@ -1341,7 +1410,7 @@ function activateLightningStrike() {
             isBossFight = true; // Set boss flag 
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
             // Zwiększ obrażenia Stonksa w trybie bossa
-            STONKS_ATTACK_DAMAGE += 5; // Zwiększ obrażenia zadawane przez Stonksa
+            STONKS_ATTACK_DAMAGE += 5; // Zwiększ obrażenia zadawane przez Stonksa (Interwał pozostaje stały)
             clearInterval(playerAttackIntervalId); // Zatrzymaj obecny interwał
             playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restartuj z nowymi obrażeniami
         } else {
@@ -1707,8 +1776,8 @@ function activateLightningStrike() {
             freezeCanvasParticles = [];
             frenzyCanvasParticles = [];
             scratchCanvasParticles = [];
-            stonksAttackClawParticles = []; // NOWE
-            stonksAttackPainParticles = [];   // NOWE
+            stonksAttackClawParticles = []; 
+            stonksAttackPainParticles = [];   
             if (gameEffectsCtx) {
                 gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             }
@@ -1748,6 +1817,7 @@ function activateLightningStrike() {
                 animateBossMovement();
             }
             // ZMIANA: Upewnij się, że animacja canvasa startuje po wyjściu ze sklepu
+            lastFrameTimeMs = 0; // ZMIANA: Resetuj czas dla FPS po wyjściu ze sklepu
             gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects);
             gameEffectsCanvas.classList.remove('hidden');
             gameEffectsCanvas.classList.add('active');
