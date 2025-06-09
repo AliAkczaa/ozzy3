@@ -712,7 +712,7 @@ button:disabled {
 @media (min-width: 769px) {
     .knockout-message, .boss-message {
         /* ZMIANA: Niższe położenie na desktopie, by nie kolidować z paskiem życia gracza */
-        top: 75%; /* Poniżej Stonksa (ok. 50%), nad przyciskami supermocy (bottom 10px) */
+        top: 80%; /* Poniżej Stonksa (ok. 50%), nad przyciskami supermocy (bottom 10px) */
         transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
     }
 }
