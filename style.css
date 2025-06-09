@@ -616,6 +616,6 @@ button:disabled {
 
     /* ZMIANA: Pozycja komunikatów na mobilnych (nad Stonksem) */
     .knockout-message, .boss-message {
-        top: 35%; /* Przeniesienie wyżej, nad Stonksa */
+        top: 45%; /* Przeniesienie wyżej, nad Stonksa */
     }
 }
