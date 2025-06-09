@@ -187,7 +187,17 @@ const originalFrenzyText = 'Szał Bojowy';
 // NOWE: Zmienne dla życia gracza i ataków Stonksa (z poprzednich zmian)
 let playerHealth = 100;
 const MAX_PLAYER_HEALTH = 100;
-let STONKS_ATTACK_DAMAGE = 5; // Bazowe obrażenia zadawane przez Stonksa graczowi
+
+// ZMIANA: Stała dla zwiększenia obrażeń Stonksa na poziom
+const STONKS_DAMAGE_PER_LEVEL_INCREMENT = 3; 
+
+// Funkcja pomocnicza do obliczania bazowych obrażeń Stonksa (nie bossa) na danym poziomie
+function calculateBaseStonksDamage(level) {
+    // Poziom 1 zaczyna się od 5 obrażeń, potem rośnie o STONKS_DAMAGE_PER_LEVEL_INCREMENT za każdy kolejny poziom
+    return 5 + (level - 1) * STONKS_DAMAGE_PER_LEVEL_INCREMENT;
+}
+
+let STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(1); // Inicjalizacja bazowych obrażeń Stonksa na start gry
 const STONKS_ATTACK_INTERVAL_MS = 2000; // Co ile ms Stonks atakuje gracza
 let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
@@ -830,7 +840,7 @@ async function fetchAndDisplayLeaderboard() {
         snapshot.forEach(doc => {
             const data = doc.data();
             const li = document.createElement('li');
-            li.textContent = `${data.nickname || 'Anonim'}: ${data.score} points`;
+            li.textContent = `${data.nickname || 'Anonim'}: ${data.score} znokautowań`;
             leaderboardList.appendChild(li);
         });
     } catch (e) {
@@ -1279,6 +1289,7 @@ function resetGame() {
         gameOverSound.pause();
         gameOverSound.currentTime = 0;
     }
+    STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(1); // Reset to base level 1 damage
 }
 
 function showMessage(message, duration = 1500) {
@@ -1365,6 +1376,7 @@ function startGame() {
     updatePlayerHealthUI();
     playerHealthContainer.classList.remove('hidden');
     clearInterval(playerAttackIntervalId); // Clear any previous interval first
+    STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(currentLevel); // Ustaw bazowe obrażenia na start
     playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Stonks zaczyna atakować
 
     if (backgroundMusic) {
@@ -1466,14 +1478,15 @@ function handleOzzyKnockout() {
         currentLevelDisplay.textContent = currentLevel; // Update display
         isBossFight = true; // Set boss flag 
         startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
-        // Zwiększ obrażenia Stonksa w trybie bossa
-        STONKS_ATTACK_DAMAGE += 3; // Zwiększ obrażenia zadawane przez Stonksa (ZMIANA Z 5 NA 3)
+        
+        // Obrażenia Stonksa w trybie bossa są ustawiane w startBossFight
         clearInterval(playerAttackIntervalId); // Zatrzymaj obecny interwał
         playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restartuj z nowymi obrażeniami
     } else {
         // Normal Stonks knockout
         currentLevel = nextLevelCandidate; // Increment level for normal stonks
         currentLevelDisplay.textContent = currentLevel; // Update display
+        console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
 
         isBossFight = false;
         // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
@@ -1488,12 +1501,14 @@ function handleOzzyKnockout() {
             // Dla poziomów 11 i wyżej, zmieniaj wariant co 10 poziomów, zapętlając się przez 0-9
             stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
         }
+        console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
         
         // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
         // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
         // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
         const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
+        console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
 
         updateOzzyAppearance(); // Apply the new Stonks variant
 
@@ -1510,6 +1525,10 @@ function handleOzzyKnockout() {
         setTimeout(() => {
             knockoutMsgElement.remove();
         }, 2000); 
+
+        // ZMIANA: Oblicz obrażenia normalnego Stonksa dla aktualnego poziomu
+        STONKS_ATTACK_DAMAGE = calculateBaseStonksDamage(currentLevel);
+        console.log(`Normal Stonks attack damage set to: ${STONKS_ATTACK_DAMAGE} for level ${currentLevel}`);
     }
 
     ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
@@ -1547,9 +1566,16 @@ function startBossFight() {
     INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
     INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); // Ensure it doesn't go below base
 
+    // ZMIANA: Komunikat bossa zależny od wybranej skórki
     const bossMessageText = currentSkin === 'stonks' ? "UWAGA! BOSS STONKS! ROZPIERDOL GO!" : "UWAGA! BOSS TINU! ROZPIERDOL GO!";
     showBossMessage(bossMessageText, 2500); 
-    
+
+    // ZMIANA: Oblicz obrażenia normalnego Stonksa na aktualnym poziomie, a następnie zwiększ je o 25% dla bossa
+    const baseDamageForThisLevel = calculateBaseStonksDamage(currentLevel);
+    STONKS_ATTACK_DAMAGE = Math.ceil(baseDamageForThisLevel * 1.25); // Zastosuj 25% zwiększenie, zaokrąglaj w górę
+    console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}, Attack Damage: ${STONKS_ATTACK_DAMAGE}`);
+
+
     // ZMIANA: Logika wyboru wariantu Bossa: zmienia się dla każdego kolejnego bossa
     bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
     updateOzzyAppearance(); // Apply the new boss variant
@@ -1596,7 +1622,7 @@ function handlePunch(event) {
 
     if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { 
         spawnRandomQuote();
-    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.2) { 
+    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.4) { // ZMIANA: Zwiększono częstotliwość pojawiania się cytatów bossa
         if (document.querySelectorAll('.knockout-message').length === 0 && document.querySelectorAll('.boss-message').length === 0) {
             const randomBossQuote = BOSS_QUOTES[Math.floor(Math.random() * BOSS_QUOTES.length)];
             showBossMessage(randomBossQuote, 2000); 
