@@ -501,8 +501,8 @@ function animateGameCanvasEffects(currentTime) {
             freezeCanvasParticles.push(new CanvasParticle(
                 ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                 ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
-                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%, ale bazowo większa
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vx (zmniejszona prędkość o 75%, ale bazowo większa)
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // vy (zmniejszona prędkość o 75%, ale bazowo większa)
                 `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                 Math.random() * 15 + 8, // size (większy)
                 1200, // life in ms (1.2 seconds)
