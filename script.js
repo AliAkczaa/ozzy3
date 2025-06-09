@@ -1474,7 +1474,6 @@ function handleOzzyKnockout() {
         // Normal Stonks knockout
         currentLevel = nextLevelCandidate; // Increment level for normal stonks
         currentLevelDisplay.textContent = currentLevel; // Update display
-        console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
 
         isBossFight = false;
         // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
@@ -1489,14 +1488,12 @@ function handleOzzyKnockout() {
             // Dla poziomów 11 i wyżej, zmieniaj wariant co 10 poziomów, zapętlając się przez 0-9
             stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
         }
-        console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
         
         // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
         // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
         // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
         const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
-        console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
 
         updateOzzyAppearance(); // Apply the new Stonks variant
 
@@ -1550,10 +1547,9 @@ function startBossFight() {
     INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
     INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); // Ensure it doesn't go below base
 
-    console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}`);
-
-    showBossMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); 
-
+    const bossMessageText = currentSkin === 'stonks' ? "UWAGA! BOSS STONKS! ROZPIERDOL GO!" : "UWAGA! BOSS TINU! ROZPIERDOL GO!";
+    showBossMessage(bossMessageText, 2500); 
+    
     // ZMIANA: Logika wyboru wariantu Bossa: zmienia się dla każdego kolejnego bossa
     bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
     updateOzzyAppearance(); // Apply the new boss variant
