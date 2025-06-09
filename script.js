@@ -272,7 +272,7 @@
 
         // Common multipliers for particle spawn area and speed
         const spawnAreaMultiplier = isBossFight ? 1.5 : 1.2; // Larger area for boss
-        const baseParticleSpeed = 1; // Base speed, particles will be slower
+        const baseParticleSpeed = 0.5; // Base speed, particles will be very slow
         
         // Boss particles (spawn only if boss fight is active)
         if (isBossFight) {
@@ -327,11 +327,11 @@
                     const nextY = currentY + (Math.random() * 100); // Segment length, generally downwards (increased)
 
                     const life = 45 + Math.random() * 45; // Longer life for individual segments (1.5 seconds)
-                    const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
+                    const size = Math.random() * 8 + 5; // Line width (większy)
 
                     lightningCanvasParticles.push(new CanvasParticle(
                         currentX, currentY, 0, 0, // No independent movement for lines, target defines end
-                        `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
+                        `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter, yellower
                         size, life, 'lightningLine', 0, nextX, nextY
                     ));
                     currentX = nextX;
@@ -637,8 +637,8 @@ function activateLightningStrike() {
             const size = Math.random() * 8 + 5; // Line width (większy)
 
             lightningCanvasParticles.push(new CanvasParticle(
-                startX, startY, 0, 0, // No independent movement for lines, target defines end
-                `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter yellow
+                currentX, currentY, 0, 0, // No independent movement for lines, target defines end
+                `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter, yellower
                 size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
             ));
 
@@ -1069,22 +1069,17 @@ function activateLightningStrike() {
             ozzyImage.classList.remove('flipped-x'); 
             
             // ZMIANA: Logika wyboru wariantu Stonksa:
-            if (currentLevel >= 1 && currentLevel <= 10) {
-                stonksVisualVariantIndex = 0; // Wariant 0 dla poziomów 1-10
-            } else {
-                // Od poziomu 11, zmieniaj wariant co 11 poziomów, zaczynając od variant-1
-                // (currentLevel - 11) daje 0 dla poziomu 11, 11 dla 22, 22 dla 33 itd.
-                // Podzielone przez 11 daje 0 dla 11-21, 1 dla 22-32 itd.
-                // Dodajemy 1, żeby wynik był 1, 2, 3... (dla stonks-variant-1, -2, -3...)
-                // Modulo (totalStonksVariants - 1) to modulo 9, aby zapętlić warianty 1-9
-                stonksVisualVariantIndex = 1 + (Math.floor((currentLevel - 11) / 11) % (totalStonksVariants - 1));
-            }
+            // Wariant 0 dla poziomów 1-10.
+            // Dla poziomów 11-20, variant-1, dla 21-30, variant-2, itd.
+            // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
+            const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
+            stonksVisualVariantIndex = bossCyclesCompletedForNormalStonks % totalStonksVariants;
+            
             console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
             
             // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
             // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
             // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
-            const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
             INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
             console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
 
@@ -1097,7 +1092,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = '+1 to respect!'; 
+            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // Przywrócono oryginalny tekst
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
