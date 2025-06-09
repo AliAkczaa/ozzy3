@@ -57,6 +57,14 @@
             <button id="back-to-start-button">Wróć do menu</button>
         </div>
 
+        <!-- NOWY element: Pasek życia gracza (dodany tutaj) -->
+        <div id="player-health-container" class="hidden">
+            <p>Twoje ZDROWIE: <span id="player-health-display"></span></p>
+            <div id="player-health-bar-bg">
+                <div id="player-health-bar-fill"></div>
+            </div>
+        </div>
+
         <!-- NOWY KONTENER NA INFORMACJE O GRZE (PUNKTY I POZIOM) -->
         <div id="game-info-container" class="hidden">
             <div id="score-display">Punkty: <span id="score">0</span></div>
@@ -77,6 +85,8 @@
         <!-- NEW: Upgrade Shop Screen -->
         <div id="upgrade-shop-screen" class="hidden">
             <h2>Sklep Ulepszeń</h2>
+            <p id="shop-points">Twoje punkty: <span id="current-score-shop">0</span></p>
+            
             <div class="upgrade-category">
                 <h3>Obrażenia Podstawowe</h3>
                 <p>Poziom: <span id="base-damage-level">1</span></p>
@@ -109,8 +119,9 @@
     </div>
 
     <!-- ZMIANA: Uproszczone tagi audio -->
-    <audio id="background-music" src="muzyka.mp3" loop></audio>
-    <audio id="punch-sound" src="punch.mp3"></audio>
+    <audio id="background-music" src="muzyka.mp3" loop preload="auto"></audio>
+    <audio id="punch-sound" src="punch.mp3" preload="auto"></audio>
+    <audio id="game-over-sound" src="gameover.mp3" preload="auto"></audio> <!-- NOWY dźwięk game over -->
 
     <!-- ZMIANA: Usunięto stare skrypty Firebase compat.js. script.js używa modular v9. -->
     <script src="script.js" type="module"></script>
