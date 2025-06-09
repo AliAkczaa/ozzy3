@@ -178,7 +178,7 @@ let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
 // === Canvas Particles System ===
 class CanvasParticle {
-    constructor(x, y, vx, vy, color, size, life, type, angle = 0, image = null) { // Added image parameter
+    constructor(x, y, vx, vy, color, size, life, type, angle = 0, image = null, targetX = null, targetY = null) { // Added image parameter, and targetX/Y for lightning
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -192,6 +192,8 @@ class CanvasParticle {
         this.angle = angle; // For rotation of some shapes
         this.startSize = size; // Store initial size for scaling
         this.image = image; // Store image for drawing (if type requires it)
+        this.targetX = targetX; // For lightning lines
+        this.targetY = targetY; // For lightning lines
     }
 
     update(deltaTime) { // Przyjmujemy deltaTime
@@ -251,7 +253,7 @@ class CanvasParticle {
             ctx.lineCap = 'round';
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
-            ctx.lineTo(this.targetX, this.targetY);
+            ctx.lineTo(this.targetX, this.targetY); // Correctly uses targetX/Y for lines
             ctx.stroke();
         } else if (this.type === 'iceShard') {
             ctx.fillStyle = this.color;
@@ -410,47 +412,69 @@ function animateGameCanvasEffects(currentTime) {
         }
     }
 
-    // Lightning particles (spawned in activateLightningStrike, just update and draw here)
+    // Lightning particles (spawn only if lightning mode is active)
     if (lightningModeActive) {
         gameEffectsCanvas.classList.remove('hidden');
         gameEffectsCanvas.classList.add('active');
         lightningEffect.classList.remove('hidden'); // Ensure the overlay is visible
         lightningEffect.classList.add('flash-active'); // Add active class for transition
 
-        // Spawn new lightning particles frequently
-        if (lightningCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.7) { // Control frequency for storm
-            const numSegments = Math.floor(Math.random() * 3) + 2; // 2-4 segments per bolt
-            let currentX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8; // Start near Ozzy, wider area (increased area for storm)
-            let currentY = ozzyCanvasY - ozzyRect.height * (0.5 + Math.random() * 0.5); // Start above Ozzy
+        // NOWE: Generowanie segmentów błyskawic w pętli animacji
+        const lightningSpawnChance = 0.2; // Szansa na wygenerowanie nowej błyskawicy w każdej klatce (zwiększona)
+        if (lightningCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < lightningSpawnChance) {
+            const boltLength = Math.random() * 100 + 100; // Długość głównego segmentu błyskawicy
+            const boltWidth = Math.random() * 5 + 5; // Grubość błyskawicy
+            const boltLife = 800 + Math.random() * 700; // Życie błyskawicy (0.8 - 1.5s)
 
-            for (let i = 0; i < numSegments; i++) {
-                const nextX = currentX + (Math.random() - 0.5) * 80; // Segment length (increased)
-                const nextY = currentY + (Math.random() * 100); // Segment length, generally downwards (increased)
+            // Losowy punkt startowy dla błyskawicy (na górze ekranu)
+            const startX = Math.random() * gameEffectsCanvas.width;
+            const startY = Math.random() * gameEffectsCanvas.height * 0.3; // Górne 30% ekranu
 
-                // Life in milliseconds (0.75-1.5 seconds)
-                const life = 750 + Math.random() * 750;
-                const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
+            // Random angle, mostly downwards
+            const angle = Math.PI / 2 + (Math.random() - 0.5) * (Math.PI / 4); // Between 45 and 135 degrees (mostly downwards)
+
+            let currentBoltX = startX;
+            let currentBoltY = startY;
+
+            // Generate main segments of the bolt
+            for (let i = 0; i < 3; i++) { // 3-4 segments per bolt for branching effect
+                const nextX = currentBoltX + Math.cos(angle + (Math.random() - 0.5) * 0.3) * (boltLength / 3 + Math.random() * 20);
+                const nextY = currentBoltY + Math.sin(angle + (Math.random() - 0.5) * 0.3) * (boltLength / 3 + Math.random() * 20);
 
                 lightningCanvasParticles.push(new CanvasParticle(
-                    currentX, currentY, 0, 0, // No independent movement for lines, target defines end
-                    `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
-                    size, life, 'lightningLine', 0, nextX, nextY
+                    currentBoltX, currentBoltY, 0, 0,
+                    `rgba(255, 255, ${Math.floor(Math.random() * 100) + 180}, ${0.8 + Math.random() * 0.2})`, // Jaśniejszy, bardziej biało-żółty
+                    boltWidth, boltLife, 'lightningLine', 0, nextX, nextY
                 ));
-                currentX = nextX;
-                currentY = nextY;
+                currentBoltX = nextX;
+                currentBoltY = nextY;
+
+                // Add small branches
+                if (Math.random() < 0.5) { // 50% chance to branch
+                    const branchLength = boltLength * (0.3 + Math.random() * 0.3); // 30-60% of main length
+                    const branchAngle = angle + (Math.random() < 0.5 ? 1 : -1) * (Math.PI / 4 + Math.random() * (Math.PI / 8)); // 45-67.5 degrees off main
+                    const branchX = currentBoltX + Math.cos(branchAngle) * branchLength;
+                    const branchY = currentBoltY + Math.sin(branchAngle) * branchLength;
+
+                    lightningCanvasParticles.push(new CanvasParticle(
+                        currentBoltX, currentBoltY, 0, 0,
+                        `rgba(255, 255, ${Math.floor(Math.random() * 100) + 180}, ${0.6 + Math.random() * 0.2})`,
+                        boltWidth * 0.6, boltLife * 0.8, 'lightningLine', 0, branchX, branchY
+                    ));
+                }
             }
 
-            // Add some small, bright "sparks" around the bolt (larger, slower)
-            for (let j = 0; j < Math.random() * 2 + 1; j++) { // 1-2 sparks per bolt
+            // Add some bright "sparks" at the end of the main bolt
+            for (let j = 0; j < Math.random() * 5 + 3; j++) { // 3-7 sparks per bolt
                 lightningCanvasParticles.push(new CanvasParticle(
-                    ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8, // Wider spawn area for sparks
-                    ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.8,
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // Slower sparks (reduced by 30%)
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7),
-                    `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
-                    Math.random() * 8 + 4, // size (larger)
-                    1000, // life in ms (1 second)
-                    'lightningSpark' // Specific type for lightning sparks
+                    currentBoltX + (Math.random() - 0.5) * 20,
+                    currentBoltY + (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // Wolniejsze iskry
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5),
+                    `rgba(255, 255, 255, ${0.7 + Math.random() * 0.3})`, // Białe iskry
+                    Math.random() * 6 + 2, // size (2-8)
+                    600, // life in ms (0.6 seconds)
+                    'lightningSpark' 
                 ));
             }
         }
@@ -632,7 +656,8 @@ function spawnStonksAttackEffects(ozzyX, ozzyY) {
 
     // --- Efekty pazurów (clawMarks) ---
     const numClawImages = 1; // Tylko jeden obraz pazura na atak
-    const clawImageSize = Math.min(gameContainerWidth * 0.2, gameContainerHeight * 0.2, 150); // Rozmiar pazura
+    // Rozmiar pazura dostosowany do rozmiaru ekranu, aby był czytelny
+    const clawImageSize = Math.min(gameContainerWidth * 0.3, gameContainerHeight * 0.3, 200); // Max 200px, responsive to screen
     const clawLife = 1000; // Życie obrazka pazura w ms (1 sekunda)
 
     for (let s = 0; s < numClawImages; s++) {
@@ -909,52 +934,8 @@ function activateLightningStrike() {
         lightningModeActive = false;
     }, 2500); // Duration for the lightning storm (2.5 seconds)
 
-    // Get Ozzy's position relative to the game container
-    const ozzyRect = ozzyContainer.getBoundingClientRect();
-    const gameRect = gameContainer.getBoundingClientRect();
-
-    // Calculate center of Ozzy relative to game container
-    const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
-    const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
-
-    const numBolts = 5; // Number of lightning segments
-
     lightningEffect.classList.remove('hidden'); // Show the overlay for general flash
     lightningEffect.classList.add('flash-active'); // Add class for animation
-
-    // Generate lightning bolts on canvas
-    for (let i = 0; i < numBolts; i++) {
-        // Start point near top of Ozzy, spread wider
-        const startX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5; // Zwiększony obszar startowy
-        const startY = ozzyCanvasY - ozzyRect.height * 0.7; // Start wyżej nad Ozzy'm
-
-        // End point below Ozzy, spread wider
-        const endX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8; // Zwiększony obszar końcowy
-        const endY = ozzyCanvasY + ozzyRect.height * 0.8 + Math.random() * 50; // Koniec niżej
-
-        const life = 1500; // Życie w ms (1.5 sekundy)
-        const size = Math.random() * 8 + 5; // Line width (większy)
-
-        lightningCanvasParticles.push(new CanvasParticle(
-            startX, startY, 0, 0, // No independent movement for lines, target defines end
-            `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
-            size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
-        ));
-
-        // Add some small, bright "sparks" around the bolt (larger, slower)
-        for (let j = 0; j < 3; j++) {
-            lightningCanvasParticles.push(new CanvasParticle(
-                startX + (Math.random() - 0.5) * 30, // Większe rozproszenie
-                startY + (Math.random() - 0.5) * 30,
-                (Math.random() - 0.5) * 2.5, // vx (wolniejsze)
-                (Math.random() - 0.5) * 2.5, // vy (wolniejsze)
-                `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
-                Math.random() * 5 + 3, // size (większy)
-                1000, // life in ms (1 second)
-                'lightningSpark' 
-            ));
-        }
-    }
 
     // Hide CSS flash and clear canvas particles after animation
     setTimeout(() => {
@@ -1393,7 +1374,7 @@ function handleOzzyKnockout() {
         isBossFight = true; // Set boss flag 
         startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
         // Zwiększ obrażenia Stonksa w trybie bossa
-        STONKS_ATTACK_DAMAGE += 5; // Zwiększ obrażenia zadawane przez Stonksa
+        STONKS_ATTACK_DAMAGE += 3; // Zwiększ obrażenia zadawane przez Stonksa (ZMIANA Z 5 NA 3)
         clearInterval(playerAttackIntervalId); // Zatrzymaj obecny interwał
         playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restartuj z nowymi obrażeniami
     } else {
