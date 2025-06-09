@@ -1183,7 +1183,7 @@
         lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
         lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
         buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-        freezeDamageLevelDisplay = document('freeze-damage-level');
+        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
         freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
         buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
