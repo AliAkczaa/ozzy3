@@ -51,21 +51,22 @@ body {
 /* Animacja Stonksa w trakcie ataku */
 #ozzy-image.attacking {
     /* ZMIANA: Dłuższa animacja ataku */
-    animation: ozzy-attack 0.8s ease-out; /* Było 0.3s, teraz 0.8s */
+    animation: ozzy-attack 1.2s ease-out; /* Było 0.3s, teraz 0.8s */
 }
 
 @keyframes ozzy-attack {
     0% { transform: scale(1); }
-    25% { transform: scale(1.1) rotate(5deg); } /* Większe odchylenie */
-    50% { transform: scale(0.9) rotate(-5deg); } /* Mniejsze, w drugą stronę */
-    75% { transform: scale(1.05) rotate(2deg); } /* Powrót z lekkim dociągnięciem */
+    25% { transform: scale(1.15) rotate(7deg); } /* Większe odchylenie */
+    50% { transform: scale(0.95) rotate(-7deg); } /* Mniejsze, w drugą stronę */
+    75% { transform: scale(1.1) rotate(4deg); } /* Powrót z lekkim dociągnięciem */
     100% { transform: scale(1) rotate(0deg); }
 }
 
 /* Animacja wstrząsu ekranu */
 .screen-shake {
-    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    transform: translate(-50%, -50%); /* Zachowanie centrowania */
+    /* ZMIANA: Jeszcze dłuższy czas trwania wstrząsu */
+    animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; /* Było 0.4s, teraz 0.6s */
+    transform: translate(-50%, -50%); 
     backface-visibility: hidden;
     perspective: 1000px;
 }
