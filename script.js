@@ -569,7 +569,7 @@
             const endX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8;
             const endY = ozzyCanvasY + ozzyRect.height / 2 + Math.random() * 50;
 
-            const life = 15; // Short life for flash effect
+            const life = 100; // ZMIANA: Dłuższe życie dla efektu błyskawicy (ok. 1.5 sekundy przy 60FPS)
             const size = Math.random() * 5 + 3; // Line width
 
             lightningCanvasParticles.push(new CanvasParticle(
@@ -587,7 +587,7 @@
                     (Math.random() - 0.5) * 5,
                     `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
                     Math.random() * 3 + 1,
-                    10,
+                    30, // ZWIĘKSZONO: Życie dla iskier
                     'bossFire' // Reusing a simple circle particle type
                 ));
             }
@@ -597,8 +597,10 @@
         setTimeout(() => {
             lightningEffect.classList.remove('flash-active');
             lightningEffect.classList.add('hidden');
-            lightningCanvasParticles = []; // Clear canvas particles
-        }, 800); // Match animation duration
+            // Cząsteczki canvasa są usuwane przez ich "life" w głównej pętli animateGameCanvasEffects
+            // Nie musimy ich czyścić tutaj, bo zostaną usunięte automatycznie po upływie ich "life".
+            // lightningCanvasParticles = []; // Usunięto: Niepotrzebne, cząsteczki znikają same
+        }, 1500); // ZMIANA: Dłuższe opóźnienie dla zniknięcia nakładki (pasuje do życia cząsteczek)
     }
 
 
