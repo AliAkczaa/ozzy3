@@ -617,5 +617,7 @@ button:disabled {
     /* ZMIANA: Pozycja komunikatów na mobilnych (nad Stonksem) */
     .knockout-message, .boss-message {
         top: 25%; /* Przeniesienie wyżej, nad Stonksa */
+        font-size: clamp(0.8em, 3.5vw, 1.5em); /* Zmniejszona czcionka dla mobilnych */
+        padding: 15px 20px; /* Zmniejszony padding */
     }
 }
