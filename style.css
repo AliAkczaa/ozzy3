@@ -185,6 +185,17 @@ body {
     transform: scale(1.05);
 }
 
+/* Animacja Stonksa podczas ataku gracza */
+#ozzy-image.attacking {
+    animation: stonks-attack-animation 0.3s ease-in-out;
+}
+
+@keyframes stonks-attack-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08) translateX(5px) translateY(-5px); filter: brightness(1.8) contrast(1.5) drop-shadow(0 0 25px #FF0000); } /* Większy, lekki ruch i czerwony blask */
+    100% { transform: scale(1); }
+}
+
 /* Animacja pojawiania się Ozzy'ego */
 #ozzy-image.spawn-ozzy {
     animation: spawn-pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -245,7 +256,7 @@ body {
 }
 
 
-/* Pasek zdrowia */
+/* Pasek zdrowia Stonksa */
 #health-bar-container {
     width: 80%;
     height: 25px; /* Grubszy pasek */
@@ -264,6 +275,44 @@ body {
     background-color: limegreen;
     transition: width 0.3s ease-out, background-color 0.3s ease-out;
     border-radius: 7px;
+}
+
+/* NOWE: Pasek życia gracza */
+#player-health-container {
+    position: absolute;
+    bottom: 10px; /* Pozycja na dole ekranu */
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 2px solid #00BFFF; /* Niebieska ramka dla gracza */
+    z-index: 30;
+    font-size: clamp(0.7em, 2.5vw, 1em);
+    color: #00BFFF; /* Niebieski tekst */
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.5); /* Niebieski cień */
+}
+
+#player-health-container p {
+    margin: 5px 0;
+    text-align: center; /* Wyśrodkuj tekst "Twoje ZDROWIE" */
+}
+
+#player-health-bar-bg {
+    width: clamp(150px, 25vw, 250px); /* Responsywna szerokość paska życia */
+    height: 20px; /* Grubość paska życia */
+    background-color: #333;
+    border: 2px solid #00BFFF;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+#player-health-bar-fill {
+    height: 100%;
+    width: 100%;
+    background-color: #00BFFF; /* Kolor niebieski dla życia gracza */
+    transition: width 0.3s ease-out, background-color 0.3s ease-out;
+    border-radius: 3px;
 }
 
 /* Ekrany gry (start, koniec, ranking, sklep) - Poprawione pozycjonowanie */
@@ -300,10 +349,13 @@ body {
     margin-bottom: 15px;
 }
 
+#nick-input-container {
+    margin-bottom: 20px;
+}
+
 #nickname-input {
     padding: 10px 15px;
     font-size: clamp(0.8em, 3.5vw, 1.2em);
-    margin-bottom: 20px;
     border: 3px solid #FFD700;
     background-color: #333;
     color: #eee;
