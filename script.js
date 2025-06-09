@@ -830,7 +830,7 @@ async function fetchAndDisplayLeaderboard() {
         snapshot.forEach(doc => {
             const data = doc.data();
             const li = document.createElement('li');
-            li.textContent = `${data.nickname || 'Anonim'}: ${data.score} znokautowań`;
+            li.textContent = `${data.nickname || 'Anonim'}: ${data.score} points`;
             leaderboardList.appendChild(li);
         });
     } catch (e) {
