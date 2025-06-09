@@ -62,6 +62,16 @@ body {
     100% { transform: scale(1) rotate(0deg); }
 }
 
+#ozzy-image.stonks-attack-effect {
+    animation: stonksAttackFlash 0.2s ease-out; /* Dodaj animację, jeśli chcesz płynniejsze przejście */
+}
+
+@keyframes stonksAttackFlash {
+    0% { filter: brightness(100%) grayscale(0%); }
+    50% { filter: brightness(200%) grayscale(100%); } /* Mocniejszy błysk i odwrócenie */
+    100% { filter: brightness(100%) grayscale(0%); }
+}
+
 /* Animacja wstrząsu ekranu */
 .screen-shake {
     /* ZMIANA: Jeszcze dłuższy czas trwania wstrząsu */
