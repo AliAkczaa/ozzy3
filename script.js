@@ -80,7 +80,7 @@
     let currentUserId = null;
     let isGameActive = false; 
 
-    let currentLevel = 0;
+    let currentLevel = 0; // Starts at 0, becomes 1 on game start
     let isBossFight = false;
 
     let punchesSinceLastPowerup = 0;
@@ -119,7 +119,7 @@
 
     const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
-    const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels
+    const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
     const NORMAL_OZZY_HEALTH_INCREMENT = 20; 
@@ -481,7 +481,7 @@
 
     /**
      * Updates Ozzy's appearance based on the current level and boss status.
-     * Uses CSS classes for dynamic filter changes.
+     * Uses CSS classes to dynamically change filters.
      */
     function updateOzzyAppearance() {
         // Remove all previous variant classes
@@ -492,15 +492,14 @@
             ozzyImage.classList.remove(`boss-mode-variant-${i}`);
         }
 
-        // Add Stonks variant class based on level
-        ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
-
-        // If it's a boss fight, add an additional boss variant class
-        if (isBossFight) {
-            ozzyImage.classList.add('boss-mode'); // Keep existing boss-mode class
-            ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
+        // Add Stonks variant class based on level (for normal Stonks)
+        // If it's a boss fight, the boss-mode class takes precedence for core appearance
+        if (!isBossFight) {
+             ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
         } else {
-            ozzyImage.classList.remove('boss-mode');
+            // If it's a boss fight, apply specific boss variant on top of default boss styling
+            ozzyImage.classList.add('boss-mode'); 
+            ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
         }
     }
 
@@ -510,7 +509,7 @@
         console.log("resetGame called.");
         score = 0;
         scoreDisplay.textContent = score;
-        currentLevel = 0;
+        currentLevel = 0; // Reset level to 0
         currentLevelDisplay.textContent = currentLevel;
 
         isBossFight = false;
@@ -631,7 +630,7 @@
 
         playerNickname = nickname;
         
-        resetGame(); // This function already resets variants
+        resetGame(); // This function already resets variants and basic game state
         
         isGameActive = true;
         startScreen.classList.add('hidden');
@@ -640,17 +639,20 @@
         superpowerButtonsContainer.classList.remove('hidden');
         shopButton.classList.remove('hidden');
         
+        // Initialize level and score for the *new* game
         currentLevel = 1; // Start from level 1
         currentLevelDisplay.textContent = currentLevel;
-        currentScore = 0; // Ensure score is reset
-        scoreDisplay.textContent = currentScore;
+        score = 0; // Corrected: use 'score' instead of 'currentScore'
+        scoreDisplay.textContent = score;
 
         // Reset Ozzy's health for the new game based on level 1
-        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (currentLevel - 1) * NORMAL_OZZY_HEALTH_INCREMENT;
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // No scaling for level 1
         ozzyHealth = INITIAL_OZZY_HEALTH;
         updateHealthBar();
         
-        updateOzzyAppearance(); // Apply initial Stonks appearance
+        // Apply initial Stonks appearance for level 1
+        stonksVisualVariantIndex = 0; // Ensure it starts with the first variant
+        updateOzzyAppearance(); 
 
         if (backgroundMusic) {
             backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
@@ -709,7 +711,7 @@
     }
 
     function handleOzzyKnockout() {
-        score++; 
+        score++; // Increment score for every knockout
         scoreDisplay.textContent = score;
 
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
@@ -717,33 +719,47 @@
 
         ozzyContainer.classList.add('hidden');
 
-        // Check if it's a boss level
-        if (currentLevel > 0 && currentLevel % BOSS_LEVEL_INTERVAL === 0) {
-            startBossFight();
+        // Determine if the *next* level is a boss level
+        const nextLevelCandidate = currentLevel + 1; // Temporary variable to check for boss
+        
+        if (nextLevelCandidate > 0 && nextLevelCandidate % BOSS_LEVEL_INTERVAL === 0) {
+            // It's time for a boss fight
+            currentLevel = nextLevelCandidate; // Set currentLevel to the boss level (e.g., 10, 20)
+            currentLevelDisplay.textContent = currentLevel; // Update display
+            isBossFight = true; // Set boss flag 
+            startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
+            // No need to set ozzyHealth and updateHealthBar here, startBossFight handles it.
+            // No need for a separate knockout message, startBossFight handles boss message.
         } else {
             // Normal Stonks knockout
+            currentLevel = nextLevelCandidate; // Increment level for normal stonks
+            currentLevelDisplay.textContent = currentLevel; // Update display
+
             isBossFight = false;
             ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // Increment Stonks visual variant every 10 levels (after boss fight)
-            // This needs to happen when a *normal* Stonks spawns after 10 levels of regular play
-            if (currentLevel > 0 && currentLevel % 10 === 0) { // This condition is already true for boss levels, so this will only trigger *after* a boss has been defeated and a new normal stonks appears.
-                stonksVisualVariantIndex = (stonksVisualVariantIndex + 1) % totalStonksVariants;
+            // Update Stonks visual variant if it's the start of a new 10-level block (e.g., Level 1, 11, 21, 31)
+            // Variant changes for normal Stonks appearing *after* a boss fight or at the very beginning
+            if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
+                stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
             }
             updateOzzyAppearance(); // Apply the new Stonks variant
 
-            // Reset Ozzy's position to center for normal Stonks
-            bossCurrentTransformX = 0; 
+            bossCurrentTransformX = 0; // Reset position for normal Stonks
             ozzyContainer.style.transform = `translate(-50%, -50%)`; 
-
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
 
             // Scale normal Ozzy health
             INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
-            showMessage(`Stonks jest silniejszy!`, 2000); 
+            
+            // "Stonks jest silniejszy!" message: show only on specific levels (e.g., every 5 normal levels)
+            // This message appears on levels 5, 15, 25, etc.
+            if (currentLevel > 0 && currentLevel % 5 === 0) { 
+                 showMessage(`Stonks jest silniejszy!`, 2000); 
+            }
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
@@ -753,19 +769,15 @@
             setTimeout(() => {
                 knockoutMsgElement.remove();
             }, 2000); 
-
-            // Increment level for normal knockout
-            currentLevel++; 
-            currentLevelDisplay.textContent = currentLevel; 
         }
 
-        ozzyHealth = INITIAL_OZZY_HEALTH; 
+        ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
         updateHealthBar(); 
 
+        // Rest of the common respawn logic
         setTimeout(() => {
             ozzyContainer.classList.remove('hidden');
             ozzyImage.classList.remove('hit-effect');
-            // Maintain appropriate transformation on respawn
             if (!isBossFight) {
                 ozzyContainer.style.transform = `translate(-50%, -50%)`; // Clean centering for normal Stonks
             } else {
@@ -781,16 +793,14 @@
     }
 
     function startBossFight() {
-        isBossFight = true;
+        // `isBossFight` and `currentLevel` are already correctly set by `handleOzzyKnockout`
         ozzyImage.src = BOSS_IMAGE_URL; 
         ozzyImage.classList.add('boss-mode'); 
         
-        // Scale boss health based on encounter count
+        // Scale boss health based on encounter count (currentLevel is already correct)
         const bossEncounterCount = currentLevel / BOSS_LEVEL_INTERVAL;
         INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
-
-        // Ensure boss health does not drop below minimum if scaling is too aggressive
-        INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); 
+        INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); // Ensure it doesn't go below base
 
         console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}`);
 
@@ -803,8 +813,7 @@
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = false; 
 
-        // Reset bossCurrentTransformX and set initial position to center
-        bossCurrentTransformX = 0;
+        bossCurrentTransformX = 0; // Reset boss position to center initially
         ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
 
         bossDx = BOSS_MOVEMENT_SPEED * (Math.random() < 0.5 ? 1 : -1); 
@@ -814,10 +823,6 @@
             ozzyImage.classList.remove('flipped-x');
         }
         bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); 
-
-        // Increment level here after boss spawns, as it's a new level encounter
-        currentLevel++;
-        currentLevelDisplay.textContent = currentLevel;
     }
 
 
