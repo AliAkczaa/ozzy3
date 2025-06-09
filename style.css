@@ -279,9 +279,6 @@ body {
 
 /* NOWE: Pasek życia gracza */
 #player-health-container {
-    position: absolute;
-    bottom: 10px; /* Pozycja na dole ekranu */
-    left: 10px;
     background-color: rgba(0, 0, 0, 0.7);
     padding: 10px 15px;
     border-radius: 8px;
@@ -290,15 +287,22 @@ body {
     font-size: clamp(0.7em, 2.5vw, 1em);
     color: #00BFFF; /* Niebieski tekst */
     box-shadow: 0 0 15px rgba(0, 191, 255, 0.5); /* Niebieski cień */
+    /* Pozycjonowanie dla desktopu (domyślne) */
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(200px, 30vw, 350px); /* Responsywna szerokość */
+    text-align: center;
 }
 
 #player-health-container p {
     margin: 5px 0;
-    text-align: center; /* Wyśrodkuj tekst "Twoje ZDROWIE" */
+    /* text-align: center; */ /* Już wyśrodkowane przez #player-health-container */
 }
 
 #player-health-bar-bg {
-    width: clamp(150px, 25vw, 250px); /* Responsywna szerokość paska życia */
+    width: 100%; 
     height: 20px; /* Grubość paska życia */
     background-color: #333;
     border: 2px solid #00BFFF;
@@ -615,7 +619,7 @@ button:disabled {
     }
 
     #superpower-buttons-container {
-        bottom: 100px; /* Podniesienie przycisków na mobilnych */
+        bottom: 10px; /* Domyślna pozycja na mobilnych */
         flex-direction: row; /* Przyciski w rzędzie */
         width: 95%; /* Większa szerokość */
         padding: 5px;
@@ -667,6 +671,22 @@ button:disabled {
         top: 25%; /* Przeniesienie wyżej, nad Stonksa */
         font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka dla mobilnych */
         padding: 12px 18px; /* Zmniejszony padding */
+    }
+
+    /* NOWE: Pozycja paska życia gracza na mobilnych - nad przyciskami supermocy */
+    #player-health-container {
+        position: absolute;
+        bottom: 100px; /* Powyżej superpower-buttons-container (który jest na bottom: 10px) */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%; /* Szerszy na mobilnych */
+        padding: 8px 12px;
+        font-size: clamp(0.6em, 2.5vw, 1em);
+    }
+
+    #player-health-bar-bg {
+        width: 100%; /* Rozciągnij na całą szerokość kontenera */
+        height: 18px; /* Nieco mniejsza wysokość na mobilnych */
     }
 }
 
