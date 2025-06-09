@@ -680,7 +680,7 @@ button:disabled {
 
     /* Przycisk sklepu - górny prawy róg na mobilnych */
     #shop-button {
-        top: 10px;
+        top: 0px;
         right: 10px;
         left: unset;
         bottom: unset;
