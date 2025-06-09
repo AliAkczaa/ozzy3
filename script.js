@@ -1421,7 +1421,7 @@ function handleOzzyKnockout() {
     ozzyContainer.classList.add('hidden');
 
     // NOWE: Regeneracja życia gracza po pokonaniu Stonksa
-    playerHealth = Math.min(MAX_PLAYER_HEALTH, playerHealth + 20); // Regeneracja 20 HP
+    playerHealth = MAX_PLAYER_HEALTH; // Regeneracja 20 HP
     updatePlayerHealthUI();
 
     // Determine if the *next* level is a boss level
