@@ -209,29 +209,29 @@ body {
     transform: scaleX(-1); /* Odwrócenie w poziomie */
 }
 
-/* Warianty wizualne Stonksa (normalne) */
+/* Warianty wizualne Stonksa (normalne) - ZNACZNE POPRAWKI */
 #ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny, brak efektów */
-#ozzy-image.stonks-variant-1 { filter: hue-rotate(45deg) brightness(1.2) saturate(1.8); } /* ZMIANA: Wyraźniejszy hue-rotate i nasycenie */
-#ozzy-image.stonks-variant-2 { filter: hue-rotate(120deg) saturate(1.8) brightness(1.1) contrast(1.2) drop-shadow(0 0 5px rgba(0,255,0,0.5)); } /* ZMIANA: Wyraźny zielonkawy, więcej detali */
-#ozzy-image.stonks-variant-3 { filter: invert(100%) hue-rotate(270deg) saturate(1.5) brightness(1.3) drop-shadow(0 0 5px rgba(128,0,128,0.5)); } /* ZMIANA: Fioletowy inwersja, wyraźny */
-#ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); } /* Pozostaje, skoro działał */
-#ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
-#ozzy-image.stonks-variant-6 { filter: drop-shadow(0 0 8px #00FF00) brightness(1.3); }
-#ozzy-image.stonks-variant-7 { filter: sepia(70%) contrast(150%) brightness(1.1); }
-#ozzy-image.stonks-variant-8 { filter: hue-rotate(270deg) saturate(180%) drop-shadow(0 0 10px #FF00FF); }
-#ozzy-image.stonks-variant-9 { filter: brightness(0.7) contrast(200%); }
+#ozzy-image.stonks-variant-1 { filter: hue-rotate(90deg) saturate(200%) brightness(1.2) contrast(1.1); } /* Zielonkawy, bardzo wyraźny */
+#ozzy-image.stonks-variant-2 { filter: sepia(100%) brightness(1.2) contrast(1.5) hue-rotate(20deg); } /* Ciepły sepia, z kontrastem */
+#ozzy-image.stonks-variant-3 { filter: invert(80%) hue-rotate(220deg) saturate(200%) brightness(1.5) drop-shadow(0 0 10px rgba(0,0,255,0.7)); } /* Inwersja na niebieski, z blaskiem */
+#ozzy-image.stonks-variant-4 { filter: grayscale(100%) contrast(200%) brightness(1.5) hue-rotate(0deg); } /* Czarno-biały, mocny kontrast */
+#ozzy-image.stonks-variant-5 { filter: saturate(300%) brightness(1.2) contrast(1.3) hue-rotate(180deg); } /* Mocno nasycony, cyjan */
+#ozzy-image.stonks-variant-6 { filter: hue-rotate(300deg) saturate(250%) brightness(1.1) contrast(1.2) drop-shadow(0 0 12px rgba(255,0,255,0.8)); } /* Fioletowy/różowy neon */
+#ozzy-image.stonks-variant-7 { filter: blur(1.5px) saturate(250%) hue-rotate(60deg) brightness(1.3); } /* Rozmyty i złocisty */
+#ozzy-image.stonks-variant-8 { filter: grayscale(50%) sepia(80%) hue-rotate(150deg) brightness(1.1) contrast(1.2); } /* Szaro-niebieski z sepią */
+#ozzy-image.stonks-variant-9 { filter: invert(100%) saturate(150%) brightness(0.8) contrast(1.8); } /* Pełna inwersja, ciemniejszy, bardziej surowy */
 
-/* Warianty wizualne Bossa (zmodyfikowane - bardziej dynamiczne) */
-#ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); } /* Czerwony, bazowy */
-#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(50deg) brightness(1.5) saturate(200%) contrast(1.3) drop-shadow(0 0 45px #FFA500); } /* Sepia/Pomarańczowy, mocniejszy */
-#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(200%) brightness(1.1) blur(0.8px) contrast(1.5) drop-shadow(0 0 50px #00FFFF); } /* Inwersja / Cyjan Glitch mocniejszy */
-#ozzy-image.boss-mode-variant-3 { filter: grayscale(90%) contrast(250%) brightness(0.7) hue-rotate(60deg) drop-shadow(0 0 55px #808080); } /* Szary Metaliczny z mocniejszym kontrastem i odcieniem */
-#ozzy-image.boss-mode-variant-4 { filter: blur(2px) hue-rotate(280deg) saturate(400%) contrast(1.8) drop-shadow(0 0 60px #FF00FF); } /* Rozmyty Purpurowy Glitch bardzo intensywny */
-#ozzy-image.boss-mode-variant-5 { filter: brightness(3.0) contrast(0.4) invert(30%) hue-rotate(20deg) drop-shadow(0 0 65px #FFFFFF); } /* Błysk / Biały Ghost z wyraźniejszą inwersją i odcieniem */
-#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(100deg) saturate(300%) brightness(1.5) contrast(1.8) drop-shadow(0 0 70px #00FF00); } /* Bardzo Intensywny Zielony */
-#ozzy-image.boss-mode-variant-7 { filter: sepia(90%) invert(60%) brightness(1.3) saturate(200%) contrast(1.5) drop-shadow(0 0 75px #FFFF00); } /* Połączenie Sepia/Inwersja / Żółty, jeszcze mocniejszy */
-#ozzy-image.boss-mode-variant-8 { filter: contrast(400%) brightness(0.4) hue-rotate(150deg) drop-shadow(0 0 80px #0000FF); } /* Ekstremalny Kontrast / Głęboki Niebieski */
-#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(320deg) saturate(200%) blur(1.2px) brightness(1.1) drop-shadow(0 0 85px #FF007F); } /* Magentowy / Różowy z wyraźnym rozmyciem i blaskiem */
+/* Warianty wizualne Bossa (zmodyfikowane - BARDZIEJ DYNAMICZNE I AGRESYWNE) */
+#ozzy-image.boss-mode-variant-0 { filter: brightness(1.5) contrast(1.5) hue-rotate(0deg) drop-shadow(0 0 50px #FF0000) saturate(200%); } /* Intensywny Czerwony Ogień */
+#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(80deg) brightness(1.8) saturate(300%) contrast(1.8) drop-shadow(0 0 60px #FFA500) ; } /* Piekielny Pomarańcz */
+#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(300%) brightness(1.3) blur(1.5px) contrast(2.0) drop-shadow(0 0 70px #00FFFF); } /* Glitchy Cyjan / Elektryczny */
+#ozzy-image.boss-mode-variant-3 { filter: grayscale(100%) contrast(300%) brightness(0.5) hue-rotate(90deg) drop-shadow(0 0 80px #00FF00); } /* Czarno-zielony, radioaktywny */
+#ozzy-image.boss-mode-variant-4 { filter: blur(3px) hue-rotate(200deg) saturate(500%) contrast(2.5) drop-shadow(0 0 90px #FF00FF); } /* Rozmyty Kosmiczny Fiolet */
+#ozzy-image.boss-mode-variant-5 { filter: brightness(4.0) contrast(0.2) invert(50%) hue-rotate(45deg) drop-shadow(0 0 100px #FFFFFF); } /* Ultra Biały Duch / Błysk */
+#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(150deg) saturate(400%) brightness(1.8) contrast(2.0) drop-shadow(0 0 110px #00BFFF); } /* Lodowy Błękit, intensywny */
+#ozzy-image.boss-mode-variant-7 { filter: sepia(100%) invert(80%) brightness(1.5) saturate(250%) contrast(1.8) drop-shadow(0 0 120px #FFFF00); } /* Złoto-żółty, toksyczny */
+#ozzy-image.boss-mode-variant-8 { filter: contrast(500%) brightness(0.2) hue-rotate(270deg) drop-shadow(0 0 130px #8A2BE2); } /* Ciemny Fiolet, bardzo kontrastowy */
+#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(340deg) saturate(250%) blur(2px) brightness(1.3) drop-shadow(0 0 140px #FFD700); } /* Złoty Rozmyty Blask */
 
 
 @keyframes boss-flicker {
