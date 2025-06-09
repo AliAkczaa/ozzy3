@@ -117,7 +117,7 @@
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    const ORIGINAL_OZZY_IMAGE_URL = 'stonks2.png'; // Updated to match index.html
+    const ORIGINAL_OZZY_IMAGE_URL = 'stonks2.png'; 
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
     const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -171,9 +171,9 @@
     let bossEffectIntervalId; // Interval for generating particles
 
     // Constants for canvas effects
-    const ICE_SHARD_COUNT = 5;
-    const FLAME_PARTICLE_COUNT = 3;
-    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 200; // How often new particles are generated
+    const ICE_SHARD_COUNT = 8; // Zwiększona liczba odłamków lodu
+    const FLAME_PARTICLE_COUNT = 5; // Zwiększona liczba cząsteczek płomieni
+    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 150; // Częściej generowane cząsteczki
 
 
     // --- Leaderboard Functions ---
@@ -535,6 +535,7 @@
         bossVisualVariantIndex = 0;
         updateOzzyAppearance(); // Apply default appearance
 
+        // ZMIANA: Resetowanie zdrowia Ozzy'ego do wartości początkowej dla poziomu 1
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
 
         PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
@@ -661,8 +662,8 @@
         score = 0; // Corrected: use 'score' instead of 'currentScore'
         scoreDisplay.textContent = score;
 
-        // Reset Ozzy's health for the new game based on level 1
-        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // No scaling for level 1
+        // ZMIANA: Zdrowie dla poziomu 1 jest ustawiane tutaj
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
         ozzyHealth = INITIAL_OZZY_HEALTH;
         updateHealthBar();
         
@@ -747,8 +748,6 @@
             currentLevelDisplay.textContent = currentLevel; // Update display
             isBossFight = true; // Set boss flag 
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
-            // No need to set ozzyHealth and updateHealthBar here, startBossFight handles it.
-            // No need for a separate knockout message, startBossFight handles boss message.
             startBossCanvasEffects(); // NEW: Start canvas effects for boss
         } else {
             // Normal Stonks knockout
@@ -760,27 +759,24 @@
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
-            // It's triggered when a normal Stonks appears.
-            // ZMIANA: Komunikat "Stonks jest silniejszy!" tylko od poziomu 11
-            if (currentLevel > 1 && (currentLevel -1) % 10 === 0) { 
-                stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
+            // ZMIANA: Logika zwiększania zdrowia i komunikatu "Stonks jest silniejszy!"
+            // To następuje tylko na poziomach 1, 11, 21, itd.
+            if (currentLevel === 1 || (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL === 1))) { 
+                stonksVisualVariantIndex = ((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
+                
+                // Zwiększ zdrowie Stonksa tylko na początku nowej "dziesiątki" poziomów
+                // (np. poziom 1, po bossie na poziomie 10 - czyli poziom 11, po bossie na 20 - czyli poziom 21)
+                const tier = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); // 0 dla poziomów 1-10, 1 dla 11-20, itd.
+                INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (tier * NORMAL_OZZY_HEALTH_INCREMENT);
                 showMessage(`Stonks jest silniejszy!`, 2000); 
-            } else if (currentLevel === 1) { // If it's level 1, ensure variant 0
-                stonksVisualVariantIndex = 0;
-            } else { // For levels 2-9, 12-19 etc., keep the current variant (no change in strength message)
-                // no change needed for stonksVisualVariantIndex here, it's already set from previous tier
             }
-
+            
             updateOzzyAppearance(); // Apply the new Stonks variant
 
             bossCurrentTransformX = 0; // Reset position for normal Stonks
             ozzyContainer.style.transform = `translate(-50%, -50%)`; 
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
-
-            // Scale normal Ozzy health
-            INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
@@ -1052,11 +1048,11 @@
                     type: 'ice',
                     x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 1.5,
                     y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 1.5,
-                    size: Math.random() * 10 + 5,
+                    size: Math.random() * 20 + 10, // ZWIĘKSZONO ROZMIAR ODŁAMKÓW LODU
                     alpha: 0.8,
-                    dx: (Math.random() - 0.5) * 3, // Horizontal movement
-                    dy: (Math.random() - 0.5) * 3, // Vertical movement
-                    fade: 0.015,
+                    dx: (Math.random() - 0.5) * 4, // Horizontal movement
+                    dy: (Math.random() - 0.5) * 4, // Vertical movement
+                    fade: 0.01, // Mniejsze zanikanie, aby dłużej były widoczne
                     angle: Math.random() * Math.PI * 2
                 });
             }
@@ -1067,11 +1063,11 @@
                     type: 'flame',
                     x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.5, // More centralized
                     y: ozzyCanvasCenterY + ozzyRect.height * 0.4, // From bottom part of Ozzy
-                    radius: Math.random() * 20 + 10,
+                    radius: Math.random() * 40 + 20, // ZWIĘKSZONO ROZMIAR PŁOMIENI
                     alpha: 0.7,
-                    dx: (Math.random() - 0.5) * 1.5,
-                    dy: -Math.random() * 3 - 0.5, // Move upwards
-                    fade: 0.01
+                    dx: (Math.random() - 0.5) * 2,
+                    dy: -Math.random() * 5 - 1, // Move upwards faster
+                    fade: 0.008 // Mniejsze zanikanie, aby dłużej były widoczne
                 });
             }
         }, BOSS_EFFECT_PARTICLE_INTERVAL_MS);
