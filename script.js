@@ -179,7 +179,6 @@
     let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
     // === Canvas Particles System ===
-    // ZMIANA: Nowy typ cząsteczki dla zadrapań
     class CanvasParticle {
         constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
             this.x = x;
@@ -187,11 +186,11 @@
             this.vx = vx;
             this.vy = vy;
             this.color = color;
-            this.size = size; // Updated: size can be larger now
+            this.size = size;
             this.life = life; // Total frames/steps to live
             this.currentLife = 0;
             this.alpha = 1;
-            this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch'
+            this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch', 'stonksClaw', 'painParticle'
             this.angle = angle; // For rotation of some shapes
             this.targetX = targetX;
             this.targetY = targetY;
@@ -211,12 +210,20 @@
                 this.alpha -= 0.05; // Fade faster for quick pulse
             } else if (this.type === 'lightningLine') {
                 // Lightning lines are static after creation, they just fade
-            }
-            // ZMIANA: Cząsteczki zadrapań powoli znikają
-            else if (this.type === 'scratch') {
+            } else if (this.type === 'scratch') {
                 this.alpha -= 0.02; // Fade out slowly
                 this.vx *= 0.98; // Slow down
                 this.vy *= 0.98; // Slow down
+            } else if (this.type === 'stonksClaw') {
+                this.alpha -= 0.04; // Szybkie zanikanie
+                this.size *= 0.95; // Lekkie zmniejszenie rozmiaru
+                if (this.currentLife % 5 === 0) { // Co kilka klatek lekko zmieniaj kąt
+                    this.angle += (Math.random() - 0.5) * 0.2; // Dodaj trochę "chwiejności"
+                }
+            } else if (this.type === 'painParticle') {
+                this.vy += 0.1; // Grawitacja
+                this.alpha -= 0.05; // Szybkie zanikanie
+                this.size *= 0.98; // Zmniejszaj rozmiar
             }
         }
 
@@ -224,7 +231,7 @@
             ctx.save();
             ctx.globalAlpha = Math.max(0, this.alpha);
 
-            if (this.type.startsWith('boss') || this.type === 'lightningSpark') { // Added lightningSpark type for small particles
+            if (this.type.startsWith('boss') || this.type === 'lightningSpark') {
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 if (this.type === 'bossElectricity' || this.type === 'lightningSpark') {
@@ -236,19 +243,19 @@
             } else if (this.type === 'lightningLine') {
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = this.size;
-                ctx.lineCap = 'round'; // Rounded ends for lightning segments
+                ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
-                ctx.lineTo(this.targetX, this.targetY); // Use target for lightning line end point
+                ctx.lineTo(this.targetX, this.targetY);
                 ctx.stroke();
             } else if (this.type === 'iceShard') {
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle * Math.PI / 180);
-                ctx.moveTo(0, -this.size); // Top point
-                ctx.lineTo(this.size / 2, this.size / 2); // Bottom right
-                ctx.lineTo(-this.size / 2, this.size / 2); // Bottom left
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size / 2, this.size / 2);
+                ctx.lineTo(-this.size / 2, this.size / 2);
                 ctx.closePath();
                 ctx.fill();
             } else if (this.type === 'frenzyPulse') {
@@ -257,17 +264,36 @@
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
                 ctx.stroke();
-            }
-            // ZMIANA: Rysowanie zadrapań
-            else if (this.type === 'scratch') {
+            } else if (this.type === 'scratch') {
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = this.size;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
-                // Rysuje linię pod kątem z określoną długością
                 ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 8, this.y + Math.sin(this.angle) * this.size * 8);
                 ctx.stroke();
+            } else if (this.type === 'stonksClaw') {
+                // Rysuje linię w kształcie "szpona"
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.size;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle); // Kąt jest już w radianach
+                ctx.moveTo(-this.size * 1.5, 0); // Start poza centrum
+                ctx.lineTo(this.size * 1.5, 0); // Koniec poza centrum
+                ctx.stroke();
+            } else if (this.type === 'painParticle') {
+                ctx.fillStyle = this.color;
+                // Rysuje małe trójkąty dla "punktów bólu"
+                ctx.beginPath();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size, this.size);
+                ctx.lineTo(-this.size, this.size);
+                ctx.closePath();
+                ctx.fill();
             }
 
             ctx.restore();
@@ -284,8 +310,10 @@
     let lightningCanvasParticles = [];
     let freezeCanvasParticles = [];
     let frenzyCanvasParticles = [];
-    // NOWE: Tablica na cząsteczki zadrapań
     let scratchCanvasParticles = [];
+    // NOWE: Tablice na cząsteczki ataku Stonksa
+    let stonksAttackClawParticles = [];
+    let stonksAttackPainParticles = [];
 
     const MAX_CANVAS_PARTICLES = 200; // General limit for performance
     let lightningModeActive = false; // New state variable for lightning storm
@@ -454,7 +482,7 @@
             }
         }
 
-        // NOWE: Aktualizacja i rysowanie cząsteczek zadrapań
+        // Update and draw scratch particles
         for (let i = scratchCanvasParticles.length - 1; i >= 0; i--) {
             scratchCanvasParticles[i].update();
             if (scratchCanvasParticles[i].isDead()) {
@@ -464,13 +492,33 @@
             }
         }
 
+        // NOWE: Update and draw Stonks attack particles
+        for (let i = stonksAttackClawParticles.length - 1; i >= 0; i--) {
+            stonksAttackClawParticles[i].update();
+            if (stonksAttackClawParticles[i].isDead()) {
+                stonksAttackClawParticles.splice(i, 1);
+            } else {
+                stonksAttackClawParticles[i].draw(gameEffectsCtx);
+            }
+        }
+
+        for (let i = stonksAttackPainParticles.length - 1; i >= 0; i--) {
+            stonksAttackPainParticles[i].update();
+            if (stonksAttackPainParticles[i].isDead()) {
+                stonksAttackPainParticles.splice(i, 1);
+            } else {
+                stonksAttackPainParticles[i].draw(gameEffectsCtx);
+            }
+        }
 
         // Determine if there are *any* active particles or if game is active to keep canvas visible
         const anyParticlesActive = bossCanvasParticles.length > 0 ||
                                    lightningCanvasParticles.length > 0 ||
                                    freezeCanvasParticles.length > 0 ||
                                    frenzyCanvasParticles.length > 0 ||
-                                   scratchCanvasParticles.length > 0; // NOWE: Dodano sprawdzenie zadrapań
+                                   scratchCanvasParticles.length > 0 ||
+                                   stonksAttackClawParticles.length > 0 || // NOWE
+                                   stonksAttackPainParticles.length > 0;   // NOWE
 
         // Only request next frame if game is active OR there are still particles to animate
         if (isGameActive || anyParticlesActive) {
@@ -510,6 +558,52 @@
             ));
         }
     }
+
+    /**
+     * NOWE: Funkcja do tworzenia dynamicznych efektów ataku Stonksa (szpony, rozprysk bólu)
+     * @param {number} x Pozycja X Stonksa na canvasie
+     * @param {number} y Pozycja Y Stonksa na canvasie
+     * @param {number} ozzyWidth Szerokość obrazka Stonksa
+     * @param {number} ozzyHeight Wysokość obrazka Stonksa
+     */
+    function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
+        // Oblicz obszar wokół Stonksa, gdzie będą pojawiać się efekty
+        const spawnRadiusX = ozzyWidth * 0.4; // Atak wokół Stonksa
+        const spawnRadiusY = ozzyHeight * 0.4;
+
+        // Ilość cięć (szponów)
+        const numClaws = Math.floor(Math.random() * 3) + 3; // 3-5 cięć
+        for (let i = 0; i < numClaws; i++) {
+            const startX = x + (Math.random() - 0.5) * spawnRadiusX;
+            const startY = y + (Math.random() - 0.5) * spawnRadiusY;
+            const angle = Math.random() * Math.PI * 2; // Losowy kąt cięcia
+            const size = Math.random() * 8 + 10; // Większa szerokość cięcia (10-18)
+            const life = 20 + Math.random() * 10; // Krótkie życie (20-30 klatek)
+            const color = `rgba(${255 - Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`; // Odcienie czerwieni
+            
+            stonksAttackClawParticles.push(new CanvasParticle(
+                startX, startY, 0, 0, color, size, life, 'stonksClaw', angle
+            ));
+        }
+
+        // Ilość "punktów bólu"
+        const numPainParticles = Math.floor(Math.random() * 5) + 5; // 5-10 punktów
+        for (let i = 0; i < numPainParticles; i++) {
+            const startX = x + (Math.random() - 0.5) * spawnRadiusX * 0.7; // Bliżej centrum ataku
+            const startY = y + (Math.random() - 0.5) * spawnRadiusY * 0.7;
+            const angle = Math.random() * Math.PI * 2; // Losowy kąt lotu
+            const size = Math.random() * 3 + 3; // Małe rozmiary (3-6)
+            const life = 30 + Math.random() * 15; // Trochę dłuższe życie (30-45 klatek)
+            const vx = (Math.random() - 0.5) * 5; // Początkowa prędkość X
+            const vy = (Math.random() - 0.5) * 5 - 2; // Początkowa prędkość Y (lekko w górę, potem grawitacja)
+            const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; // Czerwień/pomarańcz
+            
+            stonksAttackPainParticles.push(new CanvasParticle(
+                startX, startY, vx, vy, color, size, life, 'painParticle', angle
+            ));
+        }
+    }
+
 
     // --- Leaderboard Functions ---
     async function saveScoreToLeaderboard(nickname, score) {
@@ -616,7 +710,7 @@
         ozzyImage.classList.add('attacking');
         setTimeout(() => {
             ozzyImage.classList.remove('attacking');
-        }, 1500); // Duration of the attack animation
+        }, 300); // Duration of the attack animation
 
         // ZMIANA: Dodanie wstrząsu ekranu
         gameContainer.classList.add('screen-shake');
@@ -629,18 +723,13 @@
         playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
         updatePlayerHealthUI();
 
-        // NOWE: Wywołanie efektu zadrapań na canvasie
+        // NOWE: Wywołanie NOWEGO efektu ataku Stonksa na canvasie
         const ozzyRect = ozzyContainer.getBoundingClientRect();
         const gameRect = gameContainer.getBoundingClientRect();
         const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
         const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
         
-        drawScratchEffect(ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8, 
-                          ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8, 
-                          Math.floor(Math.random() * 3) + 2, // 2-4 zadrapania
-                          'rgba(255, 0, 0, 0.8)', // Czerwone zadrapania
-                          7 // ZMIANA: Bazowy rozmiar linii zadrapania zwiększony o 100% (z 5 na 10)
-        );
+        spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY, ozzyRect.width, ozzyRect.height);
 
         if (playerHealth <= 0) {
             endGame("ZGINĄŁEŚ W WALCE ZE STONKSEM!"); // Game over if player health reaches 0
@@ -999,7 +1088,9 @@ function activateLightningStrike() {
         lightningCanvasParticles = [];
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
-        scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
+        scratchCanvasParticles = [];
+        stonksAttackClawParticles = []; // NOWE
+        stonksAttackPainParticles = [];   // NOWE
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
@@ -1175,7 +1266,9 @@ function activateLightningStrike() {
         lightningCanvasParticles = [];
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
-        scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
+        scratchCanvasParticles = [];
+        stonksAttackClawParticles = []; // NOWE
+        stonksAttackPainParticles = [];   // NOWE
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
@@ -1584,7 +1677,9 @@ function activateLightningStrike() {
             lightningCanvasParticles = [];
             freezeCanvasParticles = [];
             frenzyCanvasParticles = [];
-            scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
+            scratchCanvasParticles = [];
+            stonksAttackClawParticles = []; // NOWE
+            stonksAttackPainParticles = [];   // NOWE
             if (gameEffectsCtx) {
                 gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             }
