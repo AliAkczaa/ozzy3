@@ -209,11 +209,10 @@ body {
     transform: scaleX(-1); /* Odwrócenie w poziomie */
 }
 
-
 /* Warianty wizualne Stonksa (normalne) */
 #ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny */
 #ozzy-image.stonks-variant-1 { filter: hue-rotate(30deg) brightness(1.1); }
-#ozzy-image.stonks-variant-2 { filter: grayscale(80%) sepia(30%); }
+#ozzy-image.stonks-variant-2 { filter: grayscale(60%) contrast(120%); } /* ZMIANA: Mniej szarości, więcej kontrastu */
 #ozzy-image.stonks-variant-3 { filter: invert(50%) saturate(120%); }
 #ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); }
 #ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
