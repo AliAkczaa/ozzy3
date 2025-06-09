@@ -1,4 +1,4 @@
-    // === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
+// === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
     // Przejdź do Firebase Console -> Twój Projekt -> Ustawienia projektu (zębatka) -> Dodaj aplikację (ikona </> dla web)
     // Skopiuj obiekt firebaseConfig i wklej go tutaj:
     const firebaseConfig = {
@@ -63,7 +63,7 @@
     let lightningDamageLevelDisplay;
     let lightningDamageCostDisplay;
     let buyLightningDamageButton;
-    let freezeDamageLevelDisplay; // Corrected
+    let freezeDamageLevelDisplay;
     let freezeDamageCostDisplay;
     let buyFreezeDamageButton;
     let frenzyDamageLevelDisplay;
@@ -590,11 +590,10 @@
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
         upgradeShopScreen.classList.add('hidden'); // Ensure shop is hidden on reset
-        startScreen.classList.remove('hidden'); 
-        shopButton.classList.remove('hidden'); 
+        startScreen.classList.remove('hidden'); // Ensure start screen is visible
+        shopButton.classList.add('hidden'); // Shop button should be hidden initially, shown when game starts later
         superpowerButtonsContainer.classList.add('hidden'); 
-        
-        gameInfoContainer.classList.add('hidden');
+        gameInfoContainer.classList.add('hidden'); 
 
         clearInterval(superpowerCooldownIntervalId);
         updateSuperpowerCooldownDisplays(); 
@@ -665,7 +664,7 @@
         ozzyContainer.classList.remove('hidden');
         gameInfoContainer.classList.remove('hidden');
         superpowerButtonsContainer.classList.remove('hidden');
-        shopButton.classList.remove('hidden');
+        shopButton.classList.remove('hidden'); // Show shop button when game starts
         
         // Initialize level and score for the *new* game
         currentLevel = 1; // Start from level 1
@@ -1184,7 +1183,7 @@
         lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
         lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
         buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level'); // Corrected line
+        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level'); 
         freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
         buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
@@ -1198,6 +1197,12 @@
         // The resetGame function handles hiding all screens, including the shop.
         // It's crucial to call it AFTER all DOM elements are assigned.
         resetGame(); 
+
+        console.log("DEBUG: After resetGame() call:");
+        console.log("startScreen classList:", startScreen ? startScreen.classList.value : 'N/A');
+        console.log("upgradeShopScreen classList:", upgradeShopScreen ? upgradeShopScreen.classList.value : 'N/A');
+        console.log("shopButton classList:", shopButton ? shopButton.classList.value : 'N/A');
+        console.log("ozzyContainer classList:", ozzyContainer ? ozzyContainer.classList.value : 'N/A');
 
         console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
         console.log("Initial target image (Ozzy) dimensions:", ozzyImage.offsetWidth, ozzyImage.offsetHeight);
