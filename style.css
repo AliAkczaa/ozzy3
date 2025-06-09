@@ -256,9 +256,9 @@ body {
 /* Ekrany gry (start, koniec, ranking, sklep) - Poprawione pozycjonowanie */
 #start-screen, #end-screen, #leaderboard-screen, #upgrade-shop-screen {
     position: absolute;
-    top: 50%; /* ZMIANA: Centrowanie pionowe */
-    left: 50%; /* ZMIANA: Centrowanie poziome */
-    transform: translate(-50%, -50%); /* ZMIANA: Dokładne centrowanie */
+    top: 50%; /* Centrowanie pionowe */
+    left: 50%; /* Centrowanie poziome */
+    transform: translate(-50%, -50%); /* Dokładne centrowanie */
     width: 80%; /* Zachowaj responsywność */
     max-width: 500px; /* Maksymalna szerokość */
     background: rgba(0, 0, 0, 0.9); /* Półprzezroczyste tło */
@@ -270,7 +270,7 @@ body {
     z-index: 1000; /* Zawsze na wierzchu */
     padding: 30px; /* Zwiększony padding dla lepszych marginesów wewnętrznych */
     box-sizing: border-box; /* padding wewnątrz szerokości/wysokości */
-    max-height: 95vh; /* ZMIANA: Mniejszy max-height dla przestrzeni od góry/dołu */
+    max-height: 95vh; /* Mniejszy max-height dla przestrzeni od góry/dołu */
     overflow-y: auto; /* Zapewnij przewijanie, jeśli zawartość przekroczy wysokość */
 }
 
@@ -415,7 +415,7 @@ button:disabled {
 /* Wiadomości dynamiczne */
 .knockout-message, .boss-message {
     position: absolute;
-    top: 65%; /* ZMIANA: Niższe położenie */
+    top: 80%; /* ZMIANA: Niższe położenie, z 65% na 80% */
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: rgba(0, 0, 0, 0.8);
@@ -483,12 +483,11 @@ button:disabled {
     gap: 15px;
     width: 80%; /* Zachowaj responsywność */
     max-width: 500px; /* Maksymalna szerokość */
-    /* ZMIANA: Zamiast top/left/width/height na 100%, używamy centrowania i max-height */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-height: 95vh; /* ZMIANA: Daje więcej miejsca na górze/dole */
+    max-height: 95vh; /* Daje więcej miejsca na górze/dole */
     overflow-y: auto; /* Przewijanie, jeśli zawartość jest długa */
 }
 
@@ -547,6 +546,8 @@ button:disabled {
 
 #boss-effect-canvas.active {
     opacity: 1; /* Aktywacja */
+    /* TEMP DEBUG: Bardzo lekki podkład, aby sprawdzić czy Canvas w ogóle jest aktywny */
+    background-color: rgba(0, 255, 255, 0.05); /* Bardzo lekki cyjanowy overlay */
 }
 
 
@@ -566,7 +567,7 @@ button:disabled {
     }
 
     #superpower-buttons-container {
-        bottom: 60px; /* ZMIANA: Podniesienie przycisków na mobilnych */
+        bottom: 100px; /* ZMIANA: Podniesienie przycisków na mobilnych, z 60px na 100px */
         flex-direction: row; /* Przyciski w rzędzie */
         width: 95%; /* Większa szerokość */
         padding: 5px;
