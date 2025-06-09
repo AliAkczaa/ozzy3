@@ -305,7 +305,7 @@ body {
     margin: 5px 0;
 }
 
-#player-health-bar-bg {
+#-bar-bg {
     width: 100%; 
     height: 20px; /* Grubość paska życia */
     background-color: #333;
@@ -630,11 +630,11 @@ button:disabled {
     /* Pasek życia gracza na mobilnych - umieszczony nad przyciskami supermocy */
     #player-health-container {
         top: unset; 
-        bottom: 50px; /* ZMNIEJSZONO BOTTOM - PRZESUNIĘCIE NIŻEJ */
+        bottom: 75px; /* ZMNIEJSZONO BOTTOM - PRZESUNIĘCIE NIŻEJ */
         left: 50%;
         transform: translateX(-50%);
         width: clamp(100px, 45vw, 200px); /* ZMNIEJSZONO szerokość (ok. 50%) */
-        padding: 8px 12px;
+        padding: 5px 12px;
         font-size: clamp(0.6em, 2.5vw, 1em);
     }
     #player-health-bar-bg {
