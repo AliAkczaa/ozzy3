@@ -262,7 +262,7 @@
         // Resize canvas to match gameContainer (do this first for correct drawing)
         gameEffectsCanvas.width = gameContainer.offsetWidth;
         gameEffectsCanvas.height = gameContainer.offsetHeight;
-        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
 
         // Calculate Ozzy's center relative to the canvas
         const ozzyRect = ozzyContainer.getBoundingClientRect();
@@ -1063,29 +1063,24 @@ function activateLightningStrike() {
             // Normal Stonks knockout
             currentLevel = nextLevelCandidate; // Increment level for normal stonks
             currentLevelDisplay.textContent = currentLevel; // Update display
+            console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
 
             isBossFight = false;
             ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // Clear all canvas effect particles when transitioning from boss to normal Stonks
-            // This is also implicitly handled by animateGameCanvasEffects based on `isBossFight` and `frenzyModeActive`/`freezeModeActive`
-            // bossCanvasParticles = []; 
-            // lightningCanvasParticles = []; 
-            // freezeCanvasParticles = []; 
-            // frenzyCanvasParticles = [];
-            
             // ZMIANA: Logika wyboru wariantu Stonksa:
             if (currentLevel >= 1 && currentLevel <= 10) {
                 stonksVisualVariantIndex = 0; // Wariant 0 dla poziomów 1-10
             } else {
                 // Od poziomu 11, zmieniaj wariant co 11 poziomów, zaczynając od variant-1
-                // (currentLevel - 11) daje 0 dla poziomu 11, 1 dla 12, itd.
-                // Podzielone przez 11 i modulo totalStonksVariants-1 (bo 0 jest specjalny)
-                // Dodajemy 1, żeby zacząć od stonks-variant-1
+                // currentLevel - 11: dla 11lvl to 0, dla 22lvl to 11, dla 33lvl to 22
+                // (currentLevel - 11) / 11: dla 11lvl to 0, dla 22lvl to 1, dla 33lvl to 2
+                // + 1: żeby zacząć od stonks-variant-1, stonks-variant-2, itd.
                 stonksVisualVariantIndex = 1 + (Math.floor((currentLevel - 11) / 11) % (totalStonksVariants - 1));
             }
+            console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex}`);
             
             if (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL !== 1)) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
                  INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT;
