@@ -1078,11 +1078,10 @@ function activateLightningStrike() {
             // freezeCanvasParticles = []; 
             // frenzyCanvasParticles = [];
             
-            // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
-            // It's triggered when a normal Stonks appears.
-            // ZMIANA: Wybieraj wariant z całej puli (0-9) zamiast tylko 0-3
-            stonksVisualVariantIndex = (currentLevel - 1) % totalStonksVariants; 
-            if (currentLevel > 1 && (currentLevel - 1) % BOSS_LEVEL_INTERVAL !== 0) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
+            // ZMIANA: Logika wyboru wariantu Stonksa: zmienia się co 10 poziomów (po bossie)
+            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
+            
+            if (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL !== 1)) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
                  INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT;
             }
             updateOzzyAppearance(); // Apply the new Stonks variant
@@ -1140,8 +1139,7 @@ function activateLightningStrike() {
 
         showBossMessage("UWAGA! BOSS STONKS! ROZPIERDOL GO!", 2500); 
 
-        // Increment boss visual variant for each fight
-        // ZMIANA: Wybieraj wariant z całej puli (0-9) zamiast tylko 0-2
+        // ZMIANA: Logika wyboru wariantu Bossa: zmienia się dla każdego kolejnego bossa
         bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
         updateOzzyAppearance(); // Apply the new boss variant
 
