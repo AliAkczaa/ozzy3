@@ -215,15 +215,15 @@
                 this.vx *= 0.98; // Slow down
                 this.vy *= 0.98; // Slow down
             } else if (this.type === 'stonksClaw') {
-                this.alpha -= 0.02; // Szybkie zanikanie
-                this.size *= 0.975; // Lekkie zmniejszenie rozmiaru
+                this.alpha -= 0.01; // Szybkie zanikanie
+                this.size *= 0.99; // Lekkie zmniejszenie rozmiaru
                 if (this.currentLife % 5 === 0) { // Co kilka klatek lekko zmieniaj kąt
-                    this.angle += (Math.random() - 0.5) * 0.2; // Dodaj trochę "chwiejności"
+                    this.angle += (Math.random() - 0.5) * 0.1; // Dodaj trochę "chwiejności"
                 }
             } else if (this.type === 'painParticle') {
-                this.vy += 0.1; // Grawitacja
-                this.alpha -= 0.025; // Szybkie zanikanie
-                this.size *= 0.99; // Zmniejszaj rozmiar
+                this.vy += 0.05; // Grawitacja
+                this.alpha -= 0.015; // Szybkie zanikanie
+                this.size *= 0.995; // Zmniejszaj rozmiar
             }
         }
 
@@ -568,17 +568,18 @@
      */
     function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
         // Oblicz obszar wokół Stonksa, gdzie będą pojawiać się efekty
-        const spawnRadiusX = ozzyWidth * 0.4; // Atak wokół Stonksa
-        const spawnRadiusY = ozzyHeight * 0.4;
+        const gameContainerRect = gameContainer.getBoundingClientRect(); // Pobierz rozmiary kontenera gry
+        const spawnAreaX = gameContainerRect.width * 0.8; // 80% szerokości kontenera
+        const spawnAreaY = gameContainerRect.height * 0.8; // 80% wysokości kontenera
 
         // Ilość cięć (szponów)
-        const numClaws = Math.floor(Math.random() * 3) + 3; // 3-5 cięć
+        const numClaws = Math.floor(Math.random() * 4) + 4; // 3-5 cięć
         for (let i = 0; i < numClaws; i++) {
             const startX = x + (Math.random() - 0.5) * spawnRadiusX;
             const startY = y + (Math.random() - 0.5) * spawnRadiusY;
             const angle = Math.random() * Math.PI * 2; // Losowy kąt cięcia
-            const size = Math.random() * 12 + 15; // Większa szerokość cięcia (10-18)
-            const life = 40 + Math.random() * 20; // Krótkie życie (20-30 klatek)
+            const size = Math.random() * 24 + 30; // Większa szerokość cięcia (10-18)
+            const life = 80 + Math.random() * 40; // Krótkie życie (20-30 klatek)
             const color = `rgba(${255 - Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`; // Odcienie czerwieni
             
             stonksAttackClawParticles.push(new CanvasParticle(
@@ -587,15 +588,19 @@
         }
 
         // Ilość "punktów bólu"
-        const numPainParticles = Math.floor(Math.random() * 5) + 5; // 5-10 punktów
+        const numPainParticles = Math.floor(Math.random() * 8) + 8; // 8-15 punktów (więcej)
         for (let i = 0; i < numPainParticles; i++) {
-            const startX = x + (Math.random() - 0.5) * spawnRadiusX * 0.7; // Bliżej centrum ataku
-            const startY = y + (Math.random() - 0.5) * spawnRadiusY * 0.7;
+            // ZMIANA: Losowanie pozycji na większym obszarze, centrowanie na Stonksie
+            const startX = x + (Math.random() - 0.5) * spawnAreaX * 0.7; // Bliżej centrum ataku, ale nadal duży obszar
+            const startY = y + (Math.random() - 0.5) * spawnAreaY * 0.7;
             const angle = Math.random() * Math.PI * 2; // Losowy kąt lotu
-            const size = Math.random() * 5 + 5; // Małe rozmiary (3-6)
-            const life = 60 + Math.random() * 30; // Trochę dłuższe życie (30-45 klatek)
-            const vx = (Math.random() - 0.5) * 2.5; // Początkowa prędkość X
-            const vy = (Math.random() - 0.5) * 2.5 - 1; // Początkowa prędkość Y (lekko w górę, potem grawitacja)
+            // ZMIANA: Zwiększony rozmiar punktów bólu o 100% (z 5-10 na 10-20)
+            const size = Math.random() * 10 + 10; // Min size 10, max 20
+            // ZMIANA: Znacznie wydłużony czas życia (z 60-90 na 120-180 klatek)
+            const life = 120 + Math.random() * 60;
+            // ZMIANA: Prędkości zredukowane o kolejne 50%
+            const vx = (Math.random() - 0.5) * 1.25; // Zmieniono z 2.5 na 1.25
+            const vy = (Math.random() - 0.5) * 1.25 - 0.5; // Zmieniono z 2.5 na 1.25 i z -1 na -0.5
             const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; // Czerwień/pomarańcz
             
             stonksAttackPainParticles.push(new CanvasParticle(
