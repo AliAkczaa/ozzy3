@@ -1,4 +1,4 @@
-// === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
+    // === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
     // Przejdź do Firebase Console -> Twój Projekt -> Ustawienia projektu (zębatka) -> Dodaj aplikację (ikona </> dla web)
     // Skopiuj obiekt firebaseConfig i wklej go tutaj:
     const firebaseConfig = {
@@ -70,6 +70,8 @@
     let frenzyDamageCostDisplay;
     let buyFrenzyDamageButton;
     let quoteImagesContainer; 
+    let bossEffectCanvas; // Reference to the new canvas element
+    let bossEffectCtx;    // 2D rendering context for the boss canvas
 
     // --- Other global variables (not directly related to DOM), with immediate assignments ---
     let playerNickname = "Gracz";
@@ -117,13 +119,12 @@
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    const ORIGINAL_OZZY_IMAGE_URL = 'stonks2.png'; 
+    const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
     const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
-    // ZMIANA: Zwiększony przyrost zdrowia
-    const NORMAL_OZZY_HEALTH_INCREMENT = 30; 
+    const NORMAL_OZZY_HEALTH_INCREMENT = 20; 
     const BOSS_INITIAL_HEALTH = 450; 
     const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 150; 
 
@@ -154,31 +155,18 @@
 
     // --- Variables for visual variants of Stonks ---
     let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
-    // ZMIANA: Zwiększona liczba wariantów wizualnych
-    const totalStonksVariants = 10;     
+    const totalStonksVariants = 4;     // Number of available variants (0, 1, 2, 3)
     let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
-    // ZMIANA: Zwiększona liczba wariantów wizualnych bossa
-    const totalBossVariants = 10;       
+    const totalBossVariants = 3;       // Number of available Boss variants (0, 1, 2)
 
     // Original superpower button texts (for display when not on cooldown)
     const originalLightningText = 'Piorun Zagłady';
     const originalFreezeText = 'Lodowy Wybuch';
     const originalFrenzyText = 'Szał Bojowy';
 
-    // --- NEW: Global variables for Canvas effects ---
-    let bossEffectCanvas;
-    let bossEffectCtx;
-    let bossCanvasAnimationId;
-    let bossParticles = []; // For ice shards/flames
-    let isCanvasEffectActive = false;
-    let bossEffectIntervalId; // Interval for generating particles
-
-    // Constants for canvas effects
-    const ICE_SHARD_COUNT = 10; // Zwiększona liczba odłamków lodu
-    const FLAME_PARTICLE_COUNT = 8; // Zwiększona liczba cząsteczek płomieni
-    const EARTH_PARTICLE_COUNT = 7; // Nowy typ: cząsteczki ziemi
-    const ENERGY_ORB_COUNT = 3;   // Nowy typ: kule energii
-    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 100; // Częściej generowane cząsteczki
+    // Particles for boss canvas effects
+    let bossParticles = [];
+    const MAX_BOSS_PARTICLES = 100;
 
 
     // --- Leaderboard Functions ---
@@ -239,14 +227,14 @@
         img.classList.add('quote-image'); 
 
         const gameContainerRect = gameContainer.getBoundingClientRect();
-        const maxX = gameContainerRect.width - QUOTE_SIZE_PX;
-        const maxY = gameContainerRect.height - QUOTE_SIZE_PX;
+        const ozzyRect = ozzyContainer.getBoundingClientRect();
 
-        const randomX = Math.random() * Math.max(0, maxX);
-        const randomY = Math.random() * Math.max(0, maxY);
+        // Position quotes around Ozzy, but still within game container
+        const quoteX = ozzyRect.left + ozzyRect.width / 2 + (Math.random() * 200 - 100);
+        const quoteY = ozzyRect.top + ozzyRect.height / 2 + (Math.random() * 200 - 100);
 
-        img.style.left = `${randomX}px`;
-        img.style.top = `${randomY}px`;
+        img.style.left = `${Math.min(Math.max(0, quoteX - QUOTE_SIZE_PX / 2), gameContainerRect.width - QUOTE_SIZE_PX)}px`;
+        img.style.top = `${Math.min(Math.max(0, quoteY - QUOTE_SIZE_PX / 2), gameContainerRect.height - QUOTE_SIZE_PX)}px`;
 
         const randomRotation = Math.random() * 90 - 45; 
         img.style.transform = `rotate(${randomRotation}deg)`;
@@ -345,36 +333,48 @@
         const actualLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage - 1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
         applyDamageToOzzy(actualLightningDamage); 
 
-        const segments = 10; 
+        // Get Ozzy's position relative to the game container
         const ozzyRect = ozzyContainer.getBoundingClientRect();
-        const startX = ozzyRect.left + ozzyRect.width / 2;
-        const startY = ozzyRect.top - 50; 
+        const gameRect = gameContainer.getBoundingClientRect();
 
-        for (let i = 0; i < segments; i++) {
+        // Calculate center of Ozzy relative to game container
+        const ozzyCenterX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+        const ozzyCenterY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+
+        const numSegments = 10;
+        lightningEffect.innerHTML = ''; // Clear previous segments
+        lightningEffect.classList.remove('hidden'); // Show the overlay
+
+        for (let i = 0; i < numSegments; i++) {
             const segment = document.createElement('div');
             segment.classList.add('lightning-segment');
 
-            const length = Math.random() * 50 + 30; 
-            const angle = Math.random() * 40 - 20; 
-            const width = Math.random() * 5 + 3; 
+            // Randomize position and size for more dynamic lightning
+            const length = Math.random() * 80 + 50; // length of segment
+            const width = Math.random() * 5 + 3; // width of segment
+            const angle = Math.random() * 90 - 45; // angle of segment (-45 to +45 deg)
+
+            // Distribute segments around Ozzy
+            const offsetX = (Math.random() - 0.5) * ozzyRect.width * 1.5;
+            const offsetY = (Math.random() - 0.5) * ozzyRect.height * 1.5;
 
             segment.style.width = `${width}px`;
             segment.style.height = `${length}px`;
-            segment.style.left = `${startX + (Math.random() - 0.5) * 50}px`; 
-            segment.style.top = `${startY + i * (ozzyRect.height / segments) + (Math.random() - 0.5) * 20}px`;
-            segment.style.transform = `rotate(${angle}deg)`;
-            segment.style.transformOrigin = `center top`; 
+            segment.style.left = `${ozzyCenterX + offsetX}px`;
+            segment.style.top = `${ozzyCenterY + offsetY}px`;
+            segment.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`; // Center segment on its own point
+            segment.style.animation = `lightningSegmentFade 0.8s forwards`; // Apply animation
 
             lightningEffect.appendChild(segment);
         }
 
-        lightningEffect.classList.remove('hidden');
-
+        // Hide after animation
         setTimeout(() => {
             lightningEffect.classList.add('hidden');
-            lightningEffect.innerHTML = ''; 
-        }, 1000); 
+            lightningEffect.innerHTML = ''; // Clear elements after hiding
+        }, 800);
     }
+
 
     function activateIceBlast() {
         if (!isGameActive || btnFreeze.disabled) return;
@@ -412,16 +412,24 @@
             applyDamageToOzzy(actualIceBlastDotDamage);
             dotTicks++;
 
+            // Spawn ice shards from Ozzy's position
             const ozzyRect = ozzyContainer.getBoundingClientRect();
+            const gameRect = gameContainer.getBoundingClientRect();
+            const ozzyCenterX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+            const ozzyCenterY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+
             for (let i = 0; i < 5; i++) { 
                 const shard = document.createElement('div');
                 shard.classList.add('ice-shard');
-                shard.style.left = `${ozzyRect.left + Math.random() * ozzyRect.width}px`;
-                shard.style.top = `${ozzyRect.top + Math.random() * ozzyRect.height}px`;
+                // Random position around Ozzy
+                const offsetX = (Math.random() - 0.5) * ozzyRect.width * 0.8;
+                const offsetY = (Math.random() - 0.5) * ozzyRect.height * 0.8;
+                shard.style.left = `${ozzyCenterX + offsetX}px`;
+                shard.style.top = `${ozzyCenterY + offsetY}px`;
                 freezeEffect.appendChild(shard);
                 setTimeout(() => {
                     shard.remove();
-                }, 1000);
+                }, 1000); // Shard animation duration
             }
 
             if (dotTicks >= maxDotTicks) {
@@ -514,12 +522,106 @@
         // If it's a boss fight, the boss-mode class takes precedence for core appearance
         if (!isBossFight) {
              ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
-        }
-        // If it's a boss fight, apply specific boss variant on top of default boss styling
-        else {
+        } else {
+            // If it's a boss fight, apply specific boss variant on top of default boss styling
             ozzyImage.classList.add('boss-mode'); 
             ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
         }
+    }
+
+    // --- Boss Canvas Effects ---
+    // Particle class for the boss canvas
+    class Particle {
+        constructor(x, y, color, type) {
+            this.x = x;
+            this.y = y;
+            this.vx = (Math.random() - 0.5) * 4;
+            this.vy = (Math.random() - 0.5) * 4;
+            this.alpha = 1;
+            this.decay = 0.02;
+            this.size = Math.random() * 5 + 2;
+            this.color = color;
+            this.type = type; // e.g., 'ice', 'fire', 'electricity'
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.alpha -= this.decay;
+            if (this.type === 'ice') {
+                this.vy -= 0.1; // Float up slightly
+            } else if (this.type === 'electricity') {
+                this.vx *= 0.95;
+                this.vy *= 0.95;
+            }
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.fillStyle = this.color;
+            if (this.type === 'ice') {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (this.type === 'electricity') {
+                ctx.beginPath();
+                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+            }
+            ctx.restore();
+        }
+    }
+
+    let bossCanvasAnimationFrameId;
+    function animateBossCanvasEffects() {
+        if (!isGameActive || !isBossFight || !bossEffectCtx) {
+            cancelAnimationFrame(bossCanvasAnimationFrameId);
+            bossParticles = []; // Clear particles
+            return;
+        }
+
+        // Resize canvas to match gameContainer
+        bossEffectCanvas.width = gameContainer.offsetWidth;
+        bossEffectCanvas.height = gameContainer.offsetHeight;
+
+        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+
+        const ozzyRect = ozzyContainer.getBoundingClientRect();
+        const gameRect = gameContainer.getBoundingClientRect();
+
+        // Calculate Ozzy's center relative to the canvas
+        const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+        const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+
+        // Add new particles if needed, based on boss mode
+        if (bossParticles.length < MAX_BOSS_PARTICLES && Math.random() < 0.5) { // Spawn new particles
+            let color, type;
+            // Determine particle color and type based on boss variant or general boss mode
+            if (bossVisualVariantIndex === 0) { // Red/fiery boss
+                color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, 0.7)`;
+                type = 'fire';
+            } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss
+                color = `rgba(0, ${Math.floor(Math.random() * 100) + 155}, 255, 0.7)`;
+                type = 'ice';
+            } else { // Purple/intense boss
+                color = `rgba(${Math.floor(Math.random() * 100) + 155}, 0, ${Math.floor(Math.random() * 100) + 155}, 0.7)`;
+                type = 'electricity';
+            }
+            // Spawn around Ozzy
+            bossParticles.push(new Particle(ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width, ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height, color, type));
+        }
+
+        // Update and draw particles
+        for (let i = bossParticles.length - 1; i >= 0; i--) {
+            bossParticles[i].update();
+            if (bossParticles[i].alpha <= 0) {
+                bossParticles.splice(i, 1);
+            } else {
+                bossParticles[i].draw(bossEffectCtx);
+            }
+        }
+
+        bossCanvasAnimationFrameId = requestAnimationFrame(animateBossCanvasEffects);
     }
 
 
@@ -541,7 +643,6 @@
         bossVisualVariantIndex = 0;
         updateOzzyAppearance(); // Apply default appearance
 
-        // ZMIANA: Resetowanie zdrowia Ozzy'ego do wartości początkowej dla poziomu 1
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
 
         PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
@@ -577,10 +678,17 @@
 
 
         lightningEffect.classList.add('hidden');
-        freezeEffect.classList.add('hidden');
-        frenzyEffect.classList.add('hidden');
         lightningEffect.innerHTML = ''; 
-        freezeEffect.innerHTML = ''; 
+        frenzyEffect.classList.add('hidden');
+        
+        // Clear and hide boss canvas effects
+        cancelAnimationFrame(bossCanvasAnimationFrameId);
+        bossEffectCanvas.classList.add('hidden');
+        bossEffectCanvas.classList.remove('active');
+        bossParticles = [];
+        if (bossEffectCtx) {
+            bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+        }
 
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
@@ -589,17 +697,15 @@
         isGameActive = false;
         endScreen.classList.add('hidden');
         leaderboardScreen.classList.add('hidden');
-        upgradeShopScreen.classList.add('hidden'); // Ensure shop is hidden on reset
-        startScreen.classList.remove('hidden'); // Ensure start screen is visible
-        shopButton.classList.add('hidden'); // Shop button should be hidden initially, shown when game starts later
+        upgradeShopScreen.classList.add('hidden'); 
+        startScreen.classList.remove('hidden'); 
+        shopButton.classList.remove('hidden'); 
         superpowerButtonsContainer.classList.add('hidden'); 
-        gameInfoContainer.classList.add('hidden'); 
+        
+        gameInfoContainer.classList.add('hidden');
 
         clearInterval(superpowerCooldownIntervalId);
         updateSuperpowerCooldownDisplays(); 
-
-        // Stop Canvas effects when game resets
-        stopBossCanvasEffects();
 
         if (backgroundMusic) {
             backgroundMusic.pause();
@@ -612,9 +718,6 @@
         dynamicMessageElement.classList.add('knockout-message'); 
         dynamicMessageElement.textContent = message;
 
-        // Ensure only one general knockout message is shown at a time
-        document.querySelectorAll('.knockout-message').forEach(el => el.remove());
-
         gameContainer.appendChild(dynamicMessageElement);
 
         setTimeout(() => {
@@ -626,8 +729,6 @@
         const dynamicMessageElement = document.createElement('div');
         dynamicMessageElement.classList.add('boss-message'); 
         dynamicMessageElement.textContent = message;
-        // Ensure only one boss message is shown at a time
-        document.querySelectorAll('.boss-message').forEach(el => el.remove());
         gameContainer.appendChild(dynamicMessageElement);
         setTimeout(() => {
             dynamicMessageElement.remove();
@@ -664,7 +765,7 @@
         ozzyContainer.classList.remove('hidden');
         gameInfoContainer.classList.remove('hidden');
         superpowerButtonsContainer.classList.remove('hidden');
-        shopButton.classList.remove('hidden'); // Show shop button when game starts
+        shopButton.classList.remove('hidden');
         
         // Initialize level and score for the *new* game
         currentLevel = 1; // Start from level 1
@@ -672,14 +773,19 @@
         score = 0; 
         scoreDisplay.textContent = score;
 
-        // ZMIANA: Zdrowie dla poziomu 1 jest ustawiane tutaj
-        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
+        // Reset Ozzy's health for the new game based on level 1
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // No scaling for level 1
         ozzyHealth = INITIAL_OZZY_HEALTH;
         updateHealthBar();
         
         // Apply initial Stonks appearance for level 1
         stonksVisualVariantIndex = 0; // Ensure it starts with the first variant
         updateOzzyAppearance(); 
+
+        // Start superpower cooldown interval
+        clearInterval(superpowerCooldownIntervalId); 
+        superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
+        updateSuperpowerButtons(); 
 
         if (backgroundMusic) {
             backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
@@ -724,15 +830,21 @@
         cancelAnimationFrame(bossMovementAnimationFrameId);
         isBossMovementPaused = false; 
 
+        // Clear and hide boss canvas effects
+        cancelAnimationFrame(bossCanvasAnimationFrameId);
+        bossEffectCanvas.classList.add('hidden');
+        bossEffectCanvas.classList.remove('active');
+        bossParticles = [];
+        if (bossEffectCtx) {
+            bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+        }
+
         document.getElementById('end-message').textContent = message;
         document.getElementById('final-score').textContent = score; 
 
         saveScoreToLeaderboard(playerNickname, score);
 
         endScreen.classList.remove('hidden');
-
-        // Stop Canvas effects when game ends
-        stopBossCanvasEffects();
 
         if (backgroundMusic) {
             backgroundMusic.pause();
@@ -744,7 +856,6 @@
         score++; // Increment score for every knockout
         scoreDisplay.textContent = score;
 
-        // Clear all previous general messages before showing new ones
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
@@ -759,43 +870,47 @@
             currentLevelDisplay.textContent = currentLevel; // Update display
             isBossFight = true; // Set boss flag 
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
-            startBossCanvasEffects(); // NEW: Start canvas effects for boss
+            // No need to set ozzyHealth and updateHealthBar here, startBossFight handles it.
+            // No need for a separate knockout message, startBossFight handles boss message.
         } else {
             // Normal Stonks knockout
             currentLevel = nextLevelCandidate; // Increment level for normal stonks
             currentLevelDisplay.textContent = currentLevel; // Update display
 
             isBossFight = false;
-            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
+            ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // ZMIANA: Logika zwiększania zdrowia i komunikatu "Stonks jest silniejszy!"
-            // To następuje tylko na poziomach 1, 11, 21, itd.
-            // Sprawdź, czy aktualny poziom jest początkiem nowej "dziesiątki"
-            const isNewTier = currentLevel === 1 || (currentLevel > 1 && (currentLevel - 1) % BOSS_LEVEL_INTERVAL === 0);
-
-            if (isNewTier) { 
-                stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
-                
-                // Zwiększ zdrowie Stonksa tylko na początku nowej "dziesiątki" poziomów
-                // (np. poziom 1, po bossie na poziomie 10 - czyli poziom 11, po bossie na 20 - czyli poziom 21)
-                const tier = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); // 0 dla poziomów 1-10, 1 dla 11-20, itd.
-                INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (tier * NORMAL_OZZY_HEALTH_INCREMENT);
-                showMessage(`Stonks jest silniejszy!`, 2000); 
-            } else {
-                 // Tylko jeśli nie jest to nowa "dziesiątka" i nie wyświetlono "Stonks jest silniejszy!"
-                showMessage('Stonks rozjebany!', 1500);
+            // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
+            // It's triggered when a normal Stonks appears.
+            if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
+                stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
             }
-            
             updateOzzyAppearance(); // Apply the new Stonks variant
 
             bossCurrentTransformX = 0; // Reset position for normal Stonks
             ozzyContainer.style.transform = `translate(-50%, -50%)`; 
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
+
+            // Scale normal Ozzy health
+            INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
             
-            stopBossCanvasEffects(); // NEW: Stop canvas effects when normal Stonks returns
+            // "Stonks jest silniejszy!" message: show ONLY after a boss fight (i.e., at level 1, 11, 21, etc. when a normal Stonks spawns)
+            // This ensures it appears consistently when a new "tier" of Stonks health starts.
+            if ((currentLevel -1) % 10 === 0) { // Check if current level is 1, 11, 21 etc.
+                 showMessage(`Stonks jest silniejszy!`, 2000); 
+            }
+            
+            const knockoutMsgElement = document.createElement('div');
+            knockoutMsgElement.classList.add('knockout-message'); 
+            knockoutMsgElement.textContent = 'Stonks rozjebany!'; 
+            gameContainer.appendChild(knockoutMsgElement);
+
+            setTimeout(() => {
+                knockoutMsgElement.remove();
+            }, 2000); 
         }
 
         ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
@@ -850,6 +965,12 @@
             ozzyImage.classList.remove('flipped-x');
         }
         bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); 
+
+        // Activate boss canvas effects
+        bossEffectCanvas.classList.remove('hidden');
+        bossEffectCanvas.classList.add('active');
+        bossParticles = []; // Clear any old particles
+        bossCanvasAnimationFrameId = requestAnimationFrame(animateBossCanvasEffects);
     }
 
 
@@ -942,203 +1063,6 @@
         }
     }
 
-    // --- NEW: Canvas functions for boss effects ---
-
-    // Function to initialize canvas
-    function initializeBossCanvas() {
-        bossEffectCanvas = document.getElementById('boss-effect-canvas');
-        if (!bossEffectCanvas) {
-            console.error("Canvas element #boss-effect-canvas not found.");
-            return;
-        }
-        bossEffectCtx = bossEffectCanvas.getContext('2d');
-        resizeBossCanvas(); // Set initial size
-        window.addEventListener('resize', resizeBossCanvas); // Make it responsive
-    }
-
-    // Function to resize canvas
-    function resizeBossCanvas() {
-        if (bossEffectCanvas && gameContainer) {
-            bossEffectCanvas.width = gameContainer.offsetWidth;
-            bossEffectCanvas.height = gameContainer.offsetHeight;
-            // Redraw content if necessary after resize
-            if (isCanvasEffectActive) {
-                animateBossCanvasEffects(); // Trigger a redraw
-            }
-        }
-    }
-
-    // Canvas animation loop
-    function animateBossCanvasEffects() {
-        if (!isCanvasEffectActive) return;
-
-        // Clear only the parts that need redrawing, or the whole canvas
-        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCtx.canvas.height);
-
-        // Update and draw particles
-        for (let i = bossParticles.length - 1; i >= 0; i--) {
-            let p = bossParticles[i];
-            p.x += p.dx;
-            p.y += p.dy;
-            p.alpha -= p.fade;
-
-            if (p.alpha <= 0 || p.y < -p.size * 2 || p.y > bossEffectCanvas.height + p.size * 2 || p.x < -p.size * 2 || p.x > bossEffectCanvas.width + p.size * 2) {
-                bossParticles.splice(i, 1);
-            } else {
-                if (p.type === 'ice') {
-                    bossEffectCtx.fillStyle = `rgba(173, 216, 230, ${p.alpha})`; // Light blue
-                    drawIceShard(bossEffectCtx, p.x, p.y, p.size, p.angle);
-                } else if (p.type === 'flame') {
-                    const gradient = bossEffectCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-                    gradient.addColorStop(0, `rgba(255, 165, 0, ${p.alpha})`); // Orange
-                    gradient.addColorStop(0.5, `rgba(255, 69, 0, ${p.alpha * 0.7})`); // Red-orange
-                    gradient.addColorStop(1, `rgba(255, 0, 0, 0)`); // Transparent red
-                    bossEffectCtx.fillStyle = gradient;
-                    bossEffectCtx.beginPath();
-                    bossEffectCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    bossEffectCtx.fill();
-                } else if (p.type === 'earth') {
-                    bossEffectCtx.fillStyle = `rgba(139, 69, 19, ${p.alpha})`; // Brown
-                    bossEffectCtx.beginPath();
-                    bossEffectCtx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-                    bossEffectCtx.fill();
-                } else if (p.type === 'energy') {
-                    const gradient = bossEffectCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-                    gradient.addColorStop(0, `rgba(0, 255, 255, ${p.alpha})`); // Cyan inner
-                    gradient.addColorStop(0.5, `rgba(128, 0, 128, ${p.alpha * 0.7})`); // Purple middle
-                    gradient.addColorStop(1, `rgba(0, 0, 255, 0)`); // Blue outer, transparent
-                    bossEffectCtx.fillStyle = gradient;
-                    bossEffectCtx.beginPath();
-                    bossEffectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    bossEffectCtx.fill();
-                }
-            }
-        }
-
-        // Subtle flicker effect (draws a transparent black overlay sometimes)
-        // ZMIANA: Zwiększona widoczność migotania ekranu
-        if (Math.random() < 0.05) { // 5% chance per frame to flicker
-            bossEffectCtx.fillStyle = `rgba(0, 0, 0, 0.1)`; // Bardziej zauważalny czarny overlay
-            bossEffectCtx.fillRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
-        }
-
-        bossCanvasAnimationId = requestAnimationFrame(animateBossCanvasEffects);
-    }
-
-    // Helper to draw an ice shard (simple polygon)
-    function drawIceShard(ctx, x, y, size, angle) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(angle);
-        ctx.beginPath();
-        ctx.moveTo(0, -size / 2);
-        ctx.lineTo(size / 2, size / 2);
-        ctx.lineTo(-size / 2, size / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-    }
-
-    // Function to start boss-specific canvas effects
-    function startBossCanvasEffects() {
-        if (isCanvasEffectActive) return; // Avoid starting multiple times
-        isCanvasEffectActive = true;
-        bossEffectCanvas.classList.remove('hidden'); // Ensure canvas is visible
-        bossParticles = []; // Clear any old particles
-
-        // Set initial canvas size just before starting effects
-        resizeBossCanvas();
-
-        // Start generating particles
-        bossEffectIntervalId = setInterval(() => {
-            if (!isBossFight || !isGameActive) { // Stop if boss fight or game ends unexpectedly
-                stopBossCanvasEffects();
-                return;
-            }
-
-            const ozzyRect = ozzyContainer.getBoundingClientRect();
-            const gameContainerRect = gameContainer.getBoundingClientRect();
-
-            // Adjust coordinates to be relative to the canvas's own coordinate system
-            // Canvas origin (0,0) is at the top-left of gameContainer.
-            const ozzyCanvasCenterX = (ozzyRect.left + ozzyRect.width / 2) - gameContainerRect.left;
-            const ozzyCanvasCenterY = (ozzyRect.top + ozzyRect.height / 2) - gameContainerRect.top;
-
-
-            // Generate ice shards (more spread out around Ozzy)
-            for (let i = 0; i < ICE_SHARD_COUNT; i++) {
-                bossParticles.push({
-                    type: 'ice',
-                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 1.5,
-                    y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 1.5,
-                    size: Math.random() * 20 + 10, 
-                    alpha: 0.8,
-                    dx: (Math.random() - 0.5) * 4, 
-                    dy: (Math.random() - 0.5) * 4, 
-                    fade: 0.01, 
-                    angle: Math.random() * Math.PI * 2
-                });
-            }
-
-            // Generate flame particles (from bottom of boss, moving up)
-            for (let i = 0; i < FLAME_PARTICLE_COUNT; i++) {
-                bossParticles.push({
-                    type: 'flame',
-                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.5, 
-                    y: ozzyCanvasCenterY + ozzyRect.height * 0.4, 
-                    radius: Math.random() * 40 + 20, 
-                    alpha: 0.7,
-                    dx: (Math.random() - 0.5) * 2,
-                    dy: -Math.random() * 5 - 1, 
-                    fade: 0.008 
-                });
-            }
-
-            // NEW: Generate earth particles (from bottom, moving up slightly)
-            for (let i = 0; i < EARTH_PARTICLE_COUNT; i++) {
-                bossParticles.push({
-                    type: 'earth',
-                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.8,
-                    y: ozzyCanvasCenterY + ozzyRect.height * 0.5 + Math.random() * 20, // From below boss
-                    size: Math.random() * 15 + 5,
-                    alpha: 0.9,
-                    dx: (Math.random() - 0.5) * 1,
-                    dy: -Math.random() * 3 - 0.5, // Slow upward movement
-                    fade: 0.015
-                });
-            }
-
-            // NEW: Generate energy orbs (larger, slower, fading)
-            for (let i = 0; i < ENERGY_ORB_COUNT; i++) {
-                bossParticles.push({
-                    type: 'energy',
-                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.7,
-                    y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 0.7,
-                    size: Math.random() * 30 + 15,
-                    alpha: 0.6,
-                    dx: (Math.random() - 0.5) * 0.5, // Slower movement
-                    dy: (Math.random() - 0.5) * 0.5,
-                    fade: 0.005 // Slower fade
-                });
-            }
-
-        }, BOSS_EFFECT_PARTICLE_INTERVAL_MS);
-
-        // Start animation loop
-        bossCanvasAnimationId = requestAnimationFrame(animateBossCanvasEffects);
-    }
-
-    // Function to stop boss-specific canvas effects
-    function stopBossCanvasEffects() {
-        if (!isCanvasEffectActive) return;
-        isCanvasEffectActive = false;
-        clearInterval(bossEffectIntervalId);
-        cancelAnimationFrame(bossCanvasAnimationId);
-        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
-        bossParticles = []; // Clear particles
-        bossEffectCanvas.classList.add('hidden'); // Hide canvas
-    }
-
 
     console.log("Script.js is running!");
 
@@ -1183,26 +1107,37 @@
         lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
         lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
         buyLightningDamageButton = document.getElementById('buy-lightning-damage');
-        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level'); 
+        freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
         freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
         buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
         frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
         frenzyDamageCostDisplay = document.getElementById('frenzy-cost'); 
         buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
         quoteImagesContainer = document.getElementById('quote-images-container'); 
+        bossEffectCanvas = document.getElementById('boss-effect-canvas'); // Initialize canvas reference
+        bossEffectCtx = bossEffectCanvas.getContext('2d'); // Get 2D context
 
-        // NEW: Initialize the boss effect canvas
-        initializeBossCanvas();
+        // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
+        upgradeShopScreen.classList.add('hidden');
 
-        // The resetGame function handles hiding all screens, including the shop.
-        // It's crucial to call it AFTER all DOM elements are assigned.
+        // Ensure all screens are initially hidden
+        endScreen.classList.add('hidden');
+        leaderboardScreen.classList.add('hidden');
+        ozzyContainer.classList.add('hidden');
+        gameInfoContainer.classList.add('hidden'); 
+        quoteImagesContainer.innerHTML = ''; 
+
+        // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
         resetGame(); 
 
-        console.log("DEBUG: After resetGame() call:");
-        console.log("startScreen classList:", startScreen ? startScreen.classList.value : 'N/A');
-        console.log("upgradeShopScreen classList:", upgradeShopScreen ? upgradeShopScreen.classList.value : 'N/A');
-        console.log("shopButton classList:", shopButton ? shopButton.classList.value : 'N/A');
-        console.log("ozzyContainer classList:", ozzyContainer ? ozzyContainer.classList.value : 'N/A');
+        // Set canvas dimensions on load and resize
+        const setCanvasDimensions = () => {
+            bossEffectCanvas.width = gameContainer.offsetWidth;
+            bossEffectCanvas.height = gameContainer.offsetHeight;
+        };
+        setCanvasDimensions();
+        window.addEventListener('resize', setCanvasDimensions);
+
 
         console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
         console.log("Initial target image (Ozzy) dimensions:", ozzyImage.offsetWidth, ozzyImage.offsetHeight);
@@ -1279,9 +1214,6 @@
 
             upgradeShopScreen.classList.remove('hidden'); 
             updateUpgradeShopUI(); 
-
-            // NEW: Stop canvas effects when entering shop
-            stopBossCanvasEffects();
         });
 
         closeShopButton.addEventListener('click', () => {
@@ -1296,8 +1228,10 @@
             isBossMovementPaused = false; 
             if (isBossFight) { 
                 animateBossMovement();
-                // NEW: Restart canvas effects if it's a boss fight when closing shop
-                startBossCanvasEffects();
+                // Re-activate boss canvas effects if resuming from shop during boss fight
+                bossEffectCanvas.classList.remove('hidden');
+                bossEffectCanvas.classList.add('active');
+                bossCanvasAnimationFrameId = requestAnimationFrame(animateBossCanvasEffects);
             }
             clearInterval(superpowerCooldownIntervalId); 
             superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
