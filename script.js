@@ -3,7 +3,6 @@ import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit, serve
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 
 
-
 // === Firebase Configuration (Musisz Zastąpić Własnymi Kluczami!) ===
 const firebaseConfig = {
     apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
@@ -18,8 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const functions = getFunctions(app);
-const submitScoreFunction = httpsCallable(functions, 'submitScore'); // Reference to our Cloud Function
 
 // ===================================================================
 
@@ -77,6 +74,13 @@ let playerHealthDisplay;
 let playerHealthBarBg;
 let playerHealthBarFill;
 
+// NOWE: Zmienne DOM dla wyboru skórki
+let selectSkinButton;
+let skinSelectionScreen;
+let selectStonksSkinButton;
+let selectTinuSkinButton;
+let closeSkinSelectionButton;
+
 // --- Other global variables (not directly related to DOM), with immediate assignments ---
 let playerNickname = "Gracz";
 let score = 0;
@@ -123,8 +127,19 @@ let superpowerCooldownIntervalId;
 let freezeModeActive = false;
 let freezeDotIntervalId;
 
-const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
-const BOSS_IMAGE_URL = 'stonksboss.png'; 
+// ZMIANA: Obrazy domyślne i dla innych skórek
+const SKIN_IMAGES = {
+    stonks: {
+        normal: 'stonks.png',
+        boss: 'stonksboss.png'
+    },
+    tinu: {
+        normal: 'tinu.png', // Zastąp to rzeczywistą ścieżką do obrazka Tinu
+        boss: 'tinuboss.png' // Zastąp to rzeczywistą ścieżką do obrazka Tinu Boss
+    }
+};
+let currentSkin = 'stonks'; // Domyślna skórka na start gry
+
 const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
 const NORMAL_OZZY_INITIAL_HEALTH = 100;
@@ -1168,7 +1183,8 @@ function resetGame() {
     currentLevelDisplay.textContent = currentLevel;
 
     isBossFight = false;
-    ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL;
+    // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
     ozzyImage.classList.remove('boss-mode');
     ozzyImage.classList.remove('flipped-x'); 
     ozzyImage.classList.remove('attacking'); // NOWE: Usuń klasę ataku
@@ -1437,8 +1453,8 @@ function handleOzzyKnockout() {
 
     ozzyContainer.classList.add('hidden');
 
-    // NOWE: Regeneracja życia gracza po pokonaniu Stonksa
-    playerHealth = MAX_PLAYER_HEALTH; // Regeneracja 20 HP
+    // NOWE: Regeneracja życia gracza po pokonaniu Stonksa - PRZYWRÓCONO DO 100%
+    playerHealth = MAX_PLAYER_HEALTH; // Ustaw życie gracza na maksymalne
     updatePlayerHealthUI();
 
     // Determine if the *next* level is a boss level
@@ -1461,7 +1477,8 @@ function handleOzzyKnockout() {
         console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
 
         isBossFight = false;
-        ozzyImage.src = ORIGINAL_OZZY_IMAGE_URL; 
+        // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; 
         ozzyImage.classList.remove('boss-mode'); 
         ozzyImage.classList.remove('flipped-x'); 
         
@@ -1524,7 +1541,8 @@ function handleOzzyKnockout() {
 
 function startBossFight() {
     // `isBossFight` and `currentLevel` are already correctly set by `handleOzzyKnockout`
-    ozzyImage.src = BOSS_IMAGE_URL; 
+    // ZMIANA: Używamy ścieżki obrazu z zależności od wybranej skórki
+    ozzyImage.src = SKIN_IMAGES[currentSkin].boss; 
     ozzyImage.classList.add('boss-mode'); 
     
     // Scale boss health based on encounter count (currentLevel is already correct)
@@ -1654,6 +1672,37 @@ function buyUpgrade(upgradeType) {
 }
 
 
+// NOWE: Funkcje do obsługi wyboru skórki
+function showSkinSelectionScreen() {
+    startScreen.classList.add('hidden');
+    shopButton.classList.add('hidden'); // Ukryj przycisk sklepu na ekranie wyboru skórek
+    superpowerButtonsContainer.classList.add('hidden'); // Ukryj przyciski supermocy
+    ozzyContainer.classList.add('hidden'); // Ukryj Stonksa/Ozzy'ego
+    gameInfoContainer.classList.add('hidden'); // Ukryj informacje o grze
+    playerHealthContainer.classList.add('hidden'); // Ukryj pasek życia gracza
+    leaderboardScreen.classList.add('hidden'); // Ukryj ranking
+    endScreen.classList.add('hidden'); // Ukryj ekran końcowy
+
+    skinSelectionScreen.classList.remove('hidden');
+}
+
+function hideSkinSelectionScreen() {
+    skinSelectionScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    // Pozostałe elementy UI zostaną ukryte/pokazane przez resetGame/startGame
+}
+
+function selectSkin(skinName) {
+    currentSkin = skinName;
+    console.log(`Wybrano skórkę: ${currentSkin}`);
+    // Zaktualizuj źródło obrazu dla ozzyImage natychmiast po wyborze skórki
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    // Opcjonalnie: zaktualizuj podgląd skórki w menu, jeśli jest widoczny
+    // W tej prostej implementacji, zmiana będzie widoczna po rozpoczęciu gry.
+    hideSkinSelectionScreen();
+}
+
+
 console.log("Script.js is running!");
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1713,6 +1762,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     playerHealthBarBg = document.getElementById('player-health-bar-bg');
     playerHealthBarFill = document.getElementById('player-health-bar-fill');
 
+    // NOWE: Przypisanie zmiennych DOM dla wyboru skórki
+    selectSkinButton = document.getElementById('select-skin-button');
+    skinSelectionScreen = document.getElementById('skin-selection-screen');
+    selectStonksSkinButton = document.getElementById('select-stonks-skin');
+    selectTinuSkinButton = document.getElementById('select-tinu-skin');
+    closeSkinSelectionButton = document.getElementById('close-skin-selection-button');
+
 
     // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
     upgradeShopScreen.classList.add('hidden');
@@ -1723,6 +1779,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ozzyContainer.classList.add('hidden');
     gameInfoContainer.classList.add('hidden'); 
     quoteImagesContainer.innerHTML = ''; 
+    skinSelectionScreen.classList.add('hidden'); // Ukryj ekran wyboru skórki na starcie
 
     // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
     resetGame(); 
@@ -1894,6 +1951,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     buyLightningDamageButton.addEventListener('click', () => buyUpgrade('lightningDamage'));
     buyFreezeDamageButton.addEventListener('click', () => buyUpgrade('freezeDamage'));
     buyFrenzyDamageButton.addEventListener('click', () => buyUpgrade('frenzyDamage'));
+
+    // NOWE: Obsługa przycisków wyboru skórki
+    selectSkinButton.addEventListener('click', showSkinSelectionScreen);
+    selectStonksSkinButton.addEventListener('click', () => selectSkin('stonks'));
+    selectTinuSkinButton.addEventListener('click', () => selectSkin('tinu'));
+    closeSkinSelectionButton.addEventListener('click', hideSkinSelectionScreen);
+
 
     updateUpgradeShopUI();
 });
