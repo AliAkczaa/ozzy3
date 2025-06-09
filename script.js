@@ -616,7 +616,7 @@
         ozzyImage.classList.add('attacking');
         setTimeout(() => {
             ozzyImage.classList.remove('attacking');
-        }, 300); // Duration of the attack animation
+        }, 1000); // Duration of the attack animation
 
         // ZMIANA: Dodanie wstrząsu ekranu
         gameContainer.classList.add('screen-shake');
@@ -639,7 +639,7 @@
                           ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8, 
                           Math.floor(Math.random() * 3) + 2, // 2-4 zadrapania
                           'rgba(255, 0, 0, 0.8)', // Czerwone zadrapania
-                          5 // Bazowy rozmiar linii zadrapania
+                          10 // ZMIANA: Bazowy rozmiar linii zadrapania zwiększony o 100% (z 5 na 10)
         );
 
         if (playerHealth <= 0) {
@@ -1233,13 +1233,13 @@ function activateLightningStrike() {
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // ZMIANA: Logika wyboru wariantu Stonksa:
-            // Wariant 0 dla poziomów 1-10.
-            // Dla poziomów 11-20, variant-1, dla 21-30, variant-2, itd.
-            // (currentLevel - 1) / BOSS_LEVEL_INTERVAL daje 0 dla 1-10, 1 dla 11-20 itd.
-            // ZMIANA: Poprawiona logika wyboru wariantu, aby działało od levelu 1
-            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / (BOSS_LEVEL_INTERVAL / totalStonksVariants)) % totalStonksVariants;
-            
+            // ZMIANA: Logika wyboru wariantu Stonksa: zmienia się co 10 poziomów od levelu 11
+            if (currentLevel >= 1 && currentLevel <= 10) {
+                stonksVisualVariantIndex = 0; // Wariant 0 dla poziomów 1-10
+            } else {
+                // Dla poziomów 11 i wyżej, zmieniaj wariant co 10 poziomów, zapętlając się przez 0-9
+                stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
+            }
             console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
             
             // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
