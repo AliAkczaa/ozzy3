@@ -178,7 +178,7 @@ let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
 // === Canvas Particles System ===
 class CanvasParticle {
-    constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
+    constructor(x, y, vx, vy, color, size, life, type, angle = 0, image = null) { // Added image parameter
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -188,11 +188,10 @@ class CanvasParticle {
         this.life = life; // Total life in milliseconds
         this.currentLifeTime = 0; // Current elapsed time in milliseconds
         this.alpha = 1;
-        this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch', 'stonksClaw', 'painParticle', 'lightningSpark', 'clawMark'
+        this.type = type; 
         this.angle = angle; // For rotation of some shapes
-        this.targetX = targetX;
-        this.targetY = targetY;
         this.startSize = size; // Store initial size for scaling
+        this.image = image; // Store image for drawing (if type requires it)
     }
 
     update(deltaTime) { // Przyjmujemy deltaTime
@@ -227,7 +226,7 @@ class CanvasParticle {
             this.vy += 0.02 * dtRatio; // Grawitacja, skalowana
             this.alpha -= 0.008 * dtRatio; // Szybkie zanikanie, skalowane
             this.size = this.startSize * (1 - 0.001 * (this.currentLifeTime / this.life)); // Zmniejszaj rozmiar, skalowane
-        } else if (this.type === 'clawMark') { // Nowy typ dla pazurów
+        } else if (this.type === 'clawMark') { 
             this.alpha = 1 - (this.currentLifeTime / this.life); // Fade out
             // No movement, static mark
         }
@@ -319,38 +318,13 @@ class CanvasParticle {
             ctx.lineTo(-this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Left-bottom
             ctx.closePath();
             ctx.fill();
-        } else if (this.type === 'clawMark') {
+        } else if (this.type === 'clawMark' && this.image) {
             ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
+            ctx.rotate(this.angle); // Rotate the image
 
-            // Draw the main filled red shape for claw marks
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            // Start from the "left" relative to the rotated shape
-            ctx.moveTo(-this.size * 1.5, -this.size * 0.3); // Start near top-left
-
-            // Top jagged path
-            for (let i = 0; i <= 5; i++) {
-                const px = -this.size * 1.5 + (i / 5) * (this.size * 3); // X progress along the length
-                const py = (Math.random() - 0.5) * this.size * 0.4; // Vertical jagginess
-                ctx.lineTo(px, py - this.size * 0.2); // Offset slightly up
-            }
-
-            // Bottom jagged path (reversed to close the shape)
-            for (let i = 5; i >= 0; i--) {
-                const px = -this.size * 1.5 + (i / 5) * (this.size * 3);
-                const py = (Math.random() - 0.5) * this.size * 0.4;
-                ctx.lineTo(px, py + this.size * 0.2); // Offset slightly down
-            }
-            ctx.closePath();
-            ctx.fill();
-
-            // Add a subtle darker inner shadow/edge for depth
-            ctx.globalAlpha = Math.max(0, this.alpha * 0.4); // More subtle alpha for the shadow
-            ctx.strokeStyle = `rgba(0, 0, 0, 0.7)`; // Darker outline
-            ctx.lineWidth = 1;
-            ctx.stroke(); // Stroke the same path for the outline
-            ctx.globalAlpha = Math.max(0, this.alpha); // Restore original alpha
+            // Draw the image centered around its origin (which is at x,y after translate)
+            // Adjust to draw from top-left corner
+            ctx.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size * (this.image.naturalHeight / this.image.naturalWidth)); // Maintain aspect ratio
         }
 
         ctx.restore();
@@ -372,6 +346,7 @@ let scratchCanvasParticles = [];
 let stonksAttackClawParticles = [];
 let stonksAttackPainParticles = [];
 let clawMarks = []; // Nowa tablica na efekty pazurów
+let clawImage = new Image(); // Create a new Image object for the claw
 
 
 const MAX_CANVAS_PARTICLES = 200; // General limit for performance
@@ -638,54 +613,56 @@ function drawScratchEffect(x, y, count, color, baseSize) {
 
 /**
  * NOWE: Funkcja do tworzenia dynamicznych efektów ataku Stonksa (szpony, rozprysk bólu)
- * @param {number} x Pozycja X Stonksa na canvasie (środek)
- * @param {number} y Pozycja Y Stonksa na canvasie (środek)
- * @param {number} ozzyWidth Szerokość obrazka Stonksa
- * @param {number} ozzyHeight Wysokość obrazka Stonksa
+ * @param {number} ozzyX Pozycja X Stonksa na canvasie (środek)
+ * @param {number} ozzyY Pozycja Y Stonksa na canvasie (środek)
  */
-function spawnStonksAttackEffects(x, y, ozzyWidth, ozzyHeight) {
+function spawnStonksAttackEffects(ozzyX, ozzyY) {
     const gameContainerRect = gameContainer.getBoundingClientRect(); 
-    // OBSZAR ATAKU - teraz na podstawie całego kontenera gry
-    // Aby pokryć większą część ekranu, ustalamy procentowe rozmiary
-    const spawnAreaWidth = gameContainerRect.width * 0.6; // Np. 60% szerokości ekranu
-    const spawnAreaHeight = gameContainerRect.height * 0.6; // Np. 60% wysokości ekranu
-    // Centrowanie obszaru ataku wokół Stonksa, ale rozciągnięte na ekranie
-    const centerX = x; // Ozzy's center X
-    const centerY = y; // Ozzy's center Y
+    const gameContainerWidth = gameContainerRect.width;
+    const gameContainerHeight = gameContainerRect.height;
+
+    // Losowanie punktu startowego dla ataku pazurami na większym obszarze ekranu
+    // Upewniamy się, że pazury nie wychodzą całkowicie poza ekran
+    const spawnAreaX = gameContainerWidth * 0.8; // 80% szerokości ekranu
+    const spawnAreaY = gameContainerHeight * 0.8; // 80% wysokości ekranu
+    
+    // Punkt uderzenia ataku (środek zestawu pazurów)
+    const attackHitX = (gameContainerWidth / 2) + (Math.random() - 0.5) * spawnAreaX;
+    const attackHitY = (gameContainerHeight / 2) + (Math.random() - 0.5) * spawnAreaY;
 
     // --- Efekty pazurów (clawMarks) ---
-    const numClawSets = 3; // Zwiększono liczbę zestawów pazurów
-    const clawLength = 80; // Długość "rozdarcia" pazura
-    const clawLife = 1000; // Życie rozdarcia pazura w ms (1 sekunda)
+    const numClawImages = 1; // Tylko jeden obraz pazura na atak
+    const clawImageSize = Math.min(gameContainerWidth * 0.2, gameContainerHeight * 0.2, 150); // Rozmiar pazura
+    const clawLife = 1000; // Życie obrazka pazura w ms (1 sekunda)
 
-    for (let s = 0; s < numClawSets; s++) {
-        // Losowanie punktu startowego wewnątrz nowo zdefiniowanego, większego obszaru
-        const startPointX = centerX + (Math.random() - 0.5) * spawnAreaWidth; 
-        const startPointY = centerY + (Math.random() - 0.5) * spawnAreaHeight; 
-        const baseAngle = Math.random() * Math.PI * 2; // Bazowy kąt dla zestawu pazurów
+    for (let s = 0; s < numClawImages; s++) {
+        // Kąt obrotu obrazka pazura
+        const angle = Math.random() * Math.PI * 2; 
 
-        // Generuj pojedyncze "rozdarcie" na zestaw, które samo ma ząbkowane krawędzie
         clawMarks.push(new CanvasParticle(
-            startPointX, startPointY, 0, 0, `rgba(255, 0, 0, ${0.7 + Math.random() * 0.3})`, // Czerwone, z alfa
-            clawLength / 3, // Przekazujemy rozmiar bazowy do obliczeń w draw
-            clawLife, 'clawMark', baseAngle, 0, 0 
+            attackHitX, attackHitY, 0, 0, null, // No color needed for image, no velocity
+            clawImageSize, clawLife, 'clawMark', angle, clawImage // Pass the loaded image
         ));
     }
 
     // --- Punkty bólu (Pain Particles) ---
-    const numPainParticles = Math.floor(Math.random() * 15) + 15; // Zwiększono liczbę punktów (15-29)
+    const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 punktów
     const painParticleLife = 1200; // Życie w ms (1.2 sekundy)
     const painParticleSize = Math.random() * 8 + 8; // Rozmiary (8-16, nieco większe)
     const painParticleBaseSpeed = 1.2; // Zwiększona prędkość bazowa
 
+    // Punkty bólu są skupione wokół attackHitX, attackHitY
+    const painSpawnRadius = clawImageSize * 0.5; // Promień wokół miejsca uderzenia pazura
+
     for (let i = 0; i < numPainParticles; i++) {
-        // Losowanie pozycji na większym obszarze
-        const startX = centerX + (Math.random() - 0.5) * spawnAreaWidth; 
-        const startY = centerY + (Math.random() - 0.5) * spawnAreaHeight;
         const angle = Math.random() * Math.PI * 2; 
+        const distance = Math.random() * painSpawnRadius;
+
+        const startX = attackHitX + Math.cos(angle) * distance; 
+        const startY = attackHitY + Math.sin(angle) * distance;
         
-        const vx = (Math.random() - 0.5) * painParticleBaseSpeed * 2; // Szybsze rozpraszanie
-        const vy = (Math.random() - 0.5) * painParticleBaseSpeed * 2 - 0.5; // Większe unoszenie się
+        const vx = (Math.random() - 0.5) * painParticleBaseSpeed * 2; 
+        const vy = (Math.random() - 0.5) * painParticleBaseSpeed * 2 - 0.5; 
 
         const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`; 
         
@@ -830,7 +807,7 @@ function stonksAttack() {
     const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
     
     // Używamy nowej funkcji do generowania ulepszonych efektów
-    spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY, ozzyRect.width, ozzyRect.height);
+    spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY); // Pass Ozzy's position for reference
 
     if (playerHealth <= 0) {
         endGame("ZGINĄŁEŚ W WALCE ZE STONKSEM!"); // Game over if player health reaches 0
@@ -973,7 +950,7 @@ function activateLightningStrike() {
                 (Math.random() - 0.5) * 2.5, // vy (wolniejsze)
                 `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
                 Math.random() * 5 + 3, // size (większy)
-                1000, // Życie w ms (1 sekunda)
+                1000, // life in ms (1 second)
                 'lightningSpark' 
             ));
         }
@@ -1699,6 +1676,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     setCanvasDimensions();
     window.addEventListener('resize', setCanvasDimensions);
+
+    // Load the claw image once
+    clawImage.src = 'pazury.png';
+    clawImage.onerror = () => {
+        console.error("Failed to load pazury.png. Please check the image path.");
+        // Fallback or show an error to the user if image is critical
+    };
 
 
     console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
