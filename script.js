@@ -262,7 +262,7 @@
         // Resize canvas to match gameContainer (do this first for correct drawing)
         gameEffectsCanvas.width = gameContainer.offsetWidth;
         gameEffectsCanvas.height = gameContainer.offsetHeight;
-        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
 
         // Calculate Ozzy's center relative to the canvas
         const ozzyRect = ozzyContainer.getBoundingClientRect();
@@ -330,7 +330,7 @@
                     const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
 
                     lightningCanvasParticles.push(new CanvasParticle(
-                        currentX, currentY, 0, 0, // No movement for line segments, fixed start/end
+                        currentX, currentY, 0, 0, // No independent movement for lines, target defines end
                         `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
                         size, life, 'lightningLine', 0, nextX, nextY
                     ));
@@ -338,7 +338,7 @@
                     currentY = nextY;
                 }
 
-                // Add some "sparks" around the lightning strike (larger, slower)
+                // Add some small, bright "sparks" around the bolt (larger, slower)
                 for (let j = 0; j < Math.random() * 2 + 1; j++) { // 1-2 sparks per bolt
                     lightningCanvasParticles.push(new CanvasParticle(
                         ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8, // Wider spawn area for sparks
@@ -375,8 +375,8 @@
                 freezeCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%
                     `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                     Math.random() * 15 + 8, // size (większy)
                     90, // life (dłuższe)
@@ -402,10 +402,10 @@
                 frenzyCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy (jeszcze mniejsza prędkość) // ZMIANA: Zmniejszona prędkość
-                    `rgba(255, 165, 0, ${0.7 + Math.random() * 0.3})`, // ZMIANA: Kolor na pomarańczowy
-                    (Math.random() * 12 + 6) * 1.25, // ZMIANA: Rozmiar większy o 25%
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // ZMIANA: Zmniejszona prędkość o 75%
+                    `rgba(255, 100, 0, ${0.7 + Math.random() * 0.3})`, // ZMIANA: Bardziej intensywny pomarańczowy, mniej czerwony
+                    (Math.random() * 15 + 10) * 1.25, // ZMIANA: Rozmiar większy o 25% i większa baza
                     45, // short life, but slightly longer
                     'frenzyPulse'
                 ));
@@ -1057,8 +1057,6 @@ function activateLightningStrike() {
             currentLevelDisplay.textContent = currentLevel; // Update display
             isBossFight = true; // Set boss flag 
             startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
-            // No need to set ozzyHealth and updateHealthBar here, startBossFight handles it.
-            // No need for a separate knockout message, startBossFight handles boss message.
         } else {
             // Normal Stonks knockout
             currentLevel = nextLevelCandidate; // Increment level for normal stonks
@@ -1075,16 +1073,21 @@ function activateLightningStrike() {
                 stonksVisualVariantIndex = 0; // Wariant 0 dla poziomów 1-10
             } else {
                 // Od poziomu 11, zmieniaj wariant co 11 poziomów, zaczynając od variant-1
-                // currentLevel - 11: dla 11lvl to 0, dla 22lvl to 11, dla 33lvl to 22
-                // (currentLevel - 11) / 11: dla 11lvl to 0, dla 22lvl to 1, dla 33lvl to 2
-                // + 1: żeby zacząć od stonks-variant-1, stonks-variant-2, itd.
+                // (currentLevel - 11) daje 0 dla poziomu 11, 11 dla 22, 22 dla 33 itd.
+                // Podzielone przez 11 daje 0 dla 11-21, 1 dla 22-32 itd.
+                // Dodajemy 1, żeby wynik był 1, 2, 3... (dla stonks-variant-1, -2, -3...)
+                // Modulo (totalStonksVariants - 1) to modulo 9, aby zapętlić warianty 1-9
                 stonksVisualVariantIndex = 1 + (Math.floor((currentLevel - 11) / 11) % (totalStonksVariants - 1));
             }
-            console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex}`);
+            console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
             
-            if (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL !== 1)) { // Tylko tutaj zwiększamy zdrowie normalnego Stonksa (po bossfighcie lub jeśli nie jest to poziom bossa)
-                 INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT;
-            }
+            // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
+            // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
+            // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
+            const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
+            INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
+            console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
+
             updateOzzyAppearance(); // Apply the new Stonks variant
 
             bossCurrentTransformX = 0; // Reset position for normal Stonks
