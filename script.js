@@ -1092,7 +1092,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = 'Stonks rozjebany!'; // Przywrócono oryginalny tekst
+            knockoutMsgElement.textContent = '+1 to respect!'; // Przywrócono oryginalny tekst
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
