@@ -166,7 +166,6 @@
     const originalFrenzyText = 'Szał Bojowy';
 
     // === Canvas Particles System ===
-    // === Canvas Particles System ===
     class CanvasParticle {
         constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
             this.x = x;
@@ -205,10 +204,10 @@
             ctx.save();
             ctx.globalAlpha = Math.max(0, this.alpha);
 
-            if (this.type.startsWith('boss')) {
+            if (this.type.startsWith('boss') || this.type === 'lightningSpark') { // Added lightningSpark type for small particles
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                if (this.type === 'bossElectricity') {
+                if (this.type === 'bossElectricity' || this.type === 'lightningSpark') {
                     ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
                 } else {
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -248,12 +247,14 @@
         }
     }
 
+
     // Global arrays for different types of canvas particles
     let bossCanvasParticles = [];
     let lightningCanvasParticles = [];
     let freezeCanvasParticles = [];
     let frenzyCanvasParticles = [];
     const MAX_CANVAS_PARTICLES = 200; // General limit for performance
+    let lightningModeActive = false; // New state variable for lightning storm
 
     let gameCanvasAnimationFrameId;
 
@@ -292,9 +293,9 @@
                 bossCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * spawnAreaMultiplier, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * spawnAreaMultiplier, // Zwiększony obszar
-                    (Math.random() - 0.5) * baseParticleSpeed, // vx (zmniejszona prędkość)
-                    (Math.random() - 0.5) * baseParticleSpeed, // vy (zmniejszona prędkość)
-                    color, Math.random() * 8 + 4, 90, type // size (większy), life (dłuższe)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (zmniejszona prędkość o 50%)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy (zmniejszona prędkość o 50%)
+                    color, Math.random() * 12 + 6, 90, type // size (większy o 25%), life (dłuższe)
                 ));
             }
         }
@@ -309,6 +310,54 @@
         }
 
         // Lightning particles (spawned in activateLightningStrike, just update and draw here)
+        if (lightningModeActive) {
+            gameEffectsCanvas.classList.remove('hidden');
+            gameEffectsCanvas.classList.add('active');
+            lightningEffect.classList.remove('hidden'); // Ensure the overlay is visible
+            lightningEffect.classList.add('flash-active'); // Ensure the flash effect is active
+
+            // Spawn new lightning particles frequently
+            if (lightningCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.7) { // Control frequency for storm
+                const numSegments = Math.floor(Math.random() * 3) + 2; // 2-4 segments per bolt
+                let currentX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8; // Start near Ozzy, wider area (increased area for storm)
+                let currentY = ozzyCanvasY - ozzyRect.height * (0.5 + Math.random() * 0.5); // Start above Ozzy
+
+                for (let i = 0; i < numSegments; i++) {
+                    const nextX = currentX + (Math.random() - 0.5) * 80; // Segment length (increased)
+                    const nextY = currentY + (Math.random() * 100); // Segment length, generally downwards (increased)
+
+                    const life = 45 + Math.random() * 45; // Longer life for individual segments (1.5 seconds)
+                    const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
+
+                    lightningCanvasParticles.push(new CanvasParticle(
+                        currentX, currentY, 0, 0, // No movement for line segments, fixed start/end
+                        `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
+                        size, life, 'lightningLine', 0, nextX, nextY
+                    ));
+                    currentX = nextX;
+                    currentY = nextY;
+                }
+
+                // Add some "sparks" around the lightning strike (larger, slower)
+                for (let j = 0; j < Math.random() * 2 + 1; j++) { // 1-2 sparks per bolt
+                    lightningCanvasParticles.push(new CanvasParticle(
+                        ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.8, // Wider spawn area for sparks
+                        ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.8,
+                        (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // Slower sparks (reduced by 30%)
+                        (Math.random() - 0.5) * (baseParticleSpeed * 0.7),
+                        `rgba(255, 255, 200, ${0.5 + Math.random() * 0.5})`,
+                        Math.random() * 8 + 4, // size (larger)
+                        60, // life (longer)
+                        'lightningSpark' // Specific type for lightning sparks
+                    ));
+                }
+            }
+        } else if (!lightningModeActive && lightningEffect.classList.contains('flash-active')) {
+            // If lightning mode just ended, remove the flash effect
+            lightningEffect.classList.remove('flash-active');
+            lightningEffect.classList.add('hidden'); // Hide it
+        }
+
         for (let i = lightningCanvasParticles.length - 1; i >= 0; i--) {
             lightningCanvasParticles[i].update();
             if (lightningCanvasParticles[i].isDead()) {
@@ -326,8 +375,8 @@
                 freezeCanvasParticles.push(new CanvasParticle(
                     ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Zwiększony obszar
                     ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Zwiększony obszar
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // vx (jeszcze mniejsza prędkość)
-                    (Math.random() - 0.5) * (baseParticleSpeed * 0.7), // vy
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vx (jeszcze mniejsza prędkość)
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // vy
                     `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                     Math.random() * 15 + 8, // size (większy)
                     90, // life (dłuższe)
@@ -384,7 +433,7 @@
             // No particles and game is inactive, so hide and clear canvas
             gameEffectsCanvas.classList.add('hidden');
             gameEffectsCanvas.classList.remove('active');
-            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCanvas.height);
+            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             cancelAnimationFrame(gameCanvasAnimationFrameId); // Ensure it stops
         }
     }
@@ -553,6 +602,14 @@ function activateLightningStrike() {
         const actualLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage - 1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
         applyDamageToOzzy(actualLightningDamage); 
 
+        lightningModeActive = true; // Activate lightning storm mode
+        // Clear existing lightning particles to prevent accumulation from previous activations
+        lightningCanvasParticles = [];
+        // Set a timeout to deactivate lightning mode after 2.5 seconds
+        setTimeout(() => {
+            lightningModeActive = false;
+        }, 2500); // Duration for the lightning storm (2.5 seconds)
+    
         // Get Ozzy's position relative to the game container
         const ozzyRect = ozzyContainer.getBoundingClientRect();
         const gameRect = gameContainer.getBoundingClientRect();
