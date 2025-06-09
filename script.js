@@ -5,7 +5,7 @@
         apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
         authDomain: "ozzy-14c19.firebaseapp.com",
         projectId: "ozzy-14c19",
-        storageBucket: "ozzy-14c19.firebasestorage.app",
+        storageBucket: "ozzy-14c19.firebaseapp.com",
         messagingSenderId: "668337469201",
         appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
     };
@@ -73,7 +73,7 @@
     let quoteImagesContainer; 
     let gameEffectsCanvas; // Canvas for all dynamic effects
     let gameEffectsCtx;    // 2D rendering context for the effects canvas
-    // NOWE: Zmienne DOM dla paska życia gracza
+    // ZMIANA: Zmienne DOM dla paska życia gracza (już istnieją, tylko dla jasności)
     let playerHealthContainer;
     let playerHealthDisplay;
     let playerHealthBarBg;
@@ -171,7 +171,7 @@
     const originalFreezeText = 'Lodowy Wybuch';
     const originalFrenzyText = 'Szał Bojowy';
 
-    // NOWE: Zmienne dla życia gracza i ataków Stonksa
+    // NOWE: Zmienne dla życia gracza i ataków Stonksa (z poprzednich zmian)
     let playerHealth = 100;
     const MAX_PLAYER_HEALTH = 100;
     let STONKS_ATTACK_DAMAGE = 5; // Bazowe obrażenia zadawane przez Stonksa graczowi
@@ -179,6 +179,7 @@
     let playerAttackIntervalId; // Id interwału dla ataku Stonksa
 
     // === Canvas Particles System ===
+    // ZMIANA: Nowy typ cząsteczki dla zadrapań
     class CanvasParticle {
         constructor(x, y, vx, vy, color, size, life, type, angle = 0, targetX = null, targetY = null) {
             this.x = x;
@@ -190,7 +191,7 @@
             this.life = life; // Total frames/steps to live
             this.currentLife = 0;
             this.alpha = 1;
-            this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse'
+            this.type = type; // 'bossFire', 'bossIce', 'bossElectricity', 'lightningLine', 'iceShard', 'frenzyPulse', 'scratch'
             this.angle = angle; // For rotation of some shapes
             this.targetX = targetX;
             this.targetY = targetY;
@@ -210,6 +211,12 @@
                 this.alpha -= 0.05; // Fade faster for quick pulse
             } else if (this.type === 'lightningLine') {
                 // Lightning lines are static after creation, they just fade
+            }
+            // ZMIANA: Cząsteczki zadrapań powoli znikają
+            else if (this.type === 'scratch') {
+                this.alpha -= 0.02; // Fade out slowly
+                this.vx *= 0.98; // Slow down
+                this.vy *= 0.98; // Slow down
             }
         }
 
@@ -251,6 +258,17 @@
                 ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
                 ctx.stroke();
             }
+            // ZMIANA: Rysowanie zadrapań
+            else if (this.type === 'scratch') {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.size;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                // Rysuje linię pod kątem z określoną długością
+                ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 5, this.y + Math.sin(this.angle) * this.size * 5);
+                ctx.stroke();
+            }
 
             ctx.restore();
         }
@@ -266,6 +284,9 @@
     let lightningCanvasParticles = [];
     let freezeCanvasParticles = [];
     let frenzyCanvasParticles = [];
+    // NOWE: Tablica na cząsteczki zadrapań
+    let scratchCanvasParticles = [];
+
     const MAX_CANVAS_PARTICLES = 200; // General limit for performance
     let lightningModeActive = false; // New state variable for lightning storm
 
@@ -285,7 +306,7 @@
 
         // Common multipliers for particle spawn area and speed
         const spawnAreaMultiplier = isBossFight ? 1.5 : 1.2; // Larger area for boss
-        const baseParticleSpeed = 0.5; // Base speed, particles will be very slow
+        const baseParticleSpeed = 1; // Base speed, particles will be slower
         
         // Boss particles (spawn only if boss fight is active)
         if (isBossFight) {
@@ -340,11 +361,11 @@
                     const nextY = currentY + (Math.random() * 100); // Segment length, generally downwards (increased)
 
                     const life = 45 + Math.random() * 45; // Longer life for individual segments (1.5 seconds)
-                    const size = Math.random() * 8 + 5; // Line width (większy)
+                    const size = Math.random() * 8 + 8; // Line width (larger for better visibility)
 
                     lightningCanvasParticles.push(new CanvasParticle(
                         currentX, currentY, 0, 0, // No independent movement for lines, target defines end
-                        `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter, yellower
+                        `rgba(255, 255, ${Math.floor(Math.random() * 100) + 155}, ${0.7 + Math.random() * 0.3})`, // Brighter, yellower
                         size, life, 'lightningLine', 0, nextX, nextY
                     ));
                     currentX = nextX;
@@ -433,11 +454,23 @@
             }
         }
 
-        // Determine if there are *any* active particles
+        // NOWE: Aktualizacja i rysowanie cząsteczek zadrapań
+        for (let i = scratchCanvasParticles.length - 1; i >= 0; i--) {
+            scratchCanvasParticles[i].update();
+            if (scratchCanvasParticles[i].isDead()) {
+                scratchCanvasParticles.splice(i, 1);
+            } else {
+                scratchCanvasParticles[i].draw(gameEffectsCtx);
+            }
+        }
+
+
+        // Determine if there are *any* active particles or if game is active to keep canvas visible
         const anyParticlesActive = bossCanvasParticles.length > 0 ||
                                    lightningCanvasParticles.length > 0 ||
                                    freezeCanvasParticles.length > 0 ||
-                                   frenzyCanvasParticles.length > 0;
+                                   frenzyCanvasParticles.length > 0 ||
+                                   scratchCanvasParticles.length > 0; // NOWE: Dodano sprawdzenie zadrapań
 
         // Only request next frame if game is active OR there are still particles to animate
         if (isGameActive || anyParticlesActive) {
@@ -448,6 +481,33 @@
             gameEffectsCanvas.classList.remove('active');
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             cancelAnimationFrame(gameCanvasAnimationFrameId); // Ensure it stops
+        }
+    }
+
+    /**
+     * NOWE: Funkcja rysująca efekt zadrapania na ekranie
+     * @param {CanvasRenderingContext2D} ctx Kontekst canvasu
+     * @param {number} x Pozycja X środka zadrapania
+     * @param {number} y Pozycja Y środka zadrapania
+     * @param {number} count Liczba pojedynczych linii zadrapania
+     * @param {string} color Kolor zadrapania (np. 'rgba(255, 0, 0, 0.7)')
+     * @param {number} baseSize Bazowy rozmiar linii zadrapania
+     */
+    function drawScratchEffect(x, y, count, color, baseSize) {
+        for (let i = 0; i < count; i++) {
+            // Losowy offset dla każdej linii zadrapania
+            const offsetX = (Math.random() - 0.5) * 50;
+            const offsetY = (Math.random() - 0.5) * 50;
+            // Losowy kąt dla każdej linii, aby wyglądały na bardziej naturalne zadrapania
+            const angle = Math.random() * Math.PI * 2; // Kąt w radianach
+            // Losowy rozmiar dla każdej linii
+            const size = baseSize + (Math.random() * baseSize / 2);
+            // Życie cząsteczki zadrapania
+            const life = 60; // Dłuższe życie dla zadrapań, aby były widoczne
+
+            scratchCanvasParticles.push(new CanvasParticle(
+                x + offsetX, y + offsetY, 0, 0, color, size, life, 'scratch', angle
+            ));
         }
     }
 
@@ -558,17 +618,36 @@
             ozzyImage.classList.remove('attacking');
         }, 300); // Duration of the attack animation
 
+        // ZMIANA: Dodanie wstrząsu ekranu
+        gameContainer.classList.add('screen-shake');
+        setTimeout(() => {
+            gameContainer.classList.remove('screen-shake');
+        }, 200); // Czas trwania wstrząsu, dopasowany do animacji CSS
+
         // Apply damage to player
         playerHealth -= STONKS_ATTACK_DAMAGE;
         playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
         updatePlayerHealthUI();
+
+        // NOWE: Wywołanie efektu zadrapań na canvasie
+        const ozzyRect = ozzyContainer.getBoundingClientRect();
+        const gameRect = gameContainer.getBoundingClientRect();
+        const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+        const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+        
+        drawScratchEffect(ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8, 
+                          ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8, 
+                          Math.floor(Math.random() * 3) + 2, // 2-4 zadrapania
+                          'rgba(255, 0, 0, 0.8)', // Czerwone zadrapania
+                          5 // Bazowy rozmiar linii zadrapania
+        );
 
         if (playerHealth <= 0) {
             endGame("ZGINĄŁEŚ W WALCE ZE STONKSEM!"); // Game over if player health reaches 0
         }
     }
 
-    // NOWE: Funkcja do aktualizacji UI paska życia gracza
+    // NOWE: Funkcja do aktualizacji UI paska życia gracza (z poprzednich zmian)
     function updatePlayerHealthUI() {
         playerHealthDisplay.textContent = `${playerHealth}/${MAX_PLAYER_HEALTH}`;
         const healthPercentage = (playerHealth / MAX_PLAYER_HEALTH) * 100;
@@ -691,7 +770,7 @@ function activateLightningStrike() {
 
             lightningCanvasParticles.push(new CanvasParticle(
                 startX, startY, 0, 0, // No independent movement for lines, target defines end
-                `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter, yellower
+                `rgba(255, 255, 0, ${0.8 + Math.random() * 0.2})`, // Brighter yellow
                 size, life, 'lightningLine', 0, endX, endY // Pass targetX, targetY
             ));
 
@@ -868,6 +947,7 @@ function activateLightningStrike() {
         ozzyImage.classList.remove('boss-mode');
         ozzyImage.classList.remove('flipped-x'); 
         ozzyImage.classList.remove('attacking'); // NOWE: Usuń klasę ataku
+        gameContainer.classList.remove('screen-shake'); // NOWE: Usuń klasę wstrząsu
 
         // Reset visual variants
         stonksVisualVariantIndex = 0;
@@ -919,6 +999,7 @@ function activateLightningStrike() {
         lightningCanvasParticles = [];
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
+        scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
@@ -926,7 +1007,7 @@ function activateLightningStrike() {
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
-        // NOWE: Zresetuj życie gracza i ukryj pasek
+        // ZMIANA: Zresetuj życie gracza i ukryj pasek
         playerHealth = MAX_PLAYER_HEALTH;
         updatePlayerHealthUI();
         playerHealthContainer.classList.add('hidden');
@@ -949,7 +1030,7 @@ function activateLightningStrike() {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
         }
-        if (gameOverSound) { // NOWE: Zatrzymaj dźwięk game over
+        if (gameOverSound) { // NOWE: Zatrzymaj dźwięk game over (jeśli jest)
             gameOverSound.pause();
             gameOverSound.currentTime = 0;
         }
@@ -1034,7 +1115,7 @@ function activateLightningStrike() {
         gameEffectsCanvas.classList.remove('hidden'); // ZMIANA: Upewnij się, że canvas jest widoczny
         gameEffectsCanvas.classList.add('active');
 
-        // NOWE: Ustaw życie gracza, pokaż pasek i rozpocznij atak Stonksa
+        // ZMIANA: Ustaw życie gracza, pokaż pasek i rozpocznij atak Stonksa
         playerHealth = MAX_PLAYER_HEALTH;
         updatePlayerHealthUI();
         playerHealthContainer.classList.remove('hidden');
@@ -1058,6 +1139,7 @@ function activateLightningStrike() {
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
+        gameContainer.classList.remove('screen-shake'); // NOWE: Usuń klasę wstrząsu
 
         frenzyModeActive = false;
         PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
@@ -1093,6 +1175,7 @@ function activateLightningStrike() {
         lightningCanvasParticles = [];
         freezeCanvasParticles = [];
         frenzyCanvasParticles = [];
+        scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
         if (gameEffectsCtx) {
             gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
         }
@@ -1154,13 +1237,15 @@ function activateLightningStrike() {
             // Wariant 0 dla poziomów 1-10.
             // Dla poziomów 11-20, variant-1, dla 21-30, variant-2, itd.
             // (currentLevel - 1) / BOSS_LEVEL_INTERVAL daje 0 dla 1-10, 1 dla 11-20 itd.
-            const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
-            stonksVisualVariantIndex = bossCyclesCompletedForNormalStonks % totalStonksVariants;
+            // ZMIANA: Poprawiona logika wyboru wariantu, aby działało od levelu 1
+            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / (BOSS_LEVEL_INTERVAL / totalStonksVariants)) % totalStonksVariants;
             
             console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
             
             // ZMIANA: Obliczanie zdrowia normalnego Stonksa na podstawie liczby pokonanych bossów
             // To zapewni, że zdrowie będzie skalować się co 10 poziomów, po każdej walce z bossem.
+            // bossCyclesCompletedForNormalStonks: 0 dla poziomów 1-10, 1 dla 11-20, 2 dla 21-30 itd.
+            const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
             INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
             console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
 
@@ -1173,7 +1258,7 @@ function activateLightningStrike() {
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = '+1 TO RESPECT!'; // Przywrócono oryginalny tekst
+            knockoutMsgElement.textContent = '+1 to respect!'; // Przywrócono oryginalny tekst
             gameContainer.appendChild(knockoutMsgElement);
 
             setTimeout(() => {
@@ -1241,7 +1326,6 @@ function activateLightningStrike() {
         gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // ZMIANA: Upewnij się, że animacja canvasa startuje dla bossa
         gameEffectsCanvas.classList.remove('hidden');
         gameEffectsCanvas.classList.add('active');
-        // bossCanvasParticles = []; // ZMIANA: Usunięto - cząsteczki znikają naturalnie
     }
 
 
@@ -1372,7 +1456,7 @@ function activateLightningStrike() {
         frenzyEffect = document.getElementById('frenzy-effect');
         backgroundMusic = document.getElementById('background-music');
         punchSound = document.getElementById('punch-sound');
-        gameOverSound = document.getElementById('game-over-sound'); // NOWE: Przypisanie elementu audio
+        gameOverSound = document.getElementById('game-over-sound'); // NOWE: Przypisanie elementu audio (przeniesione z góry, upewnienie się)
         shopButton = document.getElementById('shop-button');
         upgradeShopScreen = document.getElementById('upgrade-shop-screen');
         closeShopButton = document.getElementById('close-shop-button');
@@ -1391,7 +1475,7 @@ function activateLightningStrike() {
         quoteImagesContainer = document.getElementById('quote-images-container'); 
         gameEffectsCanvas = document.getElementById('boss-effect-canvas'); // Reusing this canvas for all effects
         gameEffectsCtx = gameEffectsCanvas.getContext('2d'); // Get 2D context
-        // NOWE: Przypisanie zmiennych DOM dla paska życia gracza
+        // ZMIANA: Przypisanie zmiennych DOM dla paska życia gracza (już istnieją)
         playerHealthContainer = document.getElementById('player-health-container');
         playerHealthDisplay = document.getElementById('player-health-display');
         playerHealthBarBg = document.getElementById('player-health-bar-bg');
@@ -1500,6 +1584,7 @@ function activateLightningStrike() {
             lightningCanvasParticles = [];
             freezeCanvasParticles = [];
             frenzyCanvasParticles = [];
+            scratchCanvasParticles = []; // NOWE: Wyczyść cząsteczki zadrapań
             if (gameEffectsCtx) {
                 gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
             }
