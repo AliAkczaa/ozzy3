@@ -740,8 +740,8 @@
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
-            // Update Stonks visual variant if it's the start of a new 10-level block (e.g., Level 1, 11, 21, 31)
-            // Variant changes for normal Stonks appearing *after* a boss fight or at the very beginning
+            // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
+            // It's triggered when a normal Stonks appears.
             if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
                 stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
             }
@@ -755,9 +755,9 @@
             // Scale normal Ozzy health
             INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
             
-            // "Stonks jest silniejszy!" message: show only on specific levels (e.g., every 5 normal levels)
-            // This message appears on levels 5, 15, 25, etc.
-            if (currentLevel > 0 && currentLevel % 5 === 0) { 
+            // "Stonks jest silniejszy!" message: show ONLY after a boss fight (i.e., at level 1, 11, 21, etc. when a normal Stonks spawns)
+            // This ensures it appears consistently when a new "tier" of Stonks health starts.
+            if ((currentLevel -1) % 10 === 0) { // Check if current level is 1, 11, 21 etc.
                  showMessage(`Stonks jest silniejszy!`, 2000); 
             }
             
