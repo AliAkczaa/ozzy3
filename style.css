@@ -123,7 +123,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 50; /* Nad tłem, pod graczem/boss-container */
+    z-index: 15; /* ZMIANA: Z-index niższy niż ozzy-container */
     pointer-events: none;
     overflow: hidden;
 }
@@ -150,7 +150,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); /* Centrowanie */
-    z-index: 20; /* Nad tłem */
+    z-index: 20; /* Nad tłem i cytatami */
     cursor: url('stonks.png'), auto; /* Zmieniony kursor na Stonks */
     transition: transform 0.1s ease-out; /* Płynne poruszanie */
     user-select: none; /* Zapobiegaj zaznaczaniu */
@@ -187,7 +187,7 @@ body {
     filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); /* Zmiana wyglądu i czerwony cień */
     transform: scale(1.2); /* Większy rozmiar dla bossa */
     /* Animacje bossa (pionowe poruszanie, migotanie) */
-    animation: boss-flicker 1s infinite alternate, boss-pulsate 2s infinite alternate;
+    animation: boss-flicker 1s infinite alternate, boss-pulsate 2s infinite infinite alternate;
 }
 
 /* Odwracanie obrazu bossa */
@@ -197,16 +197,16 @@ body {
 
 
 /* Warianty wizualne Stonksa (normalne) */
-#ozzy-image.stonks-variant-0 { filter: hue-rotate(0deg); } /* Domyślny */
-#ozzy-image.stonks-variant-1 { filter: hue-rotate(30deg); }
-#ozzy-image.stonks-variant-2 { filter: hue-rotate(60deg); }
-#ozzy-image.stonks-variant-3 { filter: hue-rotate(90deg); }
-#ozzy-image.stonks-variant-4 { filter: hue-rotate(120deg); }
-#ozzy-image.stonks-variant-5 { filter: hue-rotate(150deg); }
-#ozzy-image.stonks-variant-6 { filter: hue-rotate(180deg); }
-#ozzy-image.stonks-variant-7 { filter: hue-rotate(210deg); }
-#ozzy-image.stonks-variant-8 { filter: hue-rotate(240deg); }
-#ozzy-image.stonks-variant-9 { filter: hue-rotate(270deg); }
+#ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny */
+#ozzy-image.stonks-variant-1 { filter: hue-rotate(30deg) brightness(1.1); }
+#ozzy-image.stonks-variant-2 { filter: grayscale(80%) sepia(30%); }
+#ozzy-image.stonks-variant-3 { filter: invert(50%) saturate(120%); }
+#ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); }
+#ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
+#ozzy-image.stonks-variant-6 { filter: drop-shadow(0 0 8px #00FF00) brightness(1.3); }
+#ozzy-image.stonks-variant-7 { filter: sepia(70%) contrast(150%) brightness(1.1); }
+#ozzy-image.stonks-variant-8 { filter: hue-rotate(270deg) saturate(180%) drop-shadow(0 0 10px #FF00FF); }
+#ozzy-image.stonks-variant-9 { filter: brightness(0.7) contrast(200%); }
 
 /* Warianty wizualne Bossa (zmodyfikowane) */
 #ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); }
@@ -253,13 +253,14 @@ body {
     border-radius: 7px;
 }
 
-/* Ekrany gry (start, koniec, ranking, sklep) */
+/* Ekrany gry (start, koniec, ranking, sklep) - Poprawione pozycjonowanie */
 #start-screen, #end-screen, #leaderboard-screen, #upgrade-shop-screen {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%; /* ZMIANA: Centrowanie pionowe */
+    left: 50%; /* ZMIANA: Centrowanie poziome */
+    transform: translate(-50%, -50%); /* ZMIANA: Dokładne centrowanie */
+    width: 80%; /* Zachowaj responsywność */
+    max-width: 500px; /* Maksymalna szerokość */
     background: rgba(0, 0, 0, 0.9); /* Półprzezroczyste tło */
     display: flex;
     flex-direction: column;
@@ -267,9 +268,12 @@ body {
     align-items: center;
     text-align: center;
     z-index: 1000; /* Zawsze na wierzchu */
-    padding: 20px;
+    padding: 30px; /* Zwiększony padding dla lepszych marginesów wewnętrznych */
     box-sizing: border-box; /* padding wewnątrz szerokości/wysokości */
+    max-height: 95vh; /* ZMIANA: Mniejszy max-height dla przestrzeni od góry/dołu */
+    overflow-y: auto; /* Zapewnij przewijanie, jeśli zawartość przekroczy wysokość */
 }
+
 
 #start-screen h1, #end-screen h2, #leaderboard-screen h2, #upgrade-shop-screen h2 {
     font-size: clamp(1.5em, 6vw, 3em); /* Responsywny rozmiar tekstu */
@@ -377,7 +381,7 @@ button:disabled {
 /* Przyciski supermocy */
 #superpower-buttons-container {
     position: absolute;
-    bottom: 10px;
+    bottom: 10px; /* Domyślna pozycja na desktopie */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -411,7 +415,7 @@ button:disabled {
 /* Wiadomości dynamiczne */
 .knockout-message, .boss-message {
     position: absolute;
-    top: 50%;
+    top: 65%; /* ZMIANA: Niższe położenie */
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: rgba(0, 0, 0, 0.8);
@@ -477,8 +481,14 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 90%;
-    max-height: 90%;
+    width: 80%; /* Zachowaj responsywność */
+    max-width: 500px; /* Maksymalna szerokość */
+    /* ZMIANA: Zamiast top/left/width/height na 100%, używamy centrowania i max-height */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 95vh; /* ZMIANA: Daje więcej miejsca na górze/dole */
     overflow-y: auto; /* Przewijanie, jeśli zawartość jest długa */
 }
 
@@ -501,7 +511,7 @@ button:disabled {
 .upgrade-category h3 {
     font-size: clamp(0.9em, 3.5vw, 1.5em);
     color: #FFD700;
-    margin-top: 0;
+    margin-top: 0; /* Zapewnia, że nagłówek nie ma dodatkowego marginesu */
     margin-bottom: 10px;
 }
 
@@ -556,6 +566,7 @@ button:disabled {
     }
 
     #superpower-buttons-container {
+        bottom: 60px; /* ZMIANA: Podniesienie przycisków na mobilnych */
         flex-direction: row; /* Przyciski w rzędzie */
         width: 95%; /* Większa szerokość */
         padding: 5px;
