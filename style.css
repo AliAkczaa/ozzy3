@@ -56,15 +56,32 @@ body {
     100% { transform: scale(1.1); } /* Lekkie powiększanie */
 }
 
-/* Kontenery na efekty (np. błyskawice, lód, szał) */
+/* Canvas dla wszystkich dynamicznych efektów (boss, supermoce) */
+#boss-effect-canvas { /* ID canvasa pozostało 'boss-effect-canvas' */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 150; /* Nad ozzy-container, ale pod message-display */
+    pointer-events: none;
+    opacity: 0; /* Domyślnie ukryty, pokazywany przez JS */
+    transition: opacity 0.5s ease-in-out;
+}
+
+#boss-effect-canvas.active {
+    opacity: 1; /* Aktywacja */
+}
+
+/* Kontenery na efekty supermocy (tylko tło/pełnoekranowe rozbłyski) */
 .effect-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 100; /* Nad wszystkimi elementami gry */
-    pointer-events: none; /* Nie blokuj kliknięć pod spodem */
+    z-index: 100; /* Nad wszystkimi elementami gry poza canvasem i komunikatami */
+    pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease-out;
 }
@@ -73,47 +90,23 @@ body {
     opacity: 1;
 }
 
-/* Efekty błyskawicy */
+/* Efekty błyskawicy (overlay) */
 #lightning-effect.flash-active {
     opacity: 1;
     background: radial-gradient(circle, rgba(255, 255, 0, 0.4) 0%, rgba(255, 140, 0, 0) 70%);
 }
 
-.lightning-segment {
-    position: absolute;
-    background-color: #FFFF00; /* Żółty */
-    border-radius: 50%; /* Okrągłe punkty */
-    box-shadow: 0 0 10px #FFFF00, 0 0 20px #FFD700; /* Błyskawiczny cień */
-    animation: lightningSegmentFade 0.8s forwards; /* Skrócona animacja */
-}
-
-@keyframes lightningSegmentFade {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
-}
-
-
-/* Efekty lodu */
+/* Efekty lodu (overlay) */
 #freeze-effect {
-    background-color: transparent; /* Przezroczyste tło overlay */
-    opacity: 0; /* Początkowo niewidoczne */
+    background-color: transparent; 
+    opacity: 0;
     transition: background-color 0.5s ease-out, opacity 0.5s ease-out;
 }
 
 #freeze-effect.active {
-    background-color: rgba(173, 216, 230, 0.3); /* Aktywacja tła lodowego */
+    background-color: rgba(173, 216, 230, 0.3);
     animation: freezeEffectGlow 1s infinite alternate;
     opacity: 1;
-}
-
-.ice-shard {
-    position: absolute;
-    width: 15px; /* Większe kawałki lodu */
-    height: 15px;
-    background-color: rgba(173, 216, 230, 0.9); /* Jasnoniebieski */
-    transform: rotate(45deg); /* Kształt kryształu */
-    box-shadow: 0 0 10px #ADD8E6, 0 0 20px #4682B4; /* Lodowy cień */
-    animation: iceShardFloat 1s forwards; /* Animacja unoszenia i zanikania */
 }
 
 @keyframes freezeEffectGlow {
@@ -121,13 +114,7 @@ body {
     100% { background-color: rgba(173, 216, 230, 0.6); }
 }
 
-@keyframes iceShardFloat {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(45deg); }
-    100% { opacity: 0; transform: translate(-50%, -100px) scale(0) rotate(135deg); } /* Unoszenie w górę */
-}
-
-
-/* Efekty szału bojowego */
+/* Efekty szału bojowego (overlay) */
 #frenzy-effect {
     background: radial-gradient(circle, rgba(255, 69, 0, 0.3) 0%, rgba(139, 0, 0, 0) 70%);
 }
@@ -149,16 +136,17 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 15; /* ZMIANA: Z-index niższy niż ozzy-container */
+    z-index: 15; 
     pointer-events: none;
     overflow: hidden;
 }
 
 .quote-image {
     position: absolute;
-    width: 150px;
-    height: 150px;
-    object-fit: contain;
+    /* ZMIANA: Responsywne rozmiary dla obrazków cytatów */
+    width: clamp(80px, 15vw, 150px); 
+    height: clamp(80px, 15vw, 150px);
+    object-fit: contain; /* Upewnij się, że obrazek mieści się w ramce */
     opacity: 0;
     transform: scale(0.5);
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
@@ -555,23 +543,6 @@ button:disabled {
     border-color: #FF6347; /* Jasnoczerwony */
     margin-top: 20px;
     font-size: clamp(0.8em, 3.5vw, 1.2em);
-}
-
-/* Style dla canvasa efektów bossa */
-#boss-effect-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 150; /* Nad ozzy-container, ale pod message-display */
-    pointer-events: none;
-    opacity: 0; /* Domyślnie ukryty */
-    transition: opacity 0.5s ease-in-out;
-}
-
-#boss-effect-canvas.active {
-    opacity: 1; /* Aktywacja */
 }
 
 
