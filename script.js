@@ -122,7 +122,8 @@
     const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
     const NORMAL_OZZY_INITIAL_HEALTH = 100;
-    const NORMAL_OZZY_HEALTH_INCREMENT = 20; 
+    // ZMIANA: Zwiększony przyrost zdrowia
+    const NORMAL_OZZY_HEALTH_INCREMENT = 30; 
     const BOSS_INITIAL_HEALTH = 450; 
     const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 150; 
 
@@ -153,9 +154,11 @@
 
     // --- Variables for visual variants of Stonks ---
     let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
-    const totalStonksVariants = 4;     // Number of available variants (0, 1, 2, 3)
+    // ZMIANA: Zwiększona liczba wariantów wizualnych
+    const totalStonksVariants = 10;     
     let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
-    const totalBossVariants = 3;       // Number of available Boss variants (0, 1, 2)
+    // ZMIANA: Zwiększona liczba wariantów wizualnych bossa
+    const totalBossVariants = 10;       
 
     // Original superpower button texts (for display when not on cooldown)
     const originalLightningText = 'Piorun Zagłady';
@@ -171,9 +174,11 @@
     let bossEffectIntervalId; // Interval for generating particles
 
     // Constants for canvas effects
-    const ICE_SHARD_COUNT = 8; // Zwiększona liczba odłamków lodu
-    const FLAME_PARTICLE_COUNT = 5; // Zwiększona liczba cząsteczek płomieni
-    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 150; // Częściej generowane cząsteczki
+    const ICE_SHARD_COUNT = 10; // Zwiększona liczba odłamków lodu
+    const FLAME_PARTICLE_COUNT = 8; // Zwiększona liczba cząsteczek płomieni
+    const EARTH_PARTICLE_COUNT = 7; // Nowy typ: cząsteczki ziemi
+    const ENERGY_ORB_COUNT = 3;   // Nowy typ: kule energii
+    const BOSS_EFFECT_PARTICLE_INTERVAL_MS = 100; // Częściej generowane cząsteczki
 
 
     // --- Leaderboard Functions ---
@@ -607,6 +612,9 @@
         dynamicMessageElement.classList.add('knockout-message'); 
         dynamicMessageElement.textContent = message;
 
+        // Ensure only one general knockout message is shown at a time
+        document.querySelectorAll('.knockout-message').forEach(el => el.remove());
+
         gameContainer.appendChild(dynamicMessageElement);
 
         setTimeout(() => {
@@ -618,6 +626,8 @@
         const dynamicMessageElement = document.createElement('div');
         dynamicMessageElement.classList.add('boss-message'); 
         dynamicMessageElement.textContent = message;
+        // Ensure only one boss message is shown at a time
+        document.querySelectorAll('.boss-message').forEach(el => el.remove());
         gameContainer.appendChild(dynamicMessageElement);
         setTimeout(() => {
             dynamicMessageElement.remove();
@@ -659,7 +669,7 @@
         // Initialize level and score for the *new* game
         currentLevel = 1; // Start from level 1
         currentLevelDisplay.textContent = currentLevel;
-        score = 0; // Corrected: use 'score' instead of 'currentScore'
+        score = 0; 
         scoreDisplay.textContent = score;
 
         // ZMIANA: Zdrowie dla poziomu 1 jest ustawiane tutaj
@@ -734,6 +744,7 @@
         score++; // Increment score for every knockout
         scoreDisplay.textContent = score;
 
+        // Clear all previous general messages before showing new ones
         document.querySelectorAll('.knockout-message').forEach(el => el.remove());
         document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
@@ -761,14 +772,20 @@
             
             // ZMIANA: Logika zwiększania zdrowia i komunikatu "Stonks jest silniejszy!"
             // To następuje tylko na poziomach 1, 11, 21, itd.
-            if (currentLevel === 1 || (currentLevel > 1 && (currentLevel % BOSS_LEVEL_INTERVAL === 1))) { 
-                stonksVisualVariantIndex = ((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
+            // Sprawdź, czy aktualny poziom jest początkiem nowej "dziesiątki"
+            const isNewTier = currentLevel === 1 || (currentLevel > 1 && (currentLevel - 1) % BOSS_LEVEL_INTERVAL === 0);
+
+            if (isNewTier) { 
+                stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants; 
                 
                 // Zwiększ zdrowie Stonksa tylko na początku nowej "dziesiątki" poziomów
                 // (np. poziom 1, po bossie na poziomie 10 - czyli poziom 11, po bossie na 20 - czyli poziom 21)
                 const tier = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); // 0 dla poziomów 1-10, 1 dla 11-20, itd.
                 INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (tier * NORMAL_OZZY_HEALTH_INCREMENT);
                 showMessage(`Stonks jest silniejszy!`, 2000); 
+            } else {
+                 // Tylko jeśli nie jest to nowa "dziesiątka" i nie wyświetlono "Stonks jest silniejszy!"
+                showMessage('Stonks rozjebany!', 1500);
             }
             
             updateOzzyAppearance(); // Apply the new Stonks variant
@@ -778,15 +795,6 @@
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
             
-            const knockoutMsgElement = document.createElement('div');
-            knockoutMsgElement.classList.add('knockout-message'); 
-            knockoutMsgElement.textContent = 'Stonks rozjebany!'; 
-            gameContainer.appendChild(knockoutMsgElement);
-
-            setTimeout(() => {
-                knockoutMsgElement.remove();
-            }, 2000); 
-
             stopBossCanvasEffects(); // NEW: Stop canvas effects when normal Stonks returns
         }
 
@@ -965,7 +973,7 @@
         if (!isCanvasEffectActive) return;
 
         // Clear only the parts that need redrawing, or the whole canvas
-        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+        bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCtx.canvas.height);
 
         // Update and draw particles
         for (let i = bossParticles.length - 1; i >= 0; i--) {
@@ -974,7 +982,7 @@
             p.y += p.dy;
             p.alpha -= p.fade;
 
-            if (p.alpha <= 0 || p.y < -p.size || p.x < -p.size || p.x > bossEffectCanvas.width + p.size) {
+            if (p.alpha <= 0 || p.y < -p.size * 2 || p.y > bossEffectCanvas.height + p.size * 2 || p.x < -p.size * 2 || p.x > bossEffectCanvas.width + p.size * 2) {
                 bossParticles.splice(i, 1);
             } else {
                 if (p.type === 'ice') {
@@ -989,13 +997,28 @@
                     bossEffectCtx.beginPath();
                     bossEffectCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                     bossEffectCtx.fill();
+                } else if (p.type === 'earth') {
+                    bossEffectCtx.fillStyle = `rgba(139, 69, 19, ${p.alpha})`; // Brown
+                    bossEffectCtx.beginPath();
+                    bossEffectCtx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+                    bossEffectCtx.fill();
+                } else if (p.type === 'energy') {
+                    const gradient = bossEffectCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                    gradient.addColorStop(0, `rgba(0, 255, 255, ${p.alpha})`); // Cyan inner
+                    gradient.addColorStop(0.5, `rgba(128, 0, 128, ${p.alpha * 0.7})`); // Purple middle
+                    gradient.addColorStop(1, `rgba(0, 0, 255, 0)`); // Blue outer, transparent
+                    bossEffectCtx.fillStyle = gradient;
+                    bossEffectCtx.beginPath();
+                    bossEffectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    bossEffectCtx.fill();
                 }
             }
         }
 
         // Subtle flicker effect (draws a transparent black overlay sometimes)
-        if (Math.random() < 0.03) { // 3% chance per frame to flicker
-            bossEffectCtx.fillStyle = `rgba(0, 0, 0, 0.05)`; // Very subtle black overlay
+        // ZMIANA: Zwiększona widoczność migotania ekranu
+        if (Math.random() < 0.05) { // 5% chance per frame to flicker
+            bossEffectCtx.fillStyle = `rgba(0, 0, 0, 0.1)`; // Bardziej zauważalny czarny overlay
             bossEffectCtx.fillRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
         }
 
@@ -1048,11 +1071,11 @@
                     type: 'ice',
                     x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 1.5,
                     y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 1.5,
-                    size: Math.random() * 20 + 10, // ZWIĘKSZONO ROZMIAR ODŁAMKÓW LODU
+                    size: Math.random() * 20 + 10, 
                     alpha: 0.8,
-                    dx: (Math.random() - 0.5) * 4, // Horizontal movement
-                    dy: (Math.random() - 0.5) * 4, // Vertical movement
-                    fade: 0.01, // Mniejsze zanikanie, aby dłużej były widoczne
+                    dx: (Math.random() - 0.5) * 4, 
+                    dy: (Math.random() - 0.5) * 4, 
+                    fade: 0.01, 
                     angle: Math.random() * Math.PI * 2
                 });
             }
@@ -1061,15 +1084,44 @@
             for (let i = 0; i < FLAME_PARTICLE_COUNT; i++) {
                 bossParticles.push({
                     type: 'flame',
-                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.5, // More centralized
-                    y: ozzyCanvasCenterY + ozzyRect.height * 0.4, // From bottom part of Ozzy
-                    radius: Math.random() * 40 + 20, // ZWIĘKSZONO ROZMIAR PŁOMIENI
+                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.5, 
+                    y: ozzyCanvasCenterY + ozzyRect.height * 0.4, 
+                    radius: Math.random() * 40 + 20, 
                     alpha: 0.7,
                     dx: (Math.random() - 0.5) * 2,
-                    dy: -Math.random() * 5 - 1, // Move upwards faster
-                    fade: 0.008 // Mniejsze zanikanie, aby dłużej były widoczne
+                    dy: -Math.random() * 5 - 1, 
+                    fade: 0.008 
                 });
             }
+
+            // NEW: Generate earth particles (from bottom, moving up slightly)
+            for (let i = 0; i < EARTH_PARTICLE_COUNT; i++) {
+                bossParticles.push({
+                    type: 'earth',
+                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.8,
+                    y: ozzyCanvasCenterY + ozzyRect.height * 0.5 + Math.random() * 20, // From below boss
+                    size: Math.random() * 15 + 5,
+                    alpha: 0.9,
+                    dx: (Math.random() - 0.5) * 1,
+                    dy: -Math.random() * 3 - 0.5, // Slow upward movement
+                    fade: 0.015
+                });
+            }
+
+            // NEW: Generate energy orbs (larger, slower, fading)
+            for (let i = 0; i < ENERGY_ORB_COUNT; i++) {
+                bossParticles.push({
+                    type: 'energy',
+                    x: ozzyCanvasCenterX + (Math.random() - 0.5) * ozzyRect.width * 0.7,
+                    y: ozzyCanvasCenterY + (Math.random() - 0.5) * ozzyRect.height * 0.7,
+                    size: Math.random() * 30 + 15,
+                    alpha: 0.6,
+                    dx: (Math.random() - 0.5) * 0.5, // Slower movement
+                    dy: (Math.random() - 0.5) * 0.5,
+                    fade: 0.005 // Slower fade
+                });
+            }
+
         }, BOSS_EFFECT_PARTICLE_INTERVAL_MS);
 
         // Start animation loop
