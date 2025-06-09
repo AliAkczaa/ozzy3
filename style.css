@@ -41,8 +41,39 @@ body {
     box-shadow: 0 0 50px rgba(255, 0, 0, 0.5); /* Czerwony cień */
     background-color: #000; /* Domyślne tło */
     /* Centrowanie game-container na większych ekranach */
-    margin: auto; 
+    /* ZMIANA: Centrowanie z użyciem margin auto i position: fixed */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box; /* Ważne dla paddingu i borderów */
 }
+
+/* Animacja wstrząsu ekranu */
+.screen-shake {
+    animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate(-50%, -50%); /* Zachowanie centrowania */
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate(-52%, -50%); /* Lekkie przesunięcie w lewo */
+    }
+    20%, 80% {
+        transform: translate(-48%, -50%); /* Lekkie przesunięcie w prawo */
+    }
+    30%, 70% {
+        transform: translate(-52%, -50%);
+    }
+    40%, 60% {
+        transform: translate(-48%, -50%);
+    }
+    50% {
+        transform: translate(-50%, -50%); /* Powrót do centrum */
+    }
+}
+
 
 /* Animowane tło traktora */
 #animated-background-tractor {
@@ -191,17 +222,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Animacja Stonksa podczas ataku gracza */
-#ozzy-image.attacking {
-    animation: stonks-attack-animation 0.3s ease-in-out;
-}
-
-@keyframes stonks-attack-animation {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08) translateX(5px) translateY(-5px); filter: brightness(1.8) contrast(1.5) drop-shadow(0 0 25px #FF0000); } /* Większy, lekki ruch i czerwony blask */
-    100% { transform: scale(1); }
-}
-
 /* Animacja pojawiania się Ozzy'ego */
 #ozzy-image.spawn-ozzy {
     animation: spawn-pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -226,29 +246,29 @@ body {
     transform: scaleX(-1); /* Odwrócenie w poziomie */
 }
 
-/* Warianty wizualne Stonksa (normalne) - ZNACZNE POPRAWKI */
+/* Warianty wizualne Stonksa (normalne) */
 #ozzy-image.stonks-variant-0 { filter: none; } /* Domyślny, brak efektów */
-#ozzy-image.stonks-variant-1 { filter: hue-rotate(90deg) saturate(200%) brightness(1.2) contrast(1.1); } /* Zielonkawy, bardzo wyraźny */
-#ozzy-image.stonks-variant-2 { filter: sepia(100%) brightness(1.2) contrast(1.5) hue-rotate(20deg); } /* Ciepły sepia, z kontrastem */
-#ozzy-image.stonks-variant-3 { filter: invert(80%) hue-rotate(220deg) saturate(200%) brightness(1.5) drop-shadow(0 0 10px rgba(0,0,255,0.7)); } /* Inwersja na niebieski, z blaskiem */
-#ozzy-image.stonks-variant-4 { filter: grayscale(100%) contrast(200%) brightness(1.5) hue-rotate(0deg); } /* Czarno-biały, mocny kontrast */
-#ozzy-image.stonks-variant-5 { filter: saturate(300%) brightness(1.2) contrast(1.3) hue-rotate(180deg); } /* Mocno nasycony, cyjan */
-#ozzy-image.stonks-variant-6 { filter: hue-rotate(300deg) saturate(250%) brightness(1.1) contrast(1.2) drop-shadow(0 0 12px rgba(255,0,255,0.8)); } /* Fioletowy/różowy neon */
-#ozzy-image.stonks-variant-7 { filter: blur(1.5px) saturate(250%) hue-rotate(60deg) brightness(1.3); } /* Rozmyty i złocisty */
-#ozzy-image.stonks-variant-8 { filter: grayscale(50%) sepia(80%) hue-rotate(150deg) brightness(1.1) contrast(1.2); } /* Szaro-niebieski z sepią */
-#ozzy-image.stonks-variant-9 { filter: invert(100%) saturate(150%) brightness(0.8) contrast(1.8); } /* Pełna inwersja, ciemniejszy, bardziej surowy */
+#ozzy-image.stonks-variant-1 { filter: hue-rotate(45deg) brightness(1.2) saturate(1.8); } /* ZMIANA: Wyraźniejszy hue-rotate i nasycenie */
+#ozzy-image.stonks-variant-2 { filter: hue-rotate(120deg) saturate(1.8) brightness(1.1) contrast(1.2) drop-shadow(0 0 5px rgba(0,255,0,0.5)); } /* ZMIANA: Wyraźny zielonkawy, więcej detali */
+#ozzy-image.stonks-variant-3 { filter: invert(100%) hue-rotate(270deg) saturate(1.5) brightness(1.3) drop-shadow(0 0 5px rgba(128,0,128,0.5)); } /* ZMIANA: Fioletowy inwersja, wyraźny */
+#ozzy-image.stonks-variant-4 { filter: contrast(180%) brightness(0.9) hue-rotate(100deg); } /* Pozostaje, skoro działał */
+#ozzy-image.stonks-variant-5 { filter: blur(0.3px) saturate(150%) hue-rotate(200deg); }
+#ozzy-image.stonks-variant-6 { filter: drop-shadow(0 0 8px #00FF00) brightness(1.3); }
+#ozzy-image.stonks-variant-7 { filter: sepia(70%) contrast(150%) brightness(1.1); }
+#ozzy-image.stonks-variant-8 { filter: hue-rotate(270deg) saturate(180%) drop-shadow(0 0 10px #FF00FF); }
+#ozzy-image.stonks-variant-9 { filter: brightness(0.7) contrast(200%); }
 
-/* Warianty wizualne Bossa (zmodyfikowane - BARDZIEJ DYNAMICZNE I AGRESYWNE) */
-#ozzy-image.boss-mode-variant-0 { filter: brightness(1.5) contrast(1.5) hue-rotate(0deg) drop-shadow(0 0 50px #FF0000) saturate(200%); } /* Intensywny Czerwony Ogień */
-#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(80deg) brightness(1.8) saturate(300%) contrast(1.8) drop-shadow(0 0 60px #FFA500) ; } /* Piekielny Pomarańcz */
-#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(300%) brightness(1.3) blur(1.5px) contrast(2.0) drop-shadow(0 0 70px #00FFFF); } /* Glitchy Cyjan / Elektryczny */
-#ozzy-image.boss-mode-variant-3 { filter: grayscale(100%) contrast(300%) brightness(0.5) hue-rotate(90deg) drop-shadow(0 0 80px #00FF00); } /* Czarno-zielony, radioaktywny */
-#ozzy-image.boss-mode-variant-4 { filter: blur(3px) hue-rotate(200deg) saturate(500%) contrast(2.5) drop-shadow(0 0 90px #FF00FF); } /* Rozmyty Kosmiczny Fiolet */
-#ozzy-image.boss-mode-variant-5 { filter: brightness(4.0) contrast(0.2) invert(50%) hue-rotate(45deg) drop-shadow(0 0 100px #FFFFFF); } /* Ultra Biały Duch / Błysk */
-#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(150deg) saturate(400%) brightness(1.8) contrast(2.0) drop-shadow(0 0 110px #00BFFF); } /* Lodowy Błękit, intensywny */
-#ozzy-image.boss-mode-variant-7 { filter: sepia(100%) invert(80%) brightness(1.5) saturate(250%) contrast(1.8) drop-shadow(0 0 120px #FFFF00); } /* Złoto-żółty, toksyczny */
-#ozzy-image.boss-mode-variant-8 { filter: contrast(500%) brightness(0.2) hue-rotate(270deg) drop-shadow(0 0 130px #8A2BE2); } /* Ciemny Fiolet, bardzo kontrastowy */
-#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(340deg) saturate(250%) blur(2px) brightness(1.3) drop-shadow(0 0 140px #FFD700); } /* Złoty Rozmyty Blask */
+/* Warianty wizualne Bossa (zmodyfikowane - bardziej dynamiczne) */
+#ozzy-image.boss-mode-variant-0 { filter: brightness(1.2) contrast(1.2) hue-rotate(180deg) drop-shadow(0 0 30px #FF0000); } /* Czerwony, bazowy */
+#ozzy-image.boss-mode-variant-1 { filter: sepia(100%) hue-rotate(50deg) brightness(1.5) saturate(200%) contrast(1.3) drop-shadow(0 0 45px #FFA500); } /* Sepia/Pomarańczowy, mocniejszy */
+#ozzy-image.boss-mode-variant-2 { filter: invert(100%) saturate(200%) brightness(1.1) blur(0.8px) contrast(1.5) drop-shadow(0 0 50px #00FFFF); } /* Inwersja / Cyjan Glitch mocniejszy */
+#ozzy-image.boss-mode-variant-3 { filter: grayscale(90%) contrast(250%) brightness(0.7) hue-rotate(60deg) drop-shadow(0 0 55px #808080); } /* Szary Metaliczny z mocniejszym kontrastem i odcieniem */
+#ozzy-image.boss-mode-variant-4 { filter: blur(2px) hue-rotate(280deg) saturate(400%) contrast(1.8) drop-shadow(0 0 60px #FF00FF); } /* Rozmyty Purpurowy Glitch bardzo intensywny */
+#ozzy-image.boss-mode-variant-5 { filter: brightness(3.0) contrast(0.4) invert(30%) hue-rotate(20deg) drop-shadow(0 0 65px #FFFFFF); } /* Błysk / Biały Ghost z wyraźniejszą inwersją i odcieniem */
+#ozzy-image.boss-mode-variant-6 { filter: hue-rotate(100deg) saturate(300%) brightness(1.5) contrast(1.8) drop-shadow(0 0 70px #00FF00); } /* Bardzo Intensywny Zielony */
+#ozzy-image.boss-mode-variant-7 { filter: sepia(90%) invert(60%) brightness(1.3) saturate(200%) contrast(1.5) drop-shadow(0 0 75px #FFFF00); } /* Połączenie Sepia/Inwersja / Żółty, jeszcze mocniejszy */
+#ozzy-image.boss-mode-variant-8 { filter: contrast(400%) brightness(0.4) hue-rotate(150deg) drop-shadow(0 0 80px #0000FF); } /* Ekstremalny Kontrast / Głęboki Niebieski */
+#ozzy-image.boss-mode-variant-9 { filter: hue-rotate(320deg) saturate(200%) blur(1.2px) brightness(1.1) drop-shadow(0 0 85px #FF007F); } /* Magentowy / Różowy z wyraźnym rozmyciem i blaskiem */
 
 
 @keyframes boss-flicker {
@@ -262,7 +282,7 @@ body {
 }
 
 
-/* Pasek zdrowia Stonksa */
+/* Pasek zdrowia */
 #health-bar-container {
     width: 80%;
     height: 25px; /* Grubszy pasek */
@@ -305,7 +325,7 @@ body {
     margin: 5px 0;
 }
 
-#-bar-bg {
+#player-health-bar-bg {
     width: 100%; 
     height: 20px; /* Grubość paska życia */
     background-color: #333;
@@ -357,13 +377,10 @@ body {
     margin-bottom: 15px;
 }
 
-#nick-input-container {
-    margin-bottom: 20px;
-}
-
 #nickname-input {
     padding: 10px 15px;
     font-size: clamp(0.8em, 3.5vw, 1.2em);
+    margin-bottom: 20px;
     border: 3px solid #FFD700;
     background-color: #333;
     color: #eee;
@@ -530,16 +547,15 @@ button:disabled {
 
 
 /* Styl dla przycisku sklepu */
-# {
+#shop-button {
     position: absolute;
-    top: 0px;
+    top: 10px;
     right: 10px;
     background-color: #4CAF50; /* Zielony */
     border-color: #8BC34A; /* Jasnozielony */
     color: white;
-    /* ZMIANA: Dopasowanie padding i font-size do game-info-container dla wyrównania */
-    padding: 10px 15px;
-    font-size: clamp(0.7em, 2.5vw, 1em); 
+    padding: 10px 15px; /* Ujednolicone z game-info-container */
+    font-size: clamp(0.7em, 2.5vw, 1em); /* Ujednolicone z game-info-container */
     z-index: 30; /* Nad innymi elementami gry */
 }
 
@@ -627,14 +643,14 @@ button:disabled {
         height: 20px; /* Mniejszy pasek zdrowia */
     }
 
-    /* Pasek życia gracza na mobilnych - umieszczony nad przyciskami supermocy */
+    /* Pasek życia gracza na mobilnych - umieszczony niżej */
     #player-health-container {
         top: unset; 
-        bottom: 75px; /* ZMNIEJSZONO BOTTOM - PRZESUNIĘCIE NIŻEJ */
+        bottom: 50px; /* PRZESUNIĘTO NIŻEJ */
         left: 50%;
         transform: translateX(-50%);
         width: clamp(100px, 45vw, 200px); /* ZMNIEJSZONO szerokość (ok. 50%) */
-        padding: 5px 12px;
+        padding: 8px 12px;
         font-size: clamp(0.6em, 2.5vw, 1em);
     }
     #player-health-bar-bg {
@@ -680,7 +696,7 @@ button:disabled {
 
     /* Przycisk sklepu - górny prawy róg na mobilnych */
     #shop-button {
-        top: 3px;
+        top: 10px;
         right: 10px;
         left: unset;
         bottom: unset;
@@ -691,7 +707,7 @@ button:disabled {
 
     /* Komunikaty (knockout/boss) na mobilnych - ZMIANA POZYCJI */
     .knockout-message, .boss-message {
-        top: 20%; /* Przesunięcie wyżej, nad Stonksa, poniżej info/sklepu */
+        top: 30%; /* Przesunięcie wyżej, nad Stonksem, poniżej info/sklepu */
         transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
         font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
         padding: 12px 18px; /* Zmniejszony padding */
