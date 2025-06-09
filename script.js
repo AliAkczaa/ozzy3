@@ -215,15 +215,15 @@
                 this.vx *= 0.98; // Slow down
                 this.vy *= 0.98; // Slow down
             } else if (this.type === 'stonksClaw') {
-                this.alpha -= 0.04; // Szybkie zanikanie
-                this.size *= 0.95; // Lekkie zmniejszenie rozmiaru
+                this.alpha -= 0.02; // Szybkie zanikanie
+                this.size *= 0.975; // Lekkie zmniejszenie rozmiaru
                 if (this.currentLife % 5 === 0) { // Co kilka klatek lekko zmieniaj kąt
                     this.angle += (Math.random() - 0.5) * 0.2; // Dodaj trochę "chwiejności"
                 }
             } else if (this.type === 'painParticle') {
                 this.vy += 0.1; // Grawitacja
-                this.alpha -= 0.05; // Szybkie zanikanie
-                this.size *= 0.98; // Zmniejszaj rozmiar
+                this.alpha -= 0.025; // Szybkie zanikanie
+                this.size *= 0.99; // Zmniejszaj rozmiar
             }
         }
 
@@ -577,8 +577,8 @@
             const startX = x + (Math.random() - 0.5) * spawnRadiusX;
             const startY = y + (Math.random() - 0.5) * spawnRadiusY;
             const angle = Math.random() * Math.PI * 2; // Losowy kąt cięcia
-            const size = Math.random() * 8 + 10; // Większa szerokość cięcia (10-18)
-            const life = 20 + Math.random() * 10; // Krótkie życie (20-30 klatek)
+            const size = Math.random() * 12 + 15; // Większa szerokość cięcia (10-18)
+            const life = 40 + Math.random() * 20; // Krótkie życie (20-30 klatek)
             const color = `rgba(${255 - Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 50)}, ${0.7 + Math.random() * 0.3})`; // Odcienie czerwieni
             
             stonksAttackClawParticles.push(new CanvasParticle(
@@ -592,10 +592,10 @@
             const startX = x + (Math.random() - 0.5) * spawnRadiusX * 0.7; // Bliżej centrum ataku
             const startY = y + (Math.random() - 0.5) * spawnRadiusY * 0.7;
             const angle = Math.random() * Math.PI * 2; // Losowy kąt lotu
-            const size = Math.random() * 3 + 3; // Małe rozmiary (3-6)
-            const life = 30 + Math.random() * 15; // Trochę dłuższe życie (30-45 klatek)
-            const vx = (Math.random() - 0.5) * 5; // Początkowa prędkość X
-            const vy = (Math.random() - 0.5) * 5 - 2; // Początkowa prędkość Y (lekko w górę, potem grawitacja)
+            const size = Math.random() * 5 + 5; // Małe rozmiary (3-6)
+            const life = 60 + Math.random() * 30; // Trochę dłuższe życie (30-45 klatek)
+            const vx = (Math.random() - 0.5) * 2.5; // Początkowa prędkość X
+            const vy = (Math.random() - 0.5) * 2.5 - 1; // Początkowa prędkość Y (lekko w górę, potem grawitacja)
             const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.8 + Math.random() * 0.2})`; // Czerwień/pomarańcz
             
             stonksAttackPainParticles.push(new CanvasParticle(
