@@ -575,8 +575,8 @@
         // Ilość cięć (szponów)
         const numClaws = Math.floor(Math.random() * 4) + 4; // 3-5 cięć
         for (let i = 0; i < numClaws; i++) {
-            const startX = x + (Math.random() - 0.5) * spawnRadiusX;
-            const startY = y + (Math.random() - 0.5) * spawnRadiusY;
+            const startX = x + (Math.random() - 0.5) * spawnAreaX;
+            const startY = y + (Math.random() - 0.5) * spawnAreaY;
             const angle = Math.random() * Math.PI * 2; // Losowy kąt cięcia
             const size = Math.random() * 24 + 30; // Większa szerokość cięcia (10-18)
             const life = 80 + Math.random() * 40; // Krótkie życie (20-30 klatek)
