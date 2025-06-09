@@ -75,46 +75,71 @@ body {
 
 /* Efekty błyskawicy */
 #lightning-effect {
-    background: radial-gradient(circle, rgba(255, 255, 0, 0.3) 0%, rgba(255, 140, 0, 0) 70%);
+    /* Background gradient will be applied when active to ensure full screen effect */
 }
 
 .lightning-segment {
     position: absolute;
     background-color: #FFFF00; /* Żółty */
+    border-radius: 50%; /* Okrągłe punkty */
     box-shadow: 0 0 10px #FFFF00, 0 0 20px #FFD700; /* Błyskawiczny cień */
-    animation: fade-out 1s forwards;
-    transform-origin: center top;
+    animation: lightningSegmentFade 0.8s forwards; /* Skrócona animacja */
 }
 
-@keyframes fade-out {
-    from { opacity: 1; transform: scale(1); }
-    to { opacity: 0; transform: scale(1.5); }
+@keyframes lightningSegmentFade {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
 }
+
 
 /* Efekty lodu */
 #freeze-effect {
-    background: radial-gradient(circle, rgba(173, 216, 230, 0.3) 0%, rgba(70, 130, 180, 0) 70%);
+    background-color: transparent; /* Przezroczyste tło overlay */
+    opacity: 0; /* Początkowo niewidoczne */
+    transition: background-color 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+#freeze-effect.active {
+    background-color: rgba(173, 216, 230, 0.3); /* Aktywacja tła lodowego */
+    animation: freezeEffectGlow 1s infinite alternate;
+    opacity: 1;
 }
 
 .ice-shard {
     position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #ADD8E6; /* Jasnoniebieski */
-    box-shadow: 0 0 8px #ADD8E6, 0 0 15px #4682B4; /* Lodowy cień */
+    width: 15px; /* Większe kawałki lodu */
+    height: 15px;
+    background-color: rgba(173, 216, 230, 0.9); /* Jasnoniebieski */
     transform: rotate(45deg); /* Kształt kryształu */
-    animation: ice-float 1s forwards;
+    box-shadow: 0 0 10px #ADD8E6, 0 0 20px #4682B4; /* Lodowy cień */
+    animation: iceShardFloat 1s forwards; /* Animacja unoszenia i zanikania */
 }
 
-@keyframes ice-float {
-    from { opacity: 1; transform: translateY(0) rotate(45deg); }
-    to { opacity: 0; transform: translateY(-50px) rotate(90deg); }
+@keyframes freezeEffectGlow {
+    0% { background-color: rgba(173, 216, 230, 0.3); }
+    100% { background-color: rgba(173, 216, 230, 0.6); }
 }
+
+@keyframes iceShardFloat {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(45deg); }
+    100% { opacity: 0; transform: translate(-50%, -100px) scale(0) rotate(135deg); } /* Unoszenie w górę */
+}
+
 
 /* Efekty szału bojowego */
 #frenzy-effect {
     background: radial-gradient(circle, rgba(255, 69, 0, 0.3) 0%, rgba(139, 0, 0, 0) 70%);
 }
+
+#frenzy-effect.active {
+    animation: frenzyEffectPulse 0.5s infinite alternate;
+}
+
+@keyframes frenzyEffectPulse {
+    0% { background-color: rgba(255, 69, 0, 0.3); transform: scale(1); }
+    100% { background-color: rgba(255, 69, 0, 0.5); transform: scale(1.02); }
+}
+
 
 /* Kontener na obrazki z cytatami (np. memes) */
 #quote-images-container {
@@ -150,7 +175,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); /* Centrowanie */
-    z-index: 20; /* Nad tłem i cytatami */
+    z-index: 20; /* Nad tłem i cytatami, ale pod canvasem efektów */
     cursor: url('stonks.png'), auto; /* Zmieniony kursor na Stonks */
     transition: transform 0.1s ease-out; /* Płynne poruszanie */
     user-select: none; /* Zapobiegaj zaznaczaniu */
@@ -487,7 +512,7 @@ button:disabled {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-height: 95vh; /* Daje więcej miejsca na górze/dole */
+    max-height: 95vh; /* Daje więcej miejsca na górze/dołu */
     overflow-y: auto; /* Przewijanie, jeśli zawartość jest długa */
 }
 
@@ -546,8 +571,6 @@ button:disabled {
 
 #boss-effect-canvas.active {
     opacity: 1; /* Aktywacja */
-    /* TEMP DEBUG: Bardzo lekki podkład, aby sprawdzić czy Canvas w ogóle jest aktywny */
-    background-color: rgba(0, 255, 255, 0.05); /* Bardzo lekki cyjanowy overlay */
 }
 
 
@@ -614,10 +637,10 @@ button:disabled {
         padding: 6px 12px;
     }
 
-    /* ZMIANA: Pozycja komunikatów na mobilnych (nad Stonksem) */
+    /* ZMIANA: Pozycja komunikatów na mobilnych (nad Stonksem) i zmniejszenie czcionki */
     .knockout-message, .boss-message {
         top: 25%; /* Przeniesienie wyżej, nad Stonksa */
-        font-size: clamp(0.8em, 3.5vw, 1.5em); /* Zmniejszona czcionka dla mobilnych */
-        padding: 15px 20px; /* Zmniejszony padding */
+        font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka dla mobilnych */
+        padding: 12px 18px; /* Zmniejszony padding */
     }
 }
