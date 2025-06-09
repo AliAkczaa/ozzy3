@@ -119,7 +119,7 @@
     let freezeModeActive = false;
     let freezeDotIntervalId;
 
-    const ORIGINAL_OZZY_IMAGE_URL = 'stonks2.png';
+    const ORIGINAL_OZZY_IMAGE_URL = 'stonks.png';
     const BOSS_IMAGE_URL = 'stonksboss.png'; 
     const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -344,6 +344,12 @@
         const numSegments = 10;
         lightningEffect.innerHTML = ''; // Clear previous segments
         lightningEffect.classList.remove('hidden'); // Show the overlay
+
+        // Add a temporary class to the overlay for a short flash effect
+        lightningEffect.classList.add('flash-active');
+        setTimeout(() => {
+            lightningEffect.classList.remove('flash-active');
+        }, 300); // Shorter flash duration
 
         for (let i = 0; i < numSegments; i++) {
             const segment = document.createElement('div');
@@ -882,10 +888,21 @@
             ozzyImage.classList.remove('boss-mode'); 
             ozzyImage.classList.remove('flipped-x'); 
             
+            // Clear and hide boss canvas effects when transitioning from boss to normal Stonks
+            cancelAnimationFrame(bossCanvasAnimationFrameId);
+            bossEffectCanvas.classList.add('hidden');
+            bossEffectCanvas.classList.remove('active');
+            bossParticles = [];
+            if (bossEffectCtx) {
+                bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+            }
+
             // Update Stonks visual variant. This runs on Level 1, 11, 21 etc. (after a boss fight or start of game)
             // It's triggered when a normal Stonks appears.
             if ((currentLevel - 1) % 10 === 0) { // e.g. (1-1)%10=0, (11-1)%10=0
                 stonksVisualVariantIndex = ((currentLevel - 1) / 10) % totalStonksVariants; 
+                // Only increase health here, after a boss fight (or initial level 1)
+                INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
             }
             updateOzzyAppearance(); // Apply the new Stonks variant
 
@@ -893,15 +910,6 @@
             ozzyContainer.style.transform = `translate(-50%, -50%)`; 
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = false; 
-
-            // Scale normal Ozzy health
-            INITIAL_OZZY_HEALTH += NORMAL_OZZY_HEALTH_INCREMENT; 
-            
-            // "Stonks jest silniejszy!" message: show ONLY after a boss fight (i.e., at level 1, 11, 21, etc. when a normal Stonks spawns)
-            // This ensures it appears consistently when a new "tier" of Stonks health starts.
-            if ((currentLevel -1) % 10 === 0) { // Check if current level is 1, 11, 21 etc.
-                 showMessage(`Stonks jest silniejszy!`, 2000); 
-            }
             
             const knockoutMsgElement = document.createElement('div');
             knockoutMsgElement.classList.add('knockout-message'); 
@@ -1206,6 +1214,15 @@
             cancelAnimationFrame(bossMovementAnimationFrameId); 
             isBossMovementPaused = true; 
             clearInterval(superpowerCooldownIntervalId); 
+
+            // Stop boss canvas effects when going to shop
+            cancelAnimationFrame(bossCanvasAnimationFrameId);
+            bossEffectCanvas.classList.add('hidden');
+            bossEffectCanvas.classList.remove('active');
+            bossParticles = [];
+            if (bossEffectCtx) {
+                bossEffectCtx.clearRect(0, 0, bossEffectCanvas.width, bossEffectCanvas.height);
+            }
 
             ozzyContainer.classList.add('hidden'); 
             superpowerButtonsContainer.classList.add('hidden'); 
