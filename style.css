@@ -436,4 +436,4 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     .skin-options{flex-direction:column;align-items:center}
     .skin-button{width:clamp(150px,40vw,250px)}
 }
-@media(min-width:769px){.knockout-message,.boss-message{top:80%;transform:translate(-50%,-50%)}}
+@media(min-width:769px){.knockout-message,.boss-message{top:75%;transform:translate(-50%,-50%)}}
