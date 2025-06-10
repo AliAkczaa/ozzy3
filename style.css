@@ -179,8 +179,42 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
 #leaderboard-list li:last-child{border-bottom:none}
 #game-info-container{position:absolute;top:10px;left:10px;background-color:rgba(0,0,0,0.7);padding:10px 15px;border-radius:8px;border:2px solid #FFD700;z-index:30;font-size:clamp(0.7em,2.5vw,1em)}
 #game-info-container p{margin:5px 0}
-#superpower-buttons-container{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:30}
-.superpower-button{background-color:#004d00;border-color:#00FF00;color:#FFF;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em);display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;width:auto}
+#superpower-buttons-container{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    z-index:30;
+}
+.superpower-button{
+    background-color:#004d00;
+    border-color:#00FF00;
+    color:#FFF;
+    padding:10px 15px;
+    font-size:clamp(0.7em,2.5vw,1em);
+    display:flex; /* Ustawienie na flexbox */
+    align-items:center; /* Wyśrodkowanie w pionie */
+    justify-content:center; /* Wyśrodkowanie w poziomie */
+    gap:5px; /* Odstęp między elementami flex */
+    flex-wrap:nowrap;
+    width:auto;
+}
+/* ZMIANA: Style dla nowych spanów w przyciskach supermocy */
+.superpower-button .superpower-icon {
+    font-size: 1.5em; /* Rozmiar ikony */
+    line-height: 1; /* Zapobiega dodatkowemu odstępowi */
+}
+.superpower-button .superpower-name-cooldown {
+    white-space: nowrap; /* Zapobiega zawijaniu tekstu */
+}
+.superpower-button .superpower-level-display {
+    font-size: clamp(0.7em, 2.5vw, 1em); /* Rozmiar tekstu poziomu */
+    color: #FFD700; /* Kolor złoty dla poziomu */
+    white-space: nowrap; /* Zapobiega zawijaniu tekstu */
+}
+
 .superpower-button:hover{background-color:#008000;border-color:#7FFF00}
 .superpower-button span{white-space:nowrap}
 
@@ -347,7 +381,25 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     #health-bar-container{height:20px}
     #player-health-container{top:unset;bottom:75px;left:50%;transform:translateX(-50%);width:clamp(100px,45vw,200px);padding:8px 12px;font-size:clamp(0.6em,2.5vw,1em)}
     #player-health-bar-bg{height:10px}
-    #superpower-buttons-container{top:unset;bottom:5px;left:50%;transform:translateX(-50%);flex-direction:row;width:95%;padding:5px;justify-content:space-around;gap:5px}.superpower-button{flex:1;padding:8px;font-size:1.5em;width:50px;height:50px;display:flex;justify-content:center;align-items:center}.superpower-button .superpower-text{display:none}
+    #superpower-buttons-container{top:unset;bottom:5px;left:50%;transform:translateX(-50%);flex-direction:row;width:95%;padding:5px;justify-content:space-around;gap:5px}
+    .superpower-button{
+        flex:1;
+        padding:8px;
+        font-size:1.5em; /* Utrzymujemy duży rozmiar dla ikony */
+        width:50px;
+        height:50px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        gap: 2px; /* Mniejszy odstęp na mobilnych */
+    }
+    .superpower-button .superpower-name-cooldown {
+        display: none; /* Ukryj pełną nazwę/cooldown na mobilnych */
+    }
+    .superpower-button .superpower-level-display {
+        font-size: clamp(0.7em, 2.5vw, 1em); /* Rozmiar tekstu poziomu na mobilnych */
+        margin-left: 0; /* Brak dodatkowego marginesu */
+    }
     #game-info-container{top:10px;left:10px;right:unset;bottom:unset}
     #shop-button{top:2px;right:3px;left:unset;bottom:unset;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em)}.knockout-message,.boss-message{top:30%;transform:translate(-50%,-50%);font-size:clamp(0.7em,3vw,1.2em);padding:12px 18px}
     
