@@ -1,1 +1,2060 @@
-const _0x48979e=_0x1aa6;(function(_0x31a0dd,_0x5adef1){const _0x25e5dc=_0x1aa6,_0x36fd49=_0x31a0dd();while(!![]){try{const _0x3bbc6a=-parseInt(_0x25e5dc(0x2d6))/0x1*(-parseInt(_0x25e5dc(0x210))/0x2)+-parseInt(_0x25e5dc(0x200))/0x3+-parseInt(_0x25e5dc(0x30c))/0x4*(-parseInt(_0x25e5dc(0x2d8))/0x5)+parseInt(_0x25e5dc(0x310))/0x6*(parseInt(_0x25e5dc(0x2f0))/0x7)+parseInt(_0x25e5dc(0x21d))/0x8+parseInt(_0x25e5dc(0x301))/0x9+-parseInt(_0x25e5dc(0x30f))/0xa;if(_0x3bbc6a===_0x5adef1)break;else _0x36fd49['push'](_0x36fd49['shift']());}catch(_0x403f2a){_0x36fd49['push'](_0x36fd49['shift']());}}}(_0x25ff,0x35554));import{initializeApp}from'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';import{getFirestore,collection,addDoc,getDocs,orderBy,query,limit,serverTimestamp}from'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';import{getAuth,signInAnonymously}from'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';const firebaseConfig={'apiKey':_0x48979e(0x1e6),'authDomain':_0x48979e(0x23c),'projectId':_0x48979e(0x2db),'storageBucket':_0x48979e(0x23c),'messagingSenderId':_0x48979e(0x2c6),'appId':'1:668337469201:web:cd9d84d45c93d9b6e3feb0'},app=initializeApp(firebaseConfig),db=getFirestore(app),auth=getAuth(app);let backgroundTractor,ozzyContainer,ozzyImage,healthBarFill,gameContainer,gameInfoContainer,scoreDisplay,currentLevelDisplay,startScreen,startButton,nicknameInput,showLeaderboardButton,endScreen,finalScoreDisplay,restartButton,showLeaderboardAfterGameButton,leaderboardScreen,leaderboardList,backToStartButton,superpowerButtonsContainer,btnLightning,btnFreeze,btnFrenzy,lightningEffect,freezeEffect,frenzyEffect,backgroundMusic,punchSound,gameOverSound,shopButton,upgradeShopScreen,closeShopButton,baseDamageLevelDisplay,baseDamageCostDisplay,buyBaseDamageButton,lightningDamageLevelDisplay,lightningDamageCostDisplay,buyLightningDamageButton,freezeDamageLevelDisplay,freezeDamageCostDisplay,buyFreezeDamageButton,frenzyDamageLevelDisplay,frenzyDamageCostDisplay,buyFrenzyDamageButton,quoteImagesContainer,gameEffectsCanvas,gameEffectsCtx,playerHealthContainer,playerHealthDisplay,playerHealthBarBg,playerHealthBarFill,selectSkinButton,skinSelectionScreen,selectStonksSkinButton,selectTinuSkinButton,closeSkinSelectionButton,maxHealthLevelDisplay,maxHealthCostDisplay,buyMaxHealthButton,btnLightningLvlDisplay,btnFreezeLvlDisplay,btnFrenzyLvlDisplay,playerNickname=_0x48979e(0x2cf),score=0x0,ozzyHealth=0x64,INITIAL_OZZY_HEALTH=0x64,PUNCH_DAMAGE=0xa,currentUserId=null,isGameActive=!0x1,currentLevel=0x0,isBossFight=!0x1,punchesSinceLastPowerup=0x0;const quoteImagePaths=[_0x48979e(0x28c),'2.png',_0x48979e(0x1f4),_0x48979e(0x1f1),'5.png','6.png',_0x48979e(0x29d),_0x48979e(0x261),_0x48979e(0x2ba),_0x48979e(0x2cd),'11.png','12.png',_0x48979e(0x2ab),_0x48979e(0x252),_0x48979e(0x2bd),_0x48979e(0x2ec),'17.png',_0x48979e(0x2f2),'19.png',_0x48979e(0x22e),'21.png','22.png','23.png',_0x48979e(0x304),_0x48979e(0x24b),_0x48979e(0x2b8),_0x48979e(0x2a3),'28.png'],QUOTE_DISPLAY_DURATION_MS=0x7d0,PUNCHES_PER_POWERUP=0xa;let COOLDOWN_DURATION_MS=0x3c*0x3e8,lastUsedLightningTime=0x0,lastUsedFreezeTime=0x0,lastUsedFrenzyTime=0x0,frenzyModeActive=!0x1,frenzyTimerId;const FRENZY_DAMAGE_MULTIPLIER=0x3,FRENZY_DURATION_MS=0x1388;let LIGHTNING_BASE_DAMAGE=0x96,ICE_BLAST_INITIAL_DAMAGE=0x32,ICE_BLAST_DOT_DAMAGE_PER_SECOND=0x19;const ICE_BLAST_DOT_DURATION_SECONDS=0x5;let FRENZY_INITIAL_DAMAGE=0x1e,superpowerCooldownIntervalId,freezeModeActive=!0x1,freezeDotIntervalId;const SKIN_IMAGES={'stonks':{'normal':'stonks.png','boss':_0x48979e(0x24f)},'tinu':{'normal':_0x48979e(0x2a8),'boss':_0x48979e(0x265)}};let currentSkin=_0x48979e(0x244);const BOSS_LEVEL_INTERVAL=0xa,NORMAL_OZZY_INITIAL_HEALTH=0x64,NORMAL_OZZY_HEALTH_INCREMENT=0x14,BOSS_INITIAL_HEALTH=0x12c,BOSS_HEALTH_INCREMENT_PER_ENCOUNTER=0x64,BOSS_MOVEMENT_SPEED=0x2,BOSS_QUOTES=['CRYPTO\x20GUYS\x20ARE\x20FARMING!',_0x48979e(0x268),'TO\x20DUBAI!\x20WITH\x20INVESTOR\x27S\x20MONEY!','Calculating\x20next\x20move!',_0x48979e(0x1ef),_0x48979e(0x22a),_0x48979e(0x1f3)];let bossMovementAnimationFrameId,bossDx=BOSS_MOVEMENT_SPEED,bossCurrentTransformX=0x0;const CLIENT_SIDE_MAX_SCORE=0xc8;let upgradeLevels={'baseDamage':0x1,'lightningDamage':0x1,'freezeDamage':0x1,'frenzyDamage':0x1,'maxHealth':0x1};const UPGRADE_COST_BASE=0xa,UPGRADE_COST_MULTIPLIER=1.5,DAMAGE_INCREASE_PER_LEVEL=0x5,LIGHTNING_DAMAGE_INCREASE_PER_LEVEL=0x1e,FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL=0xa,FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL=0x5,FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL=0xf;let MAX_PLAYER_HEALTH=0x64;const PLAYER_HEALTH_BASE_VALUE=0x64,PLAYER_HEALTH_INCREASE_PER_LEVEL=0x19,COOLDOWN_REDUCTION_PER_LEVEL_MS=0x5*0x3e8,MIN_COOLDOWN_MS=0xf*0x3e8,MAX_UPGRADE_LEVEL=0xa;let stonksVisualVariantIndex=0x0;const totalStonksVariants=0xa;let bossVisualVariantIndex=0x0;const totalBossVariants=0xa,originalLightningText='Lightning\x20Strike',originalFreezeText='Ice\x20Blast',originalFrenzyText='Battle\x20Frenzy';let playerHealth=0x64;function _0x1aa6(_0x1d01c0,_0x965b66){const _0x25fff8=_0x25ff();return _0x1aa6=function(_0x1aa679,_0x471777){_0x1aa679=_0x1aa679-0x1e3;let _0xad98ce=_0x25fff8[_0x1aa679];return _0xad98ce;},_0x1aa6(_0x1d01c0,_0x965b66);}const STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE=0x3;let baseStonksDamage=0x5,STONKS_ATTACK_DAMAGE=baseStonksDamage;const STONKS_ATTACK_INTERVAL_MS=0x7d0;let playerAttackIntervalId;class CanvasParticle{constructor(_0x484c1c,_0xfda26c,_0x5736fb,_0x589e20,_0x5bca6f,_0x4c24de,_0x34d851,_0x1d9d14,_0x184022=0x0,_0x506282=null,_0x7f2f1f=null,_0xe3855d=null){const _0x39531c=_0x48979e;this['x']=_0x484c1c,this['y']=_0xfda26c,this['vx']=_0x5736fb,this['vy']=_0x589e20,this[_0x39531c(0x269)]=_0x5bca6f,this[_0x39531c(0x21c)]=_0x4c24de,this[_0x39531c(0x2da)]=_0x34d851,this[_0x39531c(0x2b3)]=0x0,this[_0x39531c(0x286)]=0x1,this[_0x39531c(0x28d)]=_0x1d9d14,this[_0x39531c(0x2f3)]=_0x184022,this['startSize']=_0x4c24de,this[_0x39531c(0x295)]=_0x506282,this[_0x39531c(0x20c)]=_0x7f2f1f,this[_0x39531c(0x2e0)]=_0xe3855d;}['update'](_0x3de7af){const _0x5dbffd=_0x48979e,_0x1d6ea1=0x3e8/0x3c,_0x33633f=_0x3de7af/_0x1d6ea1;this['x']+=this['vx']*_0x33633f,this['y']+=this['vy']*_0x33633f,this[_0x5dbffd(0x2b3)]+=_0x3de7af,this[_0x5dbffd(0x286)]=0x1-this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)];if(this['type']===_0x5dbffd(0x209))this['vy']-=0.05*_0x33633f;else{if(this[_0x5dbffd(0x28d)]===_0x5dbffd(0x21a))this[_0x5dbffd(0x21c)]=this['startSize']*(0x1+0.02*(this[_0x5dbffd(0x2b3)]/this['life'])),this[_0x5dbffd(0x286)]-=0.05*_0x33633f;else{if(this[_0x5dbffd(0x28d)]===_0x5dbffd(0x267)){}else{if(this[_0x5dbffd(0x28d)]==='scratch')this[_0x5dbffd(0x286)]-=0.02*_0x33633f,this['vx']*=0x1-0.02*_0x33633f,this['vy']*=0x1-0.02*_0x33633f;else{if(this['type']===_0x5dbffd(0x2bb))this[_0x5dbffd(0x286)]-=0.005*_0x33633f,this[_0x5dbffd(0x21c)]=this[_0x5dbffd(0x221)]*(0x1-0.002*(this['currentLifeTime']/this[_0x5dbffd(0x2da)]));else{if(this['type']===_0x5dbffd(0x247))this['vy']+=0.02*_0x33633f,this['alpha']-=0.008*_0x33633f,this['size']=this[_0x5dbffd(0x221)]*(0x1-0.001*(this[_0x5dbffd(0x2b3)]/this['life']));else{if(this[_0x5dbffd(0x28d)]===_0x5dbffd(0x283))this[_0x5dbffd(0x286)]=0x1-this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)];else{if(this[_0x5dbffd(0x28d)]===_0x5dbffd(0x2c8))this['vy']+=0.05*_0x33633f,this['vx']*=0x1-0.01*_0x33633f,this[_0x5dbffd(0x21c)]=this['startSize']*(0x1-this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)]*0.5);else{if(this[_0x5dbffd(0x28d)]==='bossFire')this['vy']-=0.1*_0x33633f,this['vx']*=0x1-0.03*_0x33633f,this[_0x5dbffd(0x21c)]=this[_0x5dbffd(0x221)]*(0.8+0.5*(this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)])),this['alpha']=0x1-Math['pow'](this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)],0x2);else{if(this[_0x5dbffd(0x28d)]===_0x5dbffd(0x242))this['vy']+=0.02*_0x33633f,this['vx']*=0x1-0.01*_0x33633f,this[_0x5dbffd(0x2f3)]+=0.1*_0x33633f,this['size']=this['startSize']*(0x1-this[_0x5dbffd(0x2b3)]/this[_0x5dbffd(0x2da)]*0.7);else{if(this['type']===_0x5dbffd(0x230)){}}}}}}}}}}}}['draw'](_0x51bd64){const _0x59effd=_0x48979e;_0x51bd64[_0x59effd(0x2c0)](),_0x51bd64[_0x59effd(0x2f8)]=Math[_0x59effd(0x220)](0x0,this[_0x59effd(0x286)]);if(this[_0x59effd(0x28d)]['startsWith']('boss')||this[_0x59effd(0x28d)]===_0x59effd(0x2d3)){_0x51bd64['fillStyle']=this[_0x59effd(0x269)],_0x51bd64[_0x59effd(0x207)]();if(this[_0x59effd(0x28d)]===_0x59effd(0x230))_0x51bd64[_0x59effd(0x1fc)](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this[_0x59effd(0x2f3)]),_0x51bd64['fillRect'](-this[_0x59effd(0x21c)]/0x2,-this['size']/0x2,this[_0x59effd(0x21c)],this[_0x59effd(0x21c)]/0x4);else{if(this[_0x59effd(0x28d)]===_0x59effd(0x2d3))_0x51bd64[_0x59effd(0x216)](this['x'],this['y'],this['size'],0x0,Math['PI']*0x2),_0x51bd64[_0x59effd(0x21b)]();else{if(this[_0x59effd(0x28d)]==='bossFire')_0x51bd64[_0x59effd(0x1fc)](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this[_0x59effd(0x2f3)]),_0x51bd64[_0x59effd(0x2a7)](0x0,-this[_0x59effd(0x21c)]),_0x51bd64[_0x59effd(0x288)](this['size']/0x2,-this[_0x59effd(0x21c)]/0x2,this['size']/0x2,this[_0x59effd(0x21c)]/0x2),_0x51bd64[_0x59effd(0x288)](0x0,this['size']/0x4,-this[_0x59effd(0x21c)]/0x2,this['size']/0x2),_0x51bd64[_0x59effd(0x288)](-this[_0x59effd(0x21c)]/0x2,-this[_0x59effd(0x21c)]/0x2,0x0,-this[_0x59effd(0x21c)]),_0x51bd64[_0x59effd(0x21b)]();else this['type']===_0x59effd(0x242)&&(_0x51bd64['translate'](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this[_0x59effd(0x2f3)]),_0x51bd64[_0x59effd(0x2a7)](0x0,-this[_0x59effd(0x21c)]),_0x51bd64[_0x59effd(0x2d1)](this['size']/0x2,this['size']/0x2),_0x51bd64[_0x59effd(0x2d1)](-this[_0x59effd(0x21c)]/0x2,this[_0x59effd(0x21c)]/0x2),_0x51bd64[_0x59effd(0x256)](),_0x51bd64[_0x59effd(0x21b)]());}}}else{if(this[_0x59effd(0x28d)]==='lightningLine')_0x51bd64[_0x59effd(0x282)]=this[_0x59effd(0x269)],_0x51bd64[_0x59effd(0x2ce)]=this['size'],_0x51bd64[_0x59effd(0x26b)]=_0x59effd(0x2fe),_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x2a7)](this['x'],this['y']),_0x51bd64['lineTo'](this[_0x59effd(0x20c)],this[_0x59effd(0x2e0)]),_0x51bd64[_0x59effd(0x2ff)]();else{if(this['type']===_0x59effd(0x209))_0x51bd64[_0x59effd(0x1f7)]=this[_0x59effd(0x269)],_0x51bd64['beginPath'](),_0x51bd64['translate'](this['x'],this['y']),_0x51bd64['rotate'](this[_0x59effd(0x2f3)]*Math['PI']/0xb4),_0x51bd64['moveTo'](0x0,-this[_0x59effd(0x21c)]),_0x51bd64[_0x59effd(0x2d1)](this['size']/0x2,this[_0x59effd(0x21c)]/0x2),_0x51bd64[_0x59effd(0x2d1)](-this[_0x59effd(0x21c)]/0x2,this[_0x59effd(0x21c)]/0x2),_0x51bd64[_0x59effd(0x256)](),_0x51bd64[_0x59effd(0x21b)]();else{if(this['type']===_0x59effd(0x21a))_0x51bd64[_0x59effd(0x282)]=this[_0x59effd(0x269)],_0x51bd64['lineWidth']=0x2,_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x216)](this['x'],this['y'],this[_0x59effd(0x21c)]/0x2,0x0,Math['PI']*0x2),_0x51bd64[_0x59effd(0x2ff)]();else{if(this[_0x59effd(0x28d)]===_0x59effd(0x2c8))_0x51bd64['fillStyle']=this[_0x59effd(0x269)],_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x216)](this['x'],this['y'],this['size'],0x0,Math['PI']*0x2),_0x51bd64['fill']();else{if(this['type']===_0x59effd(0x28e))_0x51bd64[_0x59effd(0x282)]=this['color'],_0x51bd64[_0x59effd(0x2ce)]=this[_0x59effd(0x21c)],_0x51bd64['lineCap']='round',_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x2a7)](this['x'],this['y']),_0x51bd64[_0x59effd(0x2d1)](this['x']+Math[_0x59effd(0x235)](this[_0x59effd(0x2f3)])*this[_0x59effd(0x21c)]*0x8,this['y']+Math['sin'](this[_0x59effd(0x2f3)])*this[_0x59effd(0x21c)]*0x8),_0x51bd64[_0x59effd(0x2ff)]();else{if(this[_0x59effd(0x28d)]===_0x59effd(0x2bb))_0x51bd64[_0x59effd(0x282)]=this[_0x59effd(0x269)],_0x51bd64[_0x59effd(0x2ce)]=this[_0x59effd(0x21c)]*0.4,_0x51bd64['translate'](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this['angle']),_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x2a7)](-this['size']*0x2,0x0),_0x51bd64['lineTo'](-this['size']*1.5+Math['random']()*this['size']*0.5,-this[_0x59effd(0x21c)]*0.3),_0x51bd64['lineTo'](-this['size']*0x1+Math['random']()*this[_0x59effd(0x21c)]*0.5,this[_0x59effd(0x21c)]*0.1),_0x51bd64['lineTo'](-this[_0x59effd(0x21c)]*0.5+Math['random']()*this[_0x59effd(0x21c)]*0.5,-this[_0x59effd(0x21c)]*0.2),_0x51bd64[_0x59effd(0x2d1)](0x0+Math[_0x59effd(0x238)]()*this['size']*0.5,this[_0x59effd(0x21c)]*0.3),_0x51bd64[_0x59effd(0x2d1)](this['size']*0.5+Math[_0x59effd(0x238)]()*this[_0x59effd(0x21c)]*0.5,-this[_0x59effd(0x21c)]*0.1),_0x51bd64[_0x59effd(0x2d1)](this[_0x59effd(0x21c)]*0x1+Math['random']()*this[_0x59effd(0x21c)]*0.5,this[_0x59effd(0x21c)]*0.2),_0x51bd64[_0x59effd(0x2d1)](this[_0x59effd(0x21c)]*1.5+Math[_0x59effd(0x238)]()*this['size']*0.5,-this['size']*0.3),_0x51bd64[_0x59effd(0x2d1)](this[_0x59effd(0x21c)]*0x2,0x0),_0x51bd64[_0x59effd(0x2ff)](),_0x51bd64['globalAlpha']=Math['max'](0x0,this[_0x59effd(0x286)]*0.3),_0x51bd64[_0x59effd(0x2ce)]=this[_0x59effd(0x21c)]*0.2,_0x51bd64[_0x59effd(0x282)]=_0x59effd(0x237),_0x51bd64[_0x59effd(0x2ff)](),_0x51bd64[_0x59effd(0x2f8)]=Math[_0x59effd(0x220)](0x0,this[_0x59effd(0x286)]);else{if(this[_0x59effd(0x28d)]===_0x59effd(0x247))_0x51bd64[_0x59effd(0x1f7)]=this[_0x59effd(0x269)],_0x51bd64[_0x59effd(0x207)](),_0x51bd64[_0x59effd(0x1fc)](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this[_0x59effd(0x2f3)]),_0x51bd64[_0x59effd(0x2a7)](0x0,-this[_0x59effd(0x21c)]*0.8),_0x51bd64[_0x59effd(0x2d1)](this[_0x59effd(0x21c)]*(0.8+Math[_0x59effd(0x238)]()*0.2),this['size']*(0.5+Math[_0x59effd(0x238)]()*0.2)),_0x51bd64[_0x59effd(0x2d1)](-this[_0x59effd(0x21c)]*(0.8+Math['random']()*0.2),this['size']*(0.5+Math['random']()*0.2)),_0x51bd64[_0x59effd(0x256)](),_0x51bd64[_0x59effd(0x21b)]();else this[_0x59effd(0x28d)]===_0x59effd(0x283)&&this[_0x59effd(0x295)]&&(_0x51bd64['translate'](this['x'],this['y']),_0x51bd64[_0x59effd(0x25d)](this[_0x59effd(0x2f3)]),_0x51bd64['drawImage'](this[_0x59effd(0x295)],-this['size']/0x2,-this['size']/0x2,this[_0x59effd(0x21c)],this[_0x59effd(0x21c)]*(this['image'][_0x59effd(0x2df)]/this[_0x59effd(0x295)][_0x59effd(0x218)])));}}}}}}}_0x51bd64[_0x59effd(0x2f7)]();}[_0x48979e(0x29e)](){const _0x3c343e=_0x48979e;return this['currentLifeTime']>=this['life']||this[_0x3c343e(0x286)]<=0x0;}}let bossCanvasParticles=[],lightningCanvasParticles=[],freezeCanvasParticles=[],frenzyCanvasParticles=[],scratchCanvasParticles=[],stonksAttackClawParticles=[],stonksAttackPainParticles=[],clawMarks=[],clawImage=new Image();const MAX_CANVAS_PARTICLES=0xc8;let lightningModeActive=!0x1,gameCanvasAnimationFrameId,lastFrameTime=0x0;function animateGameCanvasEffects(_0x37c5e3){const _0x559d9a=_0x48979e;if(!lastFrameTime)lastFrameTime=_0x37c5e3;const _0x41b923=_0x37c5e3-lastFrameTime;lastFrameTime=_0x37c5e3,gameEffectsCanvas[_0x559d9a(0x313)]=gameContainer[_0x559d9a(0x2c3)],gameEffectsCanvas[_0x559d9a(0x290)]=gameContainer[_0x559d9a(0x285)],gameEffectsCtx[_0x559d9a(0x2a4)](0x0,0x0,gameEffectsCanvas['width'],gameEffectsCtx[_0x559d9a(0x290)]);const _0x4f2e8c=ozzyContainer[_0x559d9a(0x25b)](),_0x296e14=gameContainer[_0x559d9a(0x25b)](),_0x3a9f7b=_0x4f2e8c[_0x559d9a(0x26e)]-_0x296e14['left']+_0x4f2e8c[_0x559d9a(0x313)]/0x2,_0x10e58d=_0x4f2e8c[_0x559d9a(0x202)]-_0x296e14['top']+_0x4f2e8c[_0x559d9a(0x290)]/0x2,_0x718fcb=isBossFight?1.5:1.2,_0x564ad9=0x5;if(isBossFight){gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x203)](_0x559d9a(0x1fa)),gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x1ea)](_0x559d9a(0x298));if(bossCanvasParticles[_0x559d9a(0x306)]<MAX_CANVAS_PARTICLES&&Math[_0x559d9a(0x238)]()<0.6){let _0x562fe4,_0xc26de9,_0x2ab4ee,_0x5286e8,_0x4e4743,_0x9c0e0f;const _0x4136e6=Math[_0x559d9a(0x1fd)](_0x4f2e8c[_0x559d9a(0x313)],_0x4f2e8c[_0x559d9a(0x290)])*0.8,_0x1967b3=Math[_0x559d9a(0x238)]()*Math['PI']*0x2,_0x3a85f3=Math[_0x559d9a(0x238)]()*_0x4136e6,_0x114d77=_0x3a9f7b+Math[_0x559d9a(0x235)](_0x1967b3)*_0x3a85f3,_0x668c9f=_0x10e58d+Math[_0x559d9a(0x239)](_0x1967b3)*_0x3a85f3;if(bossVisualVariantIndex===0x0)_0x562fe4=_0x559d9a(0x208)+Math[_0x559d9a(0x2e1)](Math[_0x559d9a(0x238)]()*0x64)+_0x559d9a(0x309)+(0.7+Math[_0x559d9a(0x238)]()*0.3)+')',_0xc26de9=_0x559d9a(0x2e9),_0x2ab4ee=Math['random']()*0xf+0xa,_0x5286e8=0x3e8+Math['random']()*0x1f4,_0x4e4743=(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.3),_0x9c0e0f=-(Math[_0x559d9a(0x238)]()*_0x564ad9*0.5)-0.5;else bossVisualVariantIndex===0x1?(_0x562fe4=_0x559d9a(0x23a)+(Math[_0x559d9a(0x2e1)](Math['random']()*0x32)+0x64)+',\x20'+(Math[_0x559d9a(0x2e1)](Math[_0x559d9a(0x238)]()*0x32)+0xc8)+',\x20255,\x20'+(0.7+Math[_0x559d9a(0x238)]()*0.3)+')',_0xc26de9=_0x559d9a(0x242),_0x2ab4ee=Math[_0x559d9a(0x238)]()*0xa+0x5,_0x5286e8=0x320+Math[_0x559d9a(0x238)]()*0x190,_0x4e4743=(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.8),_0x9c0e0f=(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.8)):(_0x562fe4=_0x559d9a(0x23a)+(Math['floor'](Math[_0x559d9a(0x238)]()*0x32)+0xc8)+_0x559d9a(0x309)+(Math['floor'](Math[_0x559d9a(0x238)]()*0x32)+0xc8)+',\x20'+(0.8+Math[_0x559d9a(0x238)]()*0.2)+')',_0xc26de9=_0x559d9a(0x230),_0x2ab4ee=Math[_0x559d9a(0x238)]()*0x14+0xa,_0x5286e8=0xc8+Math[_0x559d9a(0x238)]()*0x64,_0x4e4743=0x0,_0x9c0e0f=0x0);bossCanvasParticles['push'](new CanvasParticle(_0x114d77,_0x668c9f,_0x4e4743,_0x9c0e0f,_0x562fe4,_0x2ab4ee,_0x5286e8,_0xc26de9,Math[_0x559d9a(0x238)]()*Math['PI']*0x2));}}for(let _0x58f946=bossCanvasParticles[_0x559d9a(0x306)]-0x1;_0x58f946>=0x0;_0x58f946--){bossCanvasParticles[_0x58f946][_0x559d9a(0x22d)](_0x41b923),bossCanvasParticles[_0x58f946]['isDead']()?bossCanvasParticles[_0x559d9a(0x2aa)](_0x58f946,0x1):bossCanvasParticles[_0x58f946][_0x559d9a(0x240)](gameEffectsCtx);}if(lightningModeActive){gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x203)](_0x559d9a(0x1fa)),gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x1ea)](_0x559d9a(0x298)),lightningEffect[_0x559d9a(0x260)]['remove'](_0x559d9a(0x1fa)),lightningEffect[_0x559d9a(0x260)][_0x559d9a(0x1ea)]('flash-active');const _0x11b128=0.2;if(lightningCanvasParticles['length']<MAX_CANVAS_PARTICLES&&Math[_0x559d9a(0x238)]()<_0x11b128){const _0x44a68f=Math['random']()*0x64+0x64,_0x4916ad=Math[_0x559d9a(0x238)]()*0x5+0x5,_0xb77bc3=0x320+Math['random']()*0x2bc,_0x1ea08a=Math[_0x559d9a(0x238)]()*gameEffectsCanvas['width'],_0x66a9b3=Math[_0x559d9a(0x238)]()*gameEffectsCanvas[_0x559d9a(0x290)]*0.3,_0x200333=Math['PI']/0x2+(Math[_0x559d9a(0x238)]()-0.5)*(Math['PI']/0x4);let _0x51ba6b=_0x1ea08a,_0x177e1c=_0x66a9b3;for(let _0x318b97=0x0;_0x318b97<0x3;_0x318b97++){const _0x1751f9=_0x51ba6b+Math[_0x559d9a(0x235)](_0x200333+(Math[_0x559d9a(0x238)]()-0.5)*0.3)*(_0x44a68f/0x3+Math[_0x559d9a(0x238)]()*0x14),_0x23f9a2=_0x177e1c+Math[_0x559d9a(0x239)](_0x200333+(Math[_0x559d9a(0x238)]()-0.5)*0.3)*(_0x44a68f/0x3+Math[_0x559d9a(0x238)]()*0x14);lightningCanvasParticles[_0x559d9a(0x280)](new CanvasParticle(_0x51ba6b,_0x177e1c,0x0,0x0,_0x559d9a(0x311)+(Math[_0x559d9a(0x2e1)](Math[_0x559d9a(0x238)]()*0x64)+0xb4)+',\x20'+(0.8+Math[_0x559d9a(0x238)]()*0.2)+')',_0x4916ad,_0xb77bc3,_0x559d9a(0x267),0x0,_0x1751f9,_0x23f9a2)),_0x51ba6b=_0x1751f9,_0x177e1c=_0x23f9a2;if(Math['random']()<0.5){const _0x5ea89f=_0x44a68f*(0.3+Math['random']()*0.3),_0x3af8c8=_0x200333+(Math['random']()<0.5?0x1:-0x1)*(Math['PI']/0x4+Math['random']()*(Math['PI']/0x8)),_0x4a84b9=_0x51ba6b+Math[_0x559d9a(0x235)](_0x3af8c8)*_0x5ea89f,_0x436809=_0x177e1c+Math[_0x559d9a(0x239)](_0x3af8c8)*_0x5ea89f;lightningCanvasParticles[_0x559d9a(0x280)](new CanvasParticle(_0x51ba6b,_0x177e1c,0x0,0x0,_0x559d9a(0x311)+(Math[_0x559d9a(0x2e1)](Math[_0x559d9a(0x238)]()*0x64)+0xb4)+',\x20'+(0.6+Math['random']()*0.2)+')',_0x4916ad*0.6,_0xb77bc3*0.8,_0x559d9a(0x267),0x0,_0x4a84b9,_0x436809));}}for(let _0x24f878=0x0;_0x24f878<Math[_0x559d9a(0x238)]()*0x5+0x3;_0x24f878++){lightningCanvasParticles[_0x559d9a(0x280)](new CanvasParticle(_0x51ba6b+(Math['random']()-0.5)*0x14,_0x177e1c+(Math[_0x559d9a(0x238)]()-0.5)*0x14,(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.5),(Math['random']()-0.5)*(_0x564ad9*0.5),_0x559d9a(0x2ee)+(0.7+Math[_0x559d9a(0x238)]()*0.3)+')',Math['random']()*0x6+0x2,0x258,'lightningSpark'));}}}else!lightningModeActive&&lightningEffect[_0x559d9a(0x260)][_0x559d9a(0x303)](_0x559d9a(0x281))&&(lightningEffect[_0x559d9a(0x260)][_0x559d9a(0x203)](_0x559d9a(0x281)),lightningEffect[_0x559d9a(0x260)][_0x559d9a(0x1ea)](_0x559d9a(0x1fa)));for(let _0x3e742b=lightningCanvasParticles['length']-0x1;_0x3e742b>=0x0;_0x3e742b--){lightningCanvasParticles[_0x3e742b][_0x559d9a(0x22d)](_0x41b923),lightningCanvasParticles[_0x3e742b][_0x559d9a(0x29e)]()?lightningCanvasParticles[_0x559d9a(0x2aa)](_0x3e742b,0x1):lightningCanvasParticles[_0x3e742b][_0x559d9a(0x240)](gameEffectsCtx);}freezeModeActive&&(gameEffectsCanvas[_0x559d9a(0x260)]['remove'](_0x559d9a(0x1fa)),gameEffectsCanvas['classList']['add'](_0x559d9a(0x298)),freezeCanvasParticles[_0x559d9a(0x306)]<MAX_CANVAS_PARTICLES/0x2&&Math['random']()<0.3&&freezeCanvasParticles[_0x559d9a(0x280)](new CanvasParticle(_0x3a9f7b+(Math['random']()-0.5)*_0x4f2e8c[_0x559d9a(0x313)]*1.5,_0x10e58d+(Math[_0x559d9a(0x238)]()-0.5)*_0x4f2e8c[_0x559d9a(0x290)]*1.5,(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.25),(Math[_0x559d9a(0x238)]()-0.5)*(_0x564ad9*0.25),_0x559d9a(0x211)+(0.7+Math['random']()*0.3)+')',Math[_0x559d9a(0x238)]()*0xf+0x8,0x4b0,_0x559d9a(0x209),Math[_0x559d9a(0x238)]()*0x168)));for(let _0x57d96a=freezeCanvasParticles[_0x559d9a(0x306)]-0x1;_0x57d96a>=0x0;_0x57d96a--){freezeCanvasParticles[_0x57d96a][_0x559d9a(0x22d)](_0x41b923),freezeCanvasParticles[_0x57d96a][_0x559d9a(0x29e)]()?freezeCanvasParticles[_0x559d9a(0x2aa)](_0x57d96a,0x1):freezeCanvasParticles[_0x57d96a][_0x559d9a(0x240)](gameEffectsCtx);}if(frenzyModeActive){gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x203)](_0x559d9a(0x1fa)),gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x1ea)](_0x559d9a(0x298));if(frenzyCanvasParticles['length']<MAX_CANVAS_PARTICLES&&Math[_0x559d9a(0x238)]()<0.8){const _0x14f270=_0x3a9f7b+(Math['random']()-0.5)*_0x4f2e8c[_0x559d9a(0x313)]*0.8,_0x3280fc=_0x10e58d+(Math[_0x559d9a(0x238)]()-0.5)*_0x4f2e8c[_0x559d9a(0x290)]*0.8,_0x5eedd8=Math[_0x559d9a(0x238)]()*0x3+0x2,_0x4d4b0a=Math[_0x559d9a(0x238)]()*Math['PI']*0x2,_0x6bc25b=Math[_0x559d9a(0x235)](_0x4d4b0a)*_0x5eedd8,_0x176ab8=Math[_0x559d9a(0x239)](_0x4d4b0a)*_0x5eedd8;frenzyCanvasParticles[_0x559d9a(0x280)](new CanvasParticle(_0x14f270,_0x3280fc,_0x6bc25b,_0x176ab8,_0x559d9a(0x208)+Math[_0x559d9a(0x2e1)](Math[_0x559d9a(0x238)]()*0x50)+_0x559d9a(0x309)+(0.9+Math[_0x559d9a(0x238)]()*0.1)+')',Math['random']()*0x8+0x4,0x1f4+Math[_0x559d9a(0x238)]()*0x12c,_0x559d9a(0x2c8)));}}for(let _0x1358bb=frenzyCanvasParticles['length']-0x1;_0x1358bb>=0x0;_0x1358bb--){frenzyCanvasParticles[_0x1358bb][_0x559d9a(0x22d)](_0x41b923),frenzyCanvasParticles[_0x1358bb][_0x559d9a(0x29e)]()?frenzyCanvasParticles[_0x559d9a(0x2aa)](_0x1358bb,0x1):frenzyCanvasParticles[_0x1358bb][_0x559d9a(0x240)](gameEffectsCtx);}for(let _0x57264a=scratchCanvasParticles[_0x559d9a(0x306)]-0x1;_0x57264a>=0x0;_0x57264a--){scratchCanvasParticles[_0x57264a][_0x559d9a(0x22d)](_0x41b923),scratchCanvasParticles[_0x57264a]['isDead']()?scratchCanvasParticles[_0x559d9a(0x2aa)](_0x57264a,0x1):scratchCanvasParticles[_0x57264a]['draw'](gameEffectsCtx);}for(let _0x5eba46=stonksAttackClawParticles['length']-0x1;_0x5eba46>=0x0;_0x5eba46--){stonksAttackClawParticles[_0x5eba46][_0x559d9a(0x22d)](_0x41b923),stonksAttackClawParticles[_0x5eba46][_0x559d9a(0x29e)]()?stonksAttackClawParticles[_0x559d9a(0x2aa)](_0x5eba46,0x1):stonksAttackClawParticles[_0x5eba46][_0x559d9a(0x240)](gameEffectsCtx);}for(let _0x206a2e=stonksAttackPainParticles['length']-0x1;_0x206a2e>=0x0;_0x206a2e--){stonksAttackPainParticles[_0x206a2e][_0x559d9a(0x22d)](_0x41b923),stonksAttackPainParticles[_0x206a2e]['isDead']()?stonksAttackPainParticles[_0x559d9a(0x2aa)](_0x206a2e,0x1):stonksAttackPainParticles[_0x206a2e][_0x559d9a(0x240)](gameEffectsCtx);}for(let _0x3021aa=clawMarks[_0x559d9a(0x306)]-0x1;_0x3021aa>=0x0;_0x3021aa--){clawMarks[_0x3021aa][_0x559d9a(0x22d)](_0x41b923),clawMarks[_0x3021aa]['isDead']()?clawMarks[_0x559d9a(0x2aa)](_0x3021aa,0x1):clawMarks[_0x3021aa][_0x559d9a(0x240)](gameEffectsCtx);}const _0x28760d=bossCanvasParticles[_0x559d9a(0x306)]>0x0||lightningCanvasParticles[_0x559d9a(0x306)]>0x0||freezeCanvasParticles[_0x559d9a(0x306)]>0x0||frenzyCanvasParticles[_0x559d9a(0x306)]>0x0||scratchCanvasParticles['length']>0x0||stonksAttackClawParticles[_0x559d9a(0x306)]>0x0||stonksAttackPainParticles['length']>0x0||clawMarks['length']>0x0;isGameActive||_0x28760d?gameCanvasAnimationFrameId=requestAnimationFrame(animateGameCanvasEffects):(gameEffectsCanvas[_0x559d9a(0x260)]['add']('hidden'),gameEffectsCanvas[_0x559d9a(0x260)][_0x559d9a(0x203)](_0x559d9a(0x298)),gameEffectsCtx[_0x559d9a(0x2a4)](0x0,0x0,gameEffectsCanvas[_0x559d9a(0x313)],gameEffectsCtx[_0x559d9a(0x290)]),cancelAnimationFrame(gameCanvasAnimationFrameId));}function drawScratchEffect(_0x44695f,_0x2a4b22,_0x1ca92b,_0x16477b,_0x425aed){const _0x3d4a4a=_0x48979e;for(let _0x559070=0x0;_0x559070<_0x1ca92b;_0x559070++){const _0x3f9b28=(Math[_0x3d4a4a(0x238)]()-0.5)*0x32,_0x467fd1=(Math['random']()-0.5)*0x32,_0x3505dc=Math[_0x3d4a4a(0x238)]()*Math['PI']*0x2,_0x5e037a=_0x425aed+Math[_0x3d4a4a(0x238)]()*_0x425aed/0x2,_0x52aeb1=0x3e8;scratchCanvasParticles[_0x3d4a4a(0x280)](new CanvasParticle(_0x44695f+_0x3f9b28,_0x2a4b22+_0x467fd1,0x0,0x0,_0x16477b,_0x5e037a,_0x52aeb1,_0x3d4a4a(0x28e),_0x3505dc));}}function spawnStonksAttackEffects(_0x427d50,_0x5d60e9){const _0x5c98f4=_0x48979e,_0x4ea16e=gameContainer[_0x5c98f4(0x25b)](),_0x1eec17=_0x4ea16e[_0x5c98f4(0x313)],_0x37d400=_0x4ea16e[_0x5c98f4(0x290)],_0x7ee0b0=_0x1eec17*0.8,_0x84b9bf=_0x37d400*0.8,_0x2caab1=_0x1eec17/0x2+(Math[_0x5c98f4(0x238)]()-0.5)*_0x7ee0b0,_0x620eb=_0x37d400/0x2+(Math['random']()-0.5)*_0x84b9bf,_0x1a5cd5=0x1,_0x5d10d5=Math['min'](_0x1eec17*0.3,_0x37d400*0.3,0xc8),_0x830f5d=0x3e8;for(let _0x3ce020=0x0;_0x3ce020<_0x1a5cd5;_0x3ce020++){const _0x380e97=Math[_0x5c98f4(0x238)]()*Math['PI']*0x2;clawMarks[_0x5c98f4(0x280)](new CanvasParticle(_0x2caab1,_0x620eb,0x0,0x0,null,_0x5d10d5,_0x830f5d,_0x5c98f4(0x283),_0x380e97,clawImage));}const _0x391eb5=Math[_0x5c98f4(0x2e1)](Math['random']()*0xf)+0xf,_0x5107c9=0x4b0,_0x22e7f2=Math[_0x5c98f4(0x238)]()*0x8+0x8,_0x4a52d1=1.2,_0x4af09=_0x5d10d5*0.5;for(let _0x354234=0x0;_0x354234<_0x391eb5;_0x354234++){const _0x2346ec=Math[_0x5c98f4(0x238)]()*Math['PI']*0x2,_0x27616c=Math[_0x5c98f4(0x238)]()*_0x4af09,_0x762bef=_0x2caab1+Math[_0x5c98f4(0x235)](_0x2346ec)*_0x27616c,_0x49a176=_0x620eb+Math[_0x5c98f4(0x239)](_0x2346ec)*_0x27616c,_0x5e90c2=(Math[_0x5c98f4(0x238)]()-0.5)*_0x4a52d1*0x2,_0x4bc75b=(Math[_0x5c98f4(0x238)]()-0.5)*_0x4a52d1*0x2-0.5,_0x71da6c=_0x5c98f4(0x208)+Math[_0x5c98f4(0x2e1)](Math[_0x5c98f4(0x238)]()*0x64)+_0x5c98f4(0x309)+(0.7+Math[_0x5c98f4(0x238)]()*0.3)+')';stonksAttackPainParticles[_0x5c98f4(0x280)](new CanvasParticle(_0x762bef,_0x49a176,_0x5e90c2,_0x4bc75b,_0x71da6c,_0x22e7f2,_0x5107c9,_0x5c98f4(0x247),_0x2346ec));}}async function saveScoreToLeaderboard(_0x19a212,_0x47302a){const _0x44f16d=_0x48979e;console[_0x44f16d(0x213)](_0x44f16d(0x2d5),_0x19a212,_0x44f16d(0x2ef),_0x47302a);if(_0x47302a>0x0&&currentUserId)try{await addDoc(collection(db,_0x44f16d(0x2a5)),{'nickname':_0x19a212,'score':_0x47302a,'timestamp':serverTimestamp(),'userId':currentUserId}),showMessage(_0x44f16d(0x27a),0x7d0),console['log'](_0x44f16d(0x26f)+_0x47302a+_0x44f16d(0x1f9)+_0x19a212+'\x20('+currentUserId+')\x20and\x20saved.');}catch(_0x402d5b){console[_0x44f16d(0x223)]('Error\x20saving\x20score\x20directly\x20to\x20Firestore:',_0x402d5b),showMessage(_0x44f16d(0x30b)+_0x402d5b['message'],0xbb8);}else!currentUserId&&(console[_0x44f16d(0x28a)](_0x44f16d(0x241)),showMessage('Error:\x20No\x20authentication\x20to\x20save\x20score.\x20Try\x20refreshing.',0xbb8));}async function fetchAndDisplayLeaderboard(){const _0x4a5843=_0x48979e;console[_0x4a5843(0x213)](_0x4a5843(0x246)),leaderboardList[_0x4a5843(0x2be)]='';try{const _0x2d05e2=query(collection(db,_0x4a5843(0x2a5)),orderBy(_0x4a5843(0x30e),_0x4a5843(0x24a)),orderBy(_0x4a5843(0x222),_0x4a5843(0x279)),limit(0xa)),_0x52ba3e=await getDocs(_0x2d05e2);if(_0x52ba3e['empty']){leaderboardList[_0x4a5843(0x2be)]=_0x4a5843(0x25f);return;}_0x52ba3e['forEach'](_0x3ba6e1=>{const _0xdfc0fc=_0x4a5843,_0x227bee=_0x3ba6e1[_0xdfc0fc(0x2af)](),_0x42990a=document[_0xdfc0fc(0x292)]('li');_0x42990a[_0xdfc0fc(0x225)]=(_0x227bee[_0xdfc0fc(0x2ae)]||_0xdfc0fc(0x245))+_0xdfc0fc(0x219)+_0x227bee[_0xdfc0fc(0x30e)],leaderboardList[_0xdfc0fc(0x297)](_0x42990a);});}catch(_0x1506ed){console[_0x4a5843(0x223)](_0x4a5843(0x2de),_0x1506ed),leaderboardList[_0x4a5843(0x2be)]=_0x4a5843(0x20a);}}function spawnRandomQuote(){const _0x4c854c=_0x48979e,_0x2c4e23=quoteImagePaths[Math[_0x4c854c(0x2e1)](Math[_0x4c854c(0x238)]()*quoteImagePaths['length'])],_0x514392=document[_0x4c854c(0x292)]('img');_0x514392[_0x4c854c(0x2ca)]=_0x2c4e23,_0x514392[_0x4c854c(0x260)][_0x4c854c(0x1ea)](_0x4c854c(0x26c));const _0x51032f=gameContainer['getBoundingClientRect'](),_0x509b13=Math['min'](_0x51032f[_0x4c854c(0x313)]*0.15,_0x51032f[_0x4c854c(0x290)]*0.15,0x96),_0x16fa38=Math['random']()*(_0x51032f[_0x4c854c(0x313)]-_0x509b13),_0x48169c=Math[_0x4c854c(0x238)]()*(_0x51032f[_0x4c854c(0x290)]-_0x509b13);_0x514392[_0x4c854c(0x272)][_0x4c854c(0x26e)]=_0x16fa38+'px',_0x514392[_0x4c854c(0x272)][_0x4c854c(0x202)]=_0x48169c+'px';const _0x1f0745=Math['random']()*0x5a-0x2d;_0x514392[_0x4c854c(0x272)][_0x4c854c(0x2e5)]='rotate('+_0x1f0745+_0x4c854c(0x248),quoteImagesContainer[_0x4c854c(0x297)](_0x514392),setTimeout(()=>{const _0x22b7d5=_0x4c854c;_0x514392['classList'][_0x22b7d5(0x1ea)]('active');},0xa),setTimeout(()=>{const _0x1d964d=_0x4c854c;_0x514392[_0x1d964d(0x260)][_0x1d964d(0x203)](_0x1d964d(0x298)),setTimeout(()=>{_0x514392['remove']();},0x1f4);},QUOTE_DISPLAY_DURATION_MS);}function applyDamageToOzzy(_0x2de614){const _0x354f93=_0x48979e;ozzyHealth-=_0x2de614,ozzyHealth=Math[_0x354f93(0x220)](0x0,ozzyHealth),updateHealthBar(),ozzyHealth<=0x0&&handleOzzyKnockout();}function stonksAttack(){const _0x79551a=_0x48979e;if(!isGameActive){clearInterval(playerAttackIntervalId);return;}ozzyImage[_0x79551a(0x260)][_0x79551a(0x1ea)](_0x79551a(0x25a)),ozzyImage[_0x79551a(0x260)]['add'](_0x79551a(0x24c)),setTimeout(()=>{const _0x288183=_0x79551a;ozzyImage[_0x288183(0x260)][_0x288183(0x203)](_0x288183(0x24c));},0xc8),setTimeout(()=>{const _0x477851=_0x79551a;ozzyImage[_0x477851(0x260)][_0x477851(0x203)](_0x477851(0x25a));},0x320),gameContainer[_0x79551a(0x260)][_0x79551a(0x1ea)](_0x79551a(0x204)),setTimeout(()=>{const _0x2ade66=_0x79551a;gameContainer['classList'][_0x2ade66(0x203)](_0x2ade66(0x204));},0x190),playerHealth-=STONKS_ATTACK_DAMAGE,playerHealth=Math['max'](0x0,playerHealth),updatePlayerHealthUI();const _0x3634e6=ozzyContainer[_0x79551a(0x25b)](),_0x288d6f=gameContainer[_0x79551a(0x25b)](),_0x39d1a3=_0x3634e6[_0x79551a(0x26e)]-_0x288d6f['left']+_0x3634e6['width']/0x2,_0x531369=_0x3634e6[_0x79551a(0x202)]-_0x288d6f['top']+_0x3634e6[_0x79551a(0x290)]/0x2;spawnStonksAttackEffects(_0x39d1a3,_0x531369),playerHealth<=0x0&&endGame(_0x79551a(0x24e));}function updatePlayerHealthUI(){const _0x4cbb27=_0x48979e;playerHealthDisplay[_0x4cbb27(0x225)]=playerHealth+'/'+MAX_PLAYER_HEALTH;const _0x5cecf6=playerHealth/MAX_PLAYER_HEALTH*0x64;playerHealthBarFill[_0x4cbb27(0x272)][_0x4cbb27(0x313)]=_0x5cecf6+'%';if(_0x5cecf6>0x3c)playerHealthBarFill[_0x4cbb27(0x272)][_0x4cbb27(0x243)]=_0x4cbb27(0x20b);else _0x5cecf6>0x1e?playerHealthBarFill[_0x4cbb27(0x272)][_0x4cbb27(0x243)]=_0x4cbb27(0x1f5):playerHealthBarFill['style']['backgroundColor']=_0x4cbb27(0x30d);}function updateSuperpowerButtons(){const _0x2a72b6=_0x48979e,_0x331e07=Date['now'](),_0x4d3e6e=_0x550255=>{const _0x402c36=_0x1aa6;return Math[_0x402c36(0x220)](MIN_COOLDOWN_MS,COOLDOWN_DURATION_MS-(_0x550255-0x1)*COOLDOWN_REDUCTION_PER_LEVEL_MS);},_0x531e79=punchesSinceLastPowerup>=PUNCHES_PER_POWERUP&&(_0x331e07-lastUsedLightningTime>=_0x4d3e6e(upgradeLevels[_0x2a72b6(0x27b)])||lastUsedLightningTime===0x0)&&isGameActive,_0x37665b=punchesSinceLastPowerup>=PUNCHES_PER_POWERUP&&(_0x331e07-lastUsedFreezeTime>=_0x4d3e6e(upgradeLevels[_0x2a72b6(0x1f8)])||lastUsedFreezeTime===0x0)&&isGameActive,_0x112297=punchesSinceLastPowerup>=PUNCHES_PER_POWERUP&&(_0x331e07-lastUsedFrenzyTime>=_0x4d3e6e(upgradeLevels['frenzyDamage'])||lastUsedFrenzyTime===0x0)&&isGameActive;btnLightning['disabled']=!_0x531e79,btnFreeze[_0x2a72b6(0x234)]=!_0x37665b,btnFrenzy[_0x2a72b6(0x234)]=!_0x112297,_0x531e79||_0x37665b||_0x112297?superpowerButtonsContainer[_0x2a72b6(0x272)]['pointerEvents']=_0x2a72b6(0x2f6):superpowerButtonsContainer['style'][_0x2a72b6(0x266)]='none',updateSuperpowerCooldownDisplays();}function updateSuperpowerCooldownDisplays(){const _0x2e2403=_0x48979e,_0x536eac=Date['now'](),_0x2f141b=(_0x38623e,_0x1340a8,_0x5b9e7a,_0x3a9bd8,_0xd33aae)=>{const _0x251298=_0x1aa6,_0x1785ad=_0x38623e[_0x251298(0x29f)](_0x251298(0x24d)),_0x3da309=Math['max'](MIN_COOLDOWN_MS,COOLDOWN_DURATION_MS-(_0x3a9bd8-0x1)*COOLDOWN_REDUCTION_PER_LEVEL_MS),_0x17c0a2=_0x536eac-_0x1340a8,_0x3b60f5=Math['ceil']((_0x1340a8+_0x3da309-_0x536eac)/0x3e8);_0xd33aae&&(_0xd33aae['textContent']=_0x251298(0x278)+_0x3a9bd8);if(isGameActive&&_0x3b60f5>0x0){const _0x2f685f=_0x17c0a2/_0x3da309*0x64;_0x38623e[_0x251298(0x272)]['setProperty']('--cooldown-percentage',_0x2f685f+'%'),_0x1785ad&&(_0x1785ad['textContent']='\x20'+_0x3b60f5+'s');}else _0x38623e[_0x251298(0x272)][_0x251298(0x2f5)](_0x251298(0x2ad),'100%'),_0x1785ad&&(_0x1785ad[_0x251298(0x225)]='\x20'+_0x5b9e7a);};_0x2f141b(btnLightning,lastUsedLightningTime,originalLightningText,upgradeLevels['lightningDamage'],btnLightningLvlDisplay),_0x2f141b(btnFreeze,lastUsedFreezeTime,originalFreezeText,upgradeLevels['freezeDamage'],btnFreezeLvlDisplay),_0x2f141b(btnFrenzy,lastUsedFrenzyTime,originalFrenzyText,upgradeLevels[_0x2e2403(0x294)],btnFrenzyLvlDisplay);}function activateLightningStrike(){const _0x3c8c5e=_0x48979e;if(!isGameActive||btnLightning[_0x3c8c5e(0x234)])return;showMessage(_0x3c8c5e(0x254),0x5dc),punchesSinceLastPowerup=0x0,lastUsedLightningTime=Date[_0x3c8c5e(0x30a)](),updateSuperpowerButtons();const _0x5b1d6c=LIGHTNING_BASE_DAMAGE+(upgradeLevels[_0x3c8c5e(0x27b)]-0x1)*LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;applyDamageToOzzy(_0x5b1d6c),lightningModeActive=!0x0,lightningCanvasParticles=[],setTimeout(()=>{lightningModeActive=!0x1;},0x9c4),lightningEffect['classList'][_0x3c8c5e(0x203)](_0x3c8c5e(0x1fa)),lightningEffect[_0x3c8c5e(0x260)][_0x3c8c5e(0x1ea)](_0x3c8c5e(0x281)),setTimeout(()=>{const _0x117e1a=_0x3c8c5e;lightningEffect[_0x117e1a(0x260)]['remove'](_0x117e1a(0x281)),lightningEffect['classList'][_0x117e1a(0x1ea)](_0x117e1a(0x1fa));},0x5dc);}function _0x25ff(){const _0x5046f9=['27.png','clearRect','leaderboard','buy-frenzy-damage','moveTo','tinu.png','resetGame\x20called.','splice','13.png','limegreen','--cooldown-percentage','nickname','data','upgrade-shop-screen','Base\x20Damage\x20Upgraded!\x20New\x20damage:\x20','WARNING!\x20BOSS\x20STONKS!\x20BEAT\x20HIM\x20UP!','currentLifeTime',',\x20Attack\x20Damage:\x20','START\x20button\x20clicked!','Ice\x20Blast\x20Upgraded!\x20Level:\x20','+1\x20to\x20respect!','26.png','restart-button','9.png','stonksClaw','leaderboard-screen','15.png','innerHTML','RESTART\x20button\x20clicked!','save','uid','frenzy-effect','offsetWidth','startGame\x20called.','Normal\x20Stonks\x20attack\x20damage\x20set\x20to:\x20','668337469201','close-skin-selection-button','frenzyFlame','current-score-shop','src','select-tinu-skin','Stonks\x20visual\x20variant\x20set\x20to:\x20stonks-variant-','10.png','lineWidth','Player','Error\x20playing\x20punchSoundInstance:','lineTo','Leaderboard\x20connection\x20error.\x20Try\x20refreshing\x20the\x20page.','lightningSpark','.knockout-message','saveScoreToLeaderboard\x20called\x20with\x20nickname:','1HpRZAc','touchstart','8890HfgvPM','value','life','ozzy-14c19','orange','addEventListener','Error\x20fetching\x20leaderboard:\x20','naturalHeight','targetY','floor','Max\x20level\x20(','buy-base-damage','.boss-message','transform','select-stonks-skin','Base\x20Stonks\x20damage\x20increased\x20to\x20',',\x20Encounter:\x20','bossFire','select-skin-button','btn-lightning','16.png','current-level','rgba(255,\x20255,\x20255,\x20','level:','1331393EREQyU','base-damage-level','18.png','angle','back-to-start-button','setProperty','auto','restore','globalAlpha','end-message','leaderboard-list','stonks-variant-','freeze-damage-cost','trim','round','stroke','Logged\x20in\x20anonymously.\x20UID:','757512NMatot','px),\x20-50%)','contains','24.png','\x20(Damage:\x20~','length','game-container','freeze-damage-level',',\x200,\x20','now','Error\x20saving\x20score:\x20','244KXcrvW','#FF0000','score','4732480uaaamF','6ZgLEYJ','rgba(255,\x20255,\x20','.superpower-level-display','width','buy-max-health','catch','You\x20must\x20enter\x20your\x20nickname!','AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups','ozzy-image','max-health-level','SHOW\x20LEADERBOARD\x20(after\x20game)\x20button\x20clicked!','add','Error\x20playing\x20backgroundMusic:','ozzy-container','endGame\x20called\x20with\x20message:','close-shop-button','They\x20call\x20me\x20a\x20fraud!','\x20boss\x20cycles\x20completed)','4.png','lightning-damage-cost','My\x20algorithms\x20are\x20superior!','3.png','#FFD700','boss-mode-variant-','fillStyle','freezeDamage',')\x20submitted\x20by\x20','hidden','Skin\x20selected:\x20','translate','min','Frenzy\x20ended.\x20Normal\x20punches.','\x20after\x20boss\x20cycle.','843987xEvCUt','ICE\x20BLAST!','top','remove','screen-shake','boss-mode','knockout-message','beginPath','rgba(255,\x20','iceShard','<li>An\x20error\x20occurred\x20while\x20loading\x20the\x20leaderboard.</li>','#00BFFF','targetX','btn-freeze','Normal\x20Stonks\x20HP\x20set\x20to:\x20','lightning-damage-level','397074CJzKJh','rgba(173,\x20216,\x20230,\x20','\x20for\x20level\x20','log','translate(-50%,\x20-50%)','Max\x20Health\x20Upgraded!\x20New\x20Max\x20HP:\x20','arc','baseDamage','naturalWidth',':\x20Level\x20','frenzyPulse','fill','size','3133336jDvKKb','maxHealth','pow','max','startSize','timestamp','error','BACK\x20TO\x20MENU\x20button\x20clicked!','textContent','punch.mp3','skin-selection-screen','play','BOSS\x20SPAWN!\x20Level:\x20','STONKS\x20OR\x20STINKS?','start-screen','Initial\x20game\x20container\x20dimensions:','update','20.png','punch-sound','bossElectricity','Ice\x20Blast\x20weakened.','final-score','Error\x20with\x20anonymous\x20login:','disabled','cos','ceil','rgba(0,\x200,\x200,\x200.5)','random','sin','rgba(','player-health-bar-fill','ozzy-14c19.firebaseapp.com','flipped-x','nickname-input','game-over-sound','draw','Cannot\x20save\x20score:\x20User\x20is\x20not\x20authenticated.','bossIce','backgroundColor','tinu','Anonymous','fetchAndDisplayLeaderboard\x20called.','painParticle','deg)','\x20(based\x20on\x20','desc','25.png','stonks-attack-effect','.superpower-name-cooldown','YOU\x20DIED!','stonksboss.png','background-music','user','14.png','spawn-ozzy','LIGHTNING\x20STRIKE!',',\x20Health:\x20','closePath','Error\x20playing\x20gameOverSound:','DOMContentLoaded:\x20DOM\x20has\x20been\x20loaded!','animated-background-tractor','attacking','getBoundingClientRect','WARNING!\x20BOSS\x20TINU!\x20BEAT\x20HIM\x20UP!','rotate','Script.js\x20is\x20running!','<li>No\x20scores\x20on\x20the\x20leaderboard.\x20Be\x20the\x20first!</li>','classList','8.png','getElementById','player-health-display','shop-button','tinuboss.png','pointerEvents','lightningLine','TTB\x20IS\x20BEST!','color',')\x20reached\x20for\x20this\x20upgrade!','lineCap','quote-image','resize','left','Score\x20(level\x20','Lightning\x20Strike\x20Upgraded!\x20Level:\x20','Not\x20enough\x20points!','style','div','pause','max-health-cost','buy-lightning-damage','quote-images-container','Lvl\x20','asc','Score\x20saved\x20successfully!','lightningDamage','querySelectorAll','stonks','frenzy-cost','BATTLE\x20FRENZY!','push','flash-active','strokeStyle','clawMark','Initial\x20target\x20image\x20(Ozzy)\x20dimensions:','offsetHeight','alpha','health-bar-fill','quadraticCurveTo','player-health-bar-bg','warn','hit-effect','1.png','type','scratch','forEach','height','currentTime','createElement','normal','frenzyDamage','image','preventDefault','appendChild','active','click','translate(calc(-50%\x20+\x20','handlePunch\x20called.','Battle\x20Frenzy\x20Upgraded!\x20Level:\x20','7.png','isDead','querySelector','pazury.png','red','includes'];_0x25ff=function(){return _0x5046f9;};return _0x25ff();}function activateIceBlast(){const _0x5eb5a8=_0x48979e;if(!isGameActive||btnFreeze[_0x5eb5a8(0x234)])return;showMessage(_0x5eb5a8(0x201),0x5dc),punchesSinceLastPowerup=0x0,lastUsedFreezeTime=Date[_0x5eb5a8(0x30a)](),updateSuperpowerButtons();const _0x43467e=ICE_BLAST_INITIAL_DAMAGE+(upgradeLevels[_0x5eb5a8(0x1f8)]-0x1)*FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL,_0x53e80d=ICE_BLAST_DOT_DAMAGE_PER_SECOND+(upgradeLevels[_0x5eb5a8(0x1f8)]-0x1)*FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;freezeEffect['classList'][_0x5eb5a8(0x203)](_0x5eb5a8(0x1fa)),freezeEffect[_0x5eb5a8(0x260)][_0x5eb5a8(0x1ea)]('active'),applyDamageToOzzy(_0x43467e),freezeModeActive=!0x0;let _0x475567=0x0;const _0x5ce789=ICE_BLAST_DOT_DURATION_SECONDS;clearInterval(freezeDotIntervalId),freezeDotIntervalId=setInterval(()=>{const _0x42c4bb=_0x5eb5a8;if(!isGameActive&&!upgradeShopScreen[_0x42c4bb(0x260)]['contains'](_0x42c4bb(0x1fa))){clearInterval(freezeDotIntervalId);return;}if(!isGameActive){clearInterval(freezeDotIntervalId),freezeModeActive=!0x1,freezeEffect[_0x42c4bb(0x260)]['remove'](_0x42c4bb(0x298)),freezeCanvasParticles=[];return;}applyDamageToOzzy(_0x53e80d),_0x475567++,_0x475567>=_0x5ce789&&(clearInterval(freezeDotIntervalId),freezeModeActive=!0x1,freezeEffect['classList']['remove'](_0x42c4bb(0x298)),freezeCanvasParticles=[],showMessage(_0x42c4bb(0x231),0x3e8));},0x3e8);}function activateFrenzy(){const _0x10dfc6=_0x48979e;if(!isGameActive||btnFrenzy[_0x10dfc6(0x234)])return;showMessage(_0x10dfc6(0x27f),0x5dc),punchesSinceLastPowerup=0x0,lastUsedFrenzyTime=Date['now'](),updateSuperpowerButtons();const _0x47ba29=FRENZY_INITIAL_DAMAGE+(upgradeLevels['frenzyDamage']-0x1)*FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;applyDamageToOzzy(_0x47ba29),frenzyModeActive=!0x0,PUNCH_DAMAGE*=FRENZY_DAMAGE_MULTIPLIER,frenzyEffect[_0x10dfc6(0x260)][_0x10dfc6(0x203)](_0x10dfc6(0x1fa)),frenzyEffect['classList'][_0x10dfc6(0x1ea)]('active'),clearTimeout(frenzyTimerId),frenzyTimerId=setTimeout(()=>{const _0x1eef7a=_0x10dfc6;frenzyModeActive=!0x1,PUNCH_DAMAGE=0xa+(upgradeLevels[_0x1eef7a(0x217)]-0x1)*DAMAGE_INCREASE_PER_LEVEL,frenzyEffect[_0x1eef7a(0x260)][_0x1eef7a(0x1ea)]('hidden'),frenzyEffect[_0x1eef7a(0x260)][_0x1eef7a(0x203)](_0x1eef7a(0x298)),frenzyCanvasParticles=[],showMessage(_0x1eef7a(0x1fe),0x5dc);},FRENZY_DURATION_MS);}let isBossMovementPaused=!0x1;function animateBossMovement(){const _0x50b664=_0x48979e;if(!isGameActive||!isBossFight||isBossMovementPaused){cancelAnimationFrame(bossMovementAnimationFrameId);return;}const _0x4fd2af=gameContainer[_0x50b664(0x25b)](),_0x400768=ozzyContainer[_0x50b664(0x25b)](),_0x3730a2=(_0x4fd2af['width']-_0x400768['width'])/0x2;let _0x173eef=bossCurrentTransformX+bossDx;if(_0x173eef>_0x3730a2)_0x173eef=_0x3730a2,bossDx*=-0x1,ozzyImage[_0x50b664(0x260)][_0x50b664(0x1ea)](_0x50b664(0x23d));else _0x173eef<-_0x3730a2&&(_0x173eef=-_0x3730a2,bossDx*=-0x1,ozzyImage['classList'][_0x50b664(0x203)]('flipped-x'));ozzyContainer[_0x50b664(0x272)][_0x50b664(0x2e5)]=_0x50b664(0x29a)+_0x173eef+_0x50b664(0x302),bossCurrentTransformX=_0x173eef,bossMovementAnimationFrameId=requestAnimationFrame(animateBossMovement);}function updateOzzyAppearance(){const _0x1e38ff=_0x48979e;for(let _0x35dfd2=0x0;_0x35dfd2<totalStonksVariants;_0x35dfd2++){ozzyImage[_0x1e38ff(0x260)]['remove'](_0x1e38ff(0x2fb)+_0x35dfd2);}for(let _0x1f6ef7=0x0;_0x1f6ef7<totalBossVariants;_0x1f6ef7++){ozzyImage[_0x1e38ff(0x260)][_0x1e38ff(0x203)]('boss-mode-variant-'+_0x1f6ef7);}!isBossFight?ozzyImage['classList']['add'](_0x1e38ff(0x2fb)+stonksVisualVariantIndex):(ozzyImage[_0x1e38ff(0x260)][_0x1e38ff(0x1ea)]('boss-mode'),ozzyImage[_0x1e38ff(0x260)]['add'](_0x1e38ff(0x1f6)+bossVisualVariantIndex));}function resetGame(){const _0x5e9a07=_0x48979e;console[_0x5e9a07(0x213)](_0x5e9a07(0x2a9)),score=0x0,scoreDisplay['textContent']=score,currentLevel=0x0,currentLevelDisplay[_0x5e9a07(0x225)]=currentLevel,isBossFight=!0x1,ozzyImage['src']=SKIN_IMAGES[currentSkin][_0x5e9a07(0x293)],ozzyImage[_0x5e9a07(0x260)]['remove']('boss-mode'),ozzyImage['classList'][_0x5e9a07(0x203)](_0x5e9a07(0x23d)),ozzyImage[_0x5e9a07(0x260)][_0x5e9a07(0x203)](_0x5e9a07(0x25a)),ozzyImage[_0x5e9a07(0x260)][_0x5e9a07(0x203)]('stonks-attack-effect'),gameContainer['classList'][_0x5e9a07(0x203)](_0x5e9a07(0x204)),stonksVisualVariantIndex=0x0,bossVisualVariantIndex=0x0,updateOzzyAppearance(),INITIAL_OZZY_HEALTH=NORMAL_OZZY_INITIAL_HEALTH,PUNCH_DAMAGE=0xa+(upgradeLevels[_0x5e9a07(0x217)]-0x1)*DAMAGE_INCREASE_PER_LEVEL,ozzyHealth=INITIAL_OZZY_HEALTH,updateHealthBar(),ozzyImage[_0x5e9a07(0x260)]['remove']('hit-effect'),ozzyImage[_0x5e9a07(0x260)][_0x5e9a07(0x203)](_0x5e9a07(0x253)),ozzyContainer[_0x5e9a07(0x260)]['add'](_0x5e9a07(0x1fa)),bossCurrentTransformX=0x0,ozzyContainer[_0x5e9a07(0x272)][_0x5e9a07(0x2e5)]=_0x5e9a07(0x214),cancelAnimationFrame(bossMovementAnimationFrameId),isBossMovementPaused=!0x1,quoteImagesContainer[_0x5e9a07(0x2be)]='',punchesSinceLastPowerup=0x0,lastUsedLightningTime=0x0,lastUsedFreezeTime=0x0,lastUsedFrenzyTime=0x0,frenzyModeActive=!0x1,clearTimeout(frenzyTimerId),freezeModeActive=!0x1,clearInterval(freezeDotIntervalId),freezeEffect[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),freezeEffect[_0x5e9a07(0x260)][_0x5e9a07(0x203)](_0x5e9a07(0x298)),frenzyEffect[_0x5e9a07(0x260)]['add'](_0x5e9a07(0x1fa)),frenzyEffect[_0x5e9a07(0x260)][_0x5e9a07(0x203)](_0x5e9a07(0x298)),lightningEffect[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),lightningEffect[_0x5e9a07(0x260)]['remove'](_0x5e9a07(0x281)),cancelAnimationFrame(gameCanvasAnimationFrameId),gameEffectsCanvas['classList'][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),gameEffectsCanvas['classList'][_0x5e9a07(0x203)](_0x5e9a07(0x298)),bossCanvasParticles=[],lightningCanvasParticles=[],freezeCanvasParticles=[],frenzyCanvasParticles=[],scratchCanvasParticles=[],stonksAttackClawParticles=[],stonksAttackPainParticles=[],clawMarks=[],gameEffectsCtx&&gameEffectsCtx[_0x5e9a07(0x2a4)](0x0,0x0,gameEffectsCanvas['width'],gameEffectsCtx['height']),document[_0x5e9a07(0x27c)](_0x5e9a07(0x2d4))[_0x5e9a07(0x28f)](_0x4906d2=>_0x4906d2[_0x5e9a07(0x203)]()),document[_0x5e9a07(0x27c)](_0x5e9a07(0x2e4))[_0x5e9a07(0x28f)](_0x5e4bf5=>_0x5e4bf5[_0x5e9a07(0x203)]()),upgradeLevels[_0x5e9a07(0x21e)]=0x1,MAX_PLAYER_HEALTH=PLAYER_HEALTH_BASE_VALUE+(upgradeLevels['maxHealth']-0x1)*PLAYER_HEALTH_INCREASE_PER_LEVEL,playerHealth=MAX_PLAYER_HEALTH,updatePlayerHealthUI(),playerHealthContainer[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),clearInterval(playerAttackIntervalId),upgradeLevels[_0x5e9a07(0x27b)]=0x1,upgradeLevels['freezeDamage']=0x1,upgradeLevels[_0x5e9a07(0x294)]=0x1,isGameActive=!0x1,endScreen['classList']['add'](_0x5e9a07(0x1fa)),leaderboardScreen[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)]('hidden'),upgradeShopScreen[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),startScreen[_0x5e9a07(0x260)][_0x5e9a07(0x203)]('hidden'),shopButton[_0x5e9a07(0x260)][_0x5e9a07(0x203)]('hidden'),superpowerButtonsContainer[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)](_0x5e9a07(0x1fa)),gameInfoContainer[_0x5e9a07(0x260)][_0x5e9a07(0x1ea)]('hidden'),clearInterval(superpowerCooldownIntervalId),updateSuperpowerCooldownDisplays(),backgroundMusic&&(backgroundMusic[_0x5e9a07(0x274)](),backgroundMusic['currentTime']=0x0),gameOverSound&&(gameOverSound[_0x5e9a07(0x274)](),gameOverSound['currentTime']=0x0),baseStonksDamage=0x5,STONKS_ATTACK_DAMAGE=baseStonksDamage;}function showMessage(_0x5f12dd,_0x5929e0=0x5dc){const _0x58b5cd=_0x48979e,_0x5b4940=document[_0x58b5cd(0x292)](_0x58b5cd(0x273));_0x5b4940['classList'][_0x58b5cd(0x1ea)]('knockout-message'),_0x5b4940[_0x58b5cd(0x225)]=_0x5f12dd,gameContainer['appendChild'](_0x5b4940),setTimeout(()=>{const _0x2a6e4a=_0x58b5cd;_0x5b4940[_0x2a6e4a(0x203)]();},_0x5929e0);}function showBossMessage(_0x104315,_0x120c9c=0x9c4){const _0x57a677=_0x48979e,_0x5d97b7=document[_0x57a677(0x292)](_0x57a677(0x273));_0x5d97b7[_0x57a677(0x260)][_0x57a677(0x1ea)]('boss-message'),_0x5d97b7[_0x57a677(0x225)]=_0x104315,gameContainer[_0x57a677(0x297)](_0x5d97b7),setTimeout(()=>{const _0x5d43a9=_0x57a677;_0x5d97b7[_0x5d43a9(0x203)]();},_0x120c9c);}function updateHealthBar(){const _0x28a086=_0x48979e,_0x25a4c4=ozzyHealth/INITIAL_OZZY_HEALTH*0x64;healthBarFill['style'][_0x28a086(0x313)]=_0x25a4c4+'%';if(_0x25a4c4>0x32)healthBarFill[_0x28a086(0x272)][_0x28a086(0x243)]=_0x28a086(0x2ac);else _0x25a4c4>0x14?healthBarFill[_0x28a086(0x272)][_0x28a086(0x243)]=_0x28a086(0x2dc):healthBarFill[_0x28a086(0x272)][_0x28a086(0x243)]=_0x28a086(0x2a1);}function startGame(){const _0x1fe967=_0x48979e;console[_0x1fe967(0x213)](_0x1fe967(0x2c4));const _0x3c4edf=nicknameInput[_0x1fe967(0x2d9)][_0x1fe967(0x2fd)]();if(!_0x3c4edf){showMessage(_0x1fe967(0x1e5),0x7d0);return;}playerNickname=_0x3c4edf,resetGame(),isGameActive=!0x0,startScreen[_0x1fe967(0x260)][_0x1fe967(0x1ea)]('hidden'),ozzyContainer['classList']['remove']('hidden'),gameInfoContainer[_0x1fe967(0x260)][_0x1fe967(0x203)](_0x1fe967(0x1fa)),superpowerButtonsContainer['classList']['remove'](_0x1fe967(0x1fa)),shopButton['classList']['remove']('hidden'),currentLevel=0x1,currentLevelDisplay['textContent']=currentLevel,score=0x0,scoreDisplay[_0x1fe967(0x225)]=score,INITIAL_OZZY_HEALTH=NORMAL_OZZY_INITIAL_HEALTH,ozzyHealth=INITIAL_OZZY_HEALTH,updateHealthBar(),stonksVisualVariantIndex=0x0,updateOzzyAppearance(),clearInterval(superpowerCooldownIntervalId),superpowerCooldownIntervalId=setInterval(updateSuperpowerCooldownDisplays,0x3e8),updateSuperpowerButtons(),gameCanvasAnimationFrameId=requestAnimationFrame(animateGameCanvasEffects),gameEffectsCanvas[_0x1fe967(0x260)][_0x1fe967(0x203)]('hidden'),gameEffectsCanvas[_0x1fe967(0x260)][_0x1fe967(0x1ea)]('active'),MAX_PLAYER_HEALTH=PLAYER_HEALTH_BASE_VALUE+(upgradeLevels[_0x1fe967(0x21e)]-0x1)*PLAYER_HEALTH_INCREASE_PER_LEVEL,playerHealth=MAX_PLAYER_HEALTH,updatePlayerHealthUI(),playerHealthContainer[_0x1fe967(0x260)][_0x1fe967(0x203)](_0x1fe967(0x1fa)),clearInterval(playerAttackIntervalId),STONKS_ATTACK_DAMAGE=baseStonksDamage,playerAttackIntervalId=setInterval(stonksAttack,STONKS_ATTACK_INTERVAL_MS),backgroundMusic&&backgroundMusic[_0x1fe967(0x228)]()[_0x1fe967(0x1e4)](_0x1c6aa3=>console[_0x1fe967(0x223)](_0x1fe967(0x1eb),_0x1c6aa3));}function endGame(_0x409e71){const _0x3e36c7=_0x48979e;console['log'](_0x3e36c7(0x1ed),_0x409e71),isGameActive=!0x1,ozzyContainer[_0x3e36c7(0x260)][_0x3e36c7(0x1ea)](_0x3e36c7(0x1fa)),gameInfoContainer[_0x3e36c7(0x260)]['add'](_0x3e36c7(0x1fa)),playerHealthContainer[_0x3e36c7(0x260)][_0x3e36c7(0x1ea)](_0x3e36c7(0x1fa)),quoteImagesContainer['innerHTML']='',document[_0x3e36c7(0x27c)](_0x3e36c7(0x2d4))[_0x3e36c7(0x28f)](_0x2b123f=>_0x2b123f['remove']()),document[_0x3e36c7(0x27c)](_0x3e36c7(0x2e4))[_0x3e36c7(0x28f)](_0x4a0e68=>_0x4a0e68[_0x3e36c7(0x203)]()),gameContainer[_0x3e36c7(0x260)][_0x3e36c7(0x203)](_0x3e36c7(0x204)),frenzyModeActive=!0x1,PUNCH_DAMAGE=0xa+(upgradeLevels[_0x3e36c7(0x217)]-0x1)*DAMAGE_INCREASE_PER_LEVEL,clearTimeout(frenzyTimerId),frenzyEffect[_0x3e36c7(0x260)]['add'](_0x3e36c7(0x1fa)),frenzyEffect[_0x3e36c7(0x260)][_0x3e36c7(0x203)](_0x3e36c7(0x298)),freezeModeActive=!0x1,clearInterval(freezeDotIntervalId),freezeEffect[_0x3e36c7(0x260)]['add'](_0x3e36c7(0x1fa)),freezeEffect[_0x3e36c7(0x260)][_0x3e36c7(0x203)](_0x3e36c7(0x298)),lightningEffect['classList'][_0x3e36c7(0x1ea)](_0x3e36c7(0x1fa)),lightningEffect[_0x3e36c7(0x260)][_0x3e36c7(0x203)](_0x3e36c7(0x281)),punchesSinceLastPowerup=0x0,lastUsedLightningTime=0x0,lastUsedFreezeTime=0x0,lastUsedFrenzyTime=0x0,updateSuperpowerButtons(),clearInterval(superpowerCooldownIntervalId),clearInterval(playerAttackIntervalId),cancelAnimationFrame(bossMovementAnimationFrameId),isBossMovementPaused=!0x1,cancelAnimationFrame(gameCanvasAnimationFrameId),gameEffectsCanvas['classList'][_0x3e36c7(0x1ea)](_0x3e36c7(0x1fa)),gameEffectsCanvas[_0x3e36c7(0x260)]['remove']('active'),bossCanvasParticles=[],lightningCanvasParticles=[],freezeCanvasParticles=[],frenzyCanvasParticles=[],scratchCanvasParticles=[],stonksAttackClawParticles=[],stonksAttackPainParticles=[],clawMarks=[],gameEffectsCtx&&gameEffectsCtx[_0x3e36c7(0x2a4)](0x0,0x0,gameEffectsCanvas['width'],gameEffectsCtx[_0x3e36c7(0x290)]),document[_0x3e36c7(0x262)](_0x3e36c7(0x2f9))['textContent']=_0x409e71,document['getElementById'](_0x3e36c7(0x232))[_0x3e36c7(0x225)]=currentLevel,saveScoreToLeaderboard(playerNickname,currentLevel),endScreen[_0x3e36c7(0x260)][_0x3e36c7(0x203)]('hidden'),backgroundMusic&&(backgroundMusic[_0x3e36c7(0x274)](),backgroundMusic[_0x3e36c7(0x291)]=0x0),gameOverSound&&gameOverSound['play']()['catch'](_0x21e1d2=>console[_0x3e36c7(0x223)](_0x3e36c7(0x257),_0x21e1d2));}function handleOzzyKnockout(){const _0x446a35=_0x48979e;score++,scoreDisplay[_0x446a35(0x225)]=score,document['querySelectorAll']('.knockout-message')[_0x446a35(0x28f)](_0x54d6e4=>_0x54d6e4[_0x446a35(0x203)]()),document['querySelectorAll'](_0x446a35(0x2e4))[_0x446a35(0x28f)](_0x499a38=>_0x499a38[_0x446a35(0x203)]()),ozzyContainer['classList']['add'](_0x446a35(0x1fa)),playerHealth=MAX_PLAYER_HEALTH,updatePlayerHealthUI();const _0x2157e0=currentLevel+0x1;if(_0x2157e0>0x0&&_0x2157e0%BOSS_LEVEL_INTERVAL===0x0)currentLevel=_0x2157e0,currentLevelDisplay[_0x446a35(0x225)]=currentLevel,isBossFight=!0x0,baseStonksDamage+=STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE,console[_0x446a35(0x213)](_0x446a35(0x2e7)+baseStonksDamage+_0x446a35(0x1ff)),startBossFight(),clearInterval(playerAttackIntervalId),playerAttackIntervalId=setInterval(stonksAttack,STONKS_ATTACK_INTERVAL_MS);else{currentLevel=_0x2157e0,currentLevelDisplay[_0x446a35(0x225)]=currentLevel,isBossFight=!0x1,ozzyImage[_0x446a35(0x2ca)]=SKIN_IMAGES[currentSkin][_0x446a35(0x293)],ozzyImage['classList'][_0x446a35(0x203)]('boss-mode'),ozzyImage[_0x446a35(0x260)][_0x446a35(0x203)](_0x446a35(0x23d));currentLevel>=0x1&&currentLevel<=0xa?stonksVisualVariantIndex=0x0:stonksVisualVariantIndex=Math[_0x446a35(0x2e1)]((currentLevel-0x1)/BOSS_LEVEL_INTERVAL)%totalStonksVariants;console[_0x446a35(0x213)](_0x446a35(0x2cc)+stonksVisualVariantIndex+'\x20for\x20level\x20'+currentLevel);const _0x30ed48=Math[_0x446a35(0x2e1)]((currentLevel-0x1)/BOSS_LEVEL_INTERVAL);INITIAL_OZZY_HEALTH=NORMAL_OZZY_INITIAL_HEALTH+_0x30ed48*NORMAL_OZZY_HEALTH_INCREMENT,console[_0x446a35(0x213)](_0x446a35(0x20e)+INITIAL_OZZY_HEALTH+_0x446a35(0x249)+_0x30ed48+_0x446a35(0x1f0)),updateOzzyAppearance(),bossCurrentTransformX=0x0,ozzyContainer[_0x446a35(0x272)]['transform']=_0x446a35(0x214),cancelAnimationFrame(bossMovementAnimationFrameId),isBossMovementPaused=!0x1;const _0x13b473=document[_0x446a35(0x292)](_0x446a35(0x273));_0x13b473[_0x446a35(0x260)]['add'](_0x446a35(0x206)),_0x13b473['textContent']=_0x446a35(0x2b7),gameContainer[_0x446a35(0x297)](_0x13b473),setTimeout(()=>{const _0x3be20e=_0x446a35;_0x13b473[_0x3be20e(0x203)]();},0x7d0),STONKS_ATTACK_DAMAGE=baseStonksDamage,console[_0x446a35(0x213)](_0x446a35(0x2c5)+STONKS_ATTACK_DAMAGE+_0x446a35(0x212)+currentLevel);}ozzyHealth=INITIAL_OZZY_HEALTH,updateHealthBar(),setTimeout(()=>{const _0x4a12a9=_0x446a35;ozzyContainer['classList'][_0x4a12a9(0x203)](_0x4a12a9(0x1fa)),ozzyImage['classList'][_0x4a12a9(0x203)](_0x4a12a9(0x28b)),!isBossFight?ozzyContainer[_0x4a12a9(0x272)]['transform']=_0x4a12a9(0x214):ozzyContainer[_0x4a12a9(0x272)][_0x4a12a9(0x2e5)]='translate(calc(-50%\x20+\x20'+bossCurrentTransformX+_0x4a12a9(0x302),ozzyImage[_0x4a12a9(0x260)][_0x4a12a9(0x1ea)](_0x4a12a9(0x253)),setTimeout(()=>{const _0x1ad2cf=_0x4a12a9;ozzyImage[_0x1ad2cf(0x260)][_0x1ad2cf(0x203)](_0x1ad2cf(0x253));},0x1f4),gameCanvasAnimationFrameId=requestAnimationFrame(animateGameCanvasEffects),gameEffectsCanvas['classList']['remove'](_0x4a12a9(0x1fa)),gameEffectsCanvas[_0x4a12a9(0x260)]['add'](_0x4a12a9(0x298));},0xc8);}function startBossFight(){const _0x6306d8=_0x48979e;ozzyImage['src']=SKIN_IMAGES[currentSkin]['boss'],ozzyImage[_0x6306d8(0x260)]['add'](_0x6306d8(0x205));const _0x3b003c=currentLevel/BOSS_LEVEL_INTERVAL;INITIAL_OZZY_HEALTH=BOSS_INITIAL_HEALTH+(_0x3b003c-0x1)*BOSS_HEALTH_INCREMENT_PER_ENCOUNTER,INITIAL_OZZY_HEALTH=Math['max'](BOSS_INITIAL_HEALTH,INITIAL_OZZY_HEALTH);const _0x3de992=currentSkin===_0x6306d8(0x27d)?_0x6306d8(0x2b2):_0x6306d8(0x25c);showBossMessage(_0x3de992,0x9c4),STONKS_ATTACK_DAMAGE=Math[_0x6306d8(0x236)](baseStonksDamage*1.25),console[_0x6306d8(0x213)](_0x6306d8(0x229)+currentLevel+_0x6306d8(0x2e8)+_0x3b003c+_0x6306d8(0x255)+INITIAL_OZZY_HEALTH+_0x6306d8(0x2b4)+STONKS_ATTACK_DAMAGE),bossVisualVariantIndex=(_0x3b003c-0x1)%totalBossVariants,updateOzzyAppearance(),cancelAnimationFrame(bossMovementAnimationFrameId),isBossMovementPaused=!0x1,bossCurrentTransformX=0x0,ozzyContainer[_0x6306d8(0x272)][_0x6306d8(0x2e5)]='translate(calc(-50%\x20+\x20'+bossCurrentTransformX+_0x6306d8(0x302),bossDx=BOSS_MOVEMENT_SPEED*(Math[_0x6306d8(0x238)]()<0.5?0x1:-0x1),bossDx<0x0?ozzyImage[_0x6306d8(0x260)]['add']('flipped-x'):ozzyImage['classList'][_0x6306d8(0x203)](_0x6306d8(0x23d)),bossMovementAnimationFrameId=requestAnimationFrame(animateBossMovement),gameCanvasAnimationFrameId=requestAnimationFrame(animateGameCanvasEffects),gameEffectsCanvas['classList'][_0x6306d8(0x203)](_0x6306d8(0x1fa)),gameEffectsCanvas[_0x6306d8(0x260)][_0x6306d8(0x1ea)](_0x6306d8(0x298));}function handlePunch(_0x106349){const _0x278f0c=_0x48979e;console[_0x278f0c(0x213)](_0x278f0c(0x29b));if(!isGameActive)return;const _0x5f202d=new Audio(_0x278f0c(0x226));_0x5f202d[_0x278f0c(0x228)]()['catch'](_0x17b624=>console['error'](_0x278f0c(0x2d0),_0x17b624)),_0x5f202d['onended']=()=>{const _0x37e380=_0x278f0c;_0x5f202d[_0x37e380(0x203)]();},applyDamageToOzzy(PUNCH_DAMAGE),ozzyImage[_0x278f0c(0x260)][_0x278f0c(0x1ea)](_0x278f0c(0x28b)),setTimeout(()=>{const _0x37fe92=_0x278f0c;ozzyImage['classList'][_0x37fe92(0x203)](_0x37fe92(0x28b));},0x96);if(!isBossFight&&ozzyHealth>0x0&&Math['random']()<0.3)spawnRandomQuote();else{if(isBossFight&&ozzyHealth>0x0&&Math[_0x278f0c(0x238)]()<0.45){if(document[_0x278f0c(0x27c)](_0x278f0c(0x2d4))[_0x278f0c(0x306)]===0x0&&document['querySelectorAll'](_0x278f0c(0x2e4))[_0x278f0c(0x306)]===0x0){const _0x3c3474=BOSS_QUOTES[Math[_0x278f0c(0x2e1)](Math['random']()*BOSS_QUOTES[_0x278f0c(0x306)])];showBossMessage(_0x3c3474,0x7d0);}}}punchesSinceLastPowerup++,updateSuperpowerButtons();}function calculateUpgradeCost(_0x540cd6){const _0x6ef89d=_0x48979e;return Math[_0x6ef89d(0x236)](UPGRADE_COST_BASE*Math[_0x6ef89d(0x21f)](UPGRADE_COST_MULTIPLIER,_0x540cd6-0x1));}function updateUpgradeShopUI(){const _0x339c01=_0x48979e;document[_0x339c01(0x262)](_0x339c01(0x2c9))[_0x339c01(0x225)]=score,baseDamageLevelDisplay[_0x339c01(0x225)]=upgradeLevels[_0x339c01(0x217)];const _0x1b58df=calculateUpgradeCost(upgradeLevels['baseDamage']);baseDamageCostDisplay[_0x339c01(0x225)]=_0x1b58df,buyBaseDamageButton[_0x339c01(0x234)]=score<_0x1b58df,lightningDamageLevelDisplay[_0x339c01(0x225)]=upgradeLevels[_0x339c01(0x27b)];const _0x3d867e=calculateUpgradeCost(upgradeLevels[_0x339c01(0x27b)]);lightningDamageCostDisplay[_0x339c01(0x225)]=_0x3d867e,buyLightningDamageButton['disabled']=score<_0x3d867e||upgradeLevels[_0x339c01(0x27b)]>=MAX_UPGRADE_LEVEL,freezeDamageLevelDisplay[_0x339c01(0x225)]=upgradeLevels[_0x339c01(0x1f8)];const _0x416b0a=calculateUpgradeCost(upgradeLevels[_0x339c01(0x1f8)]);freezeDamageCostDisplay[_0x339c01(0x225)]=_0x416b0a,buyFreezeDamageButton['disabled']=score<_0x416b0a||upgradeLevels[_0x339c01(0x1f8)]>=MAX_UPGRADE_LEVEL,frenzyDamageLevelDisplay['textContent']=upgradeLevels[_0x339c01(0x294)];const _0xd057e5=calculateUpgradeCost(upgradeLevels[_0x339c01(0x294)]);frenzyDamageCostDisplay[_0x339c01(0x225)]=_0xd057e5,buyFrenzyDamageButton[_0x339c01(0x234)]=score<_0xd057e5||upgradeLevels['frenzyDamage']>=MAX_UPGRADE_LEVEL,maxHealthLevelDisplay['textContent']=upgradeLevels['maxHealth'];const _0x4db2f9=calculateUpgradeCost(upgradeLevels['maxHealth']);maxHealthCostDisplay[_0x339c01(0x225)]=_0x4db2f9,buyMaxHealthButton[_0x339c01(0x234)]=score<_0x4db2f9;}function buyUpgrade(_0x4f324b){const _0x593d3e=_0x48979e;let _0x5286f0=upgradeLevels[_0x4f324b];if([_0x593d3e(0x27b),'freezeDamage',_0x593d3e(0x294)][_0x593d3e(0x2a2)](_0x4f324b)&&_0x5286f0>=MAX_UPGRADE_LEVEL){showMessage(_0x593d3e(0x2e2)+MAX_UPGRADE_LEVEL+_0x593d3e(0x26a),0xbb8);return;}const _0x581202=calculateUpgradeCost(_0x5286f0);if(score>=_0x581202){score-=_0x581202,scoreDisplay[_0x593d3e(0x225)]=score,upgradeLevels[_0x4f324b]++;if(_0x4f324b===_0x593d3e(0x217))PUNCH_DAMAGE=0xa+(upgradeLevels['baseDamage']-0x1)*DAMAGE_INCREASE_PER_LEVEL,showMessage(_0x593d3e(0x2b1)+PUNCH_DAMAGE,0xbb8);else{if(_0x4f324b===_0x593d3e(0x27b)){const _0xcf8ee5=LIGHTNING_BASE_DAMAGE+(upgradeLevels[_0x593d3e(0x27b)]-0x1)*LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;showMessage(_0x593d3e(0x270)+upgradeLevels[_0x593d3e(0x27b)]+_0x593d3e(0x305)+_0xcf8ee5+')',0xbb8);}else{if(_0x4f324b===_0x593d3e(0x1f8)){const _0x34c246=ICE_BLAST_INITIAL_DAMAGE+(upgradeLevels[_0x593d3e(0x1f8)]-0x1)*FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL,_0x28304d=ICE_BLAST_DOT_DAMAGE_PER_SECOND+(upgradeLevels['freezeDamage']-0x1)*FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;showMessage(_0x593d3e(0x2b6)+upgradeLevels[_0x593d3e(0x1f8)]+_0x593d3e(0x305)+_0x34c246+',\x20DOT:\x20~'+_0x28304d+'/s)',0xbb8);}else{if(_0x4f324b===_0x593d3e(0x294)){const _0x4376e8=FRENZY_INITIAL_DAMAGE+(upgradeLevels[_0x593d3e(0x294)]-0x1)*FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;showMessage(_0x593d3e(0x29c)+upgradeLevels[_0x593d3e(0x294)]+_0x593d3e(0x305)+_0x4376e8+')',0xbb8);}else _0x4f324b==='maxHealth'&&(MAX_PLAYER_HEALTH=PLAYER_HEALTH_BASE_VALUE+(upgradeLevels[_0x593d3e(0x21e)]-0x1)*PLAYER_HEALTH_INCREASE_PER_LEVEL,playerHealth=MAX_PLAYER_HEALTH,updatePlayerHealthUI(),showMessage(_0x593d3e(0x215)+MAX_PLAYER_HEALTH,0xbb8));}}}updateUpgradeShopUI(),updateSuperpowerButtons();}else showMessage(_0x593d3e(0x271),0xbb8);}function showSkinSelectionScreen(){const _0x317643=_0x48979e;startScreen[_0x317643(0x260)][_0x317643(0x1ea)](_0x317643(0x1fa)),shopButton['classList']['add'](_0x317643(0x1fa)),superpowerButtonsContainer[_0x317643(0x260)]['add'](_0x317643(0x1fa)),ozzyContainer[_0x317643(0x260)][_0x317643(0x1ea)](_0x317643(0x1fa)),gameInfoContainer['classList'][_0x317643(0x1ea)](_0x317643(0x1fa)),playerHealthContainer[_0x317643(0x260)][_0x317643(0x1ea)]('hidden'),leaderboardScreen[_0x317643(0x260)][_0x317643(0x1ea)]('hidden'),endScreen[_0x317643(0x260)]['add'](_0x317643(0x1fa)),skinSelectionScreen[_0x317643(0x260)][_0x317643(0x203)](_0x317643(0x1fa));}function hideSkinSelectionScreen(){const _0xe6e220=_0x48979e;skinSelectionScreen[_0xe6e220(0x260)]['add'](_0xe6e220(0x1fa)),startScreen[_0xe6e220(0x260)][_0xe6e220(0x203)]('hidden');}function selectSkin(_0x333ed){const _0x16a153=_0x48979e;currentSkin=_0x333ed,console[_0x16a153(0x213)](_0x16a153(0x1fb)+currentSkin),ozzyImage['src']=SKIN_IMAGES[currentSkin][_0x16a153(0x293)],hideSkinSelectionScreen();}console['log'](_0x48979e(0x25e)),document[_0x48979e(0x2dd)]('DOMContentLoaded',async()=>{const _0x5d9c0b=_0x48979e;console[_0x5d9c0b(0x213)](_0x5d9c0b(0x258)),backgroundTractor=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x259)),ozzyContainer=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x1ec)),ozzyImage=document['getElementById'](_0x5d9c0b(0x1e7)),healthBarFill=document['getElementById'](_0x5d9c0b(0x287)),gameContainer=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x307)),gameInfoContainer=document[_0x5d9c0b(0x262)]('game-info-container'),scoreDisplay=document[_0x5d9c0b(0x262)]('score'),currentLevelDisplay=document['getElementById'](_0x5d9c0b(0x2ed)),startScreen=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x22b)),startButton=document[_0x5d9c0b(0x262)]('start-button'),nicknameInput=document['getElementById'](_0x5d9c0b(0x23e)),showLeaderboardButton=document[_0x5d9c0b(0x262)]('show-leaderboard-button'),endScreen=document['getElementById']('end-screen'),finalScoreDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x232)),restartButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2b9)),showLeaderboardAfterGameButton=document[_0x5d9c0b(0x262)]('show-leaderboard-after-game-button'),leaderboardScreen=document['getElementById'](_0x5d9c0b(0x2bc)),leaderboardList=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2fa)),backToStartButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2f4)),superpowerButtonsContainer=document[_0x5d9c0b(0x262)]('superpower-buttons-container'),btnLightning=document['getElementById'](_0x5d9c0b(0x2eb)),btnFreeze=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x20d)),btnFrenzy=document[_0x5d9c0b(0x262)]('btn-frenzy'),lightningEffect=document['getElementById']('lightning-effect'),freezeEffect=document[_0x5d9c0b(0x262)]('freeze-effect'),frenzyEffect=document['getElementById'](_0x5d9c0b(0x2c2)),backgroundMusic=document['getElementById'](_0x5d9c0b(0x250)),punchSound=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x22f)),gameOverSound=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x23f)),shopButton=document['getElementById'](_0x5d9c0b(0x264)),upgradeShopScreen=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2b0)),closeShopButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x1ee)),baseDamageLevelDisplay=document['getElementById'](_0x5d9c0b(0x2f1)),baseDamageCostDisplay=document[_0x5d9c0b(0x262)]('base-damage-cost'),buyBaseDamageButton=document['getElementById'](_0x5d9c0b(0x2e3)),lightningDamageLevelDisplay=document['getElementById'](_0x5d9c0b(0x20f)),lightningDamageCostDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x1f2)),buyLightningDamageButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x276)),freezeDamageLevelDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x308)),freezeDamageCostDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2fc)),buyFreezeDamageButton=document[_0x5d9c0b(0x262)]('buy-freeze-damage'),frenzyDamageLevelDisplay=document['getElementById']('frenzy-damage-level'),frenzyDamageCostDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x27e)),buyFrenzyDamageButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2a6)),quoteImagesContainer=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x277)),gameEffectsCanvas=document['getElementById']('boss-effect-canvas'),gameEffectsCtx=gameEffectsCanvas['getContext']('2d'),playerHealthContainer=document[_0x5d9c0b(0x262)]('player-health-container'),playerHealthDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x263)),playerHealthBarBg=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x289)),playerHealthBarFill=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x23b)),selectSkinButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2ea)),skinSelectionScreen=document['getElementById'](_0x5d9c0b(0x227)),selectStonksSkinButton=document['getElementById'](_0x5d9c0b(0x2e6)),selectTinuSkinButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x2cb)),closeSkinSelectionButton=document['getElementById'](_0x5d9c0b(0x2c7)),maxHealthLevelDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x1e8)),maxHealthCostDisplay=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x275)),buyMaxHealthButton=document[_0x5d9c0b(0x262)](_0x5d9c0b(0x1e3)),btnLightningLvlDisplay=btnLightning[_0x5d9c0b(0x29f)](_0x5d9c0b(0x312)),btnFreezeLvlDisplay=btnFreeze['querySelector'](_0x5d9c0b(0x312)),btnFrenzyLvlDisplay=btnFrenzy[_0x5d9c0b(0x29f)]('.superpower-level-display'),upgradeShopScreen[_0x5d9c0b(0x260)][_0x5d9c0b(0x1ea)](_0x5d9c0b(0x1fa)),endScreen[_0x5d9c0b(0x260)][_0x5d9c0b(0x1ea)](_0x5d9c0b(0x1fa)),leaderboardScreen[_0x5d9c0b(0x260)][_0x5d9c0b(0x1ea)](_0x5d9c0b(0x1fa)),ozzyContainer[_0x5d9c0b(0x260)]['add'](_0x5d9c0b(0x1fa)),gameInfoContainer[_0x5d9c0b(0x260)][_0x5d9c0b(0x1ea)](_0x5d9c0b(0x1fa)),quoteImagesContainer[_0x5d9c0b(0x2be)]='',skinSelectionScreen[_0x5d9c0b(0x260)][_0x5d9c0b(0x1ea)](_0x5d9c0b(0x1fa)),resetGame();const _0x124a46=()=>{const _0x210f89=_0x5d9c0b;gameEffectsCanvas[_0x210f89(0x313)]=gameContainer[_0x210f89(0x2c3)],gameEffectsCanvas[_0x210f89(0x290)]=gameContainer[_0x210f89(0x285)];};_0x124a46(),window[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x26d),_0x124a46),clawImage['src']=_0x5d9c0b(0x2a0),clawImage['onerror']=()=>{console['error']('Failed\x20to\x20load\x20pazury.png.\x20Please\x20check\x20the\x20image\x20path.');},console[_0x5d9c0b(0x213)](_0x5d9c0b(0x22c),gameContainer[_0x5d9c0b(0x2c3)],gameContainer[_0x5d9c0b(0x285)]),console[_0x5d9c0b(0x213)](_0x5d9c0b(0x284),ozzyImage[_0x5d9c0b(0x2c3)],ozzyImage['offsetHeight']);try{const _0x1635dc=await signInAnonymously(auth);currentUserId=_0x1635dc[_0x5d9c0b(0x251)][_0x5d9c0b(0x2c1)],console['log'](_0x5d9c0b(0x300),currentUserId);}catch(_0x1a9d4c){console[_0x5d9c0b(0x223)](_0x5d9c0b(0x233),_0x1a9d4c),showMessage(_0x5d9c0b(0x2d2),0x1388);}console[_0x5d9c0b(0x213)]('DOMContentLoaded:\x20Authentication\x20completed.'),startButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>{const _0x5aa937=_0x5d9c0b;console[_0x5aa937(0x213)](_0x5aa937(0x2b5)),startGame();}),showLeaderboardButton['addEventListener'](_0x5d9c0b(0x299),()=>{const _0x4760e1=_0x5d9c0b;console[_0x4760e1(0x213)]('LEADERBOARD\x20button\x20clicked!'),startScreen['classList']['add'](_0x4760e1(0x1fa)),shopButton['classList'][_0x4760e1(0x1ea)]('hidden'),superpowerButtonsContainer['classList'][_0x4760e1(0x1ea)]('hidden'),ozzyContainer[_0x4760e1(0x260)][_0x4760e1(0x1ea)]('hidden'),gameInfoContainer[_0x4760e1(0x260)]['add'](_0x4760e1(0x1fa)),playerHealthContainer[_0x4760e1(0x260)]['add']('hidden'),leaderboardScreen[_0x4760e1(0x260)][_0x4760e1(0x203)]('hidden'),fetchAndDisplayLeaderboard();}),restartButton['addEventListener'](_0x5d9c0b(0x299),()=>{const _0x4e3ccb=_0x5d9c0b;console['log'](_0x4e3ccb(0x2bf)),resetGame();}),ozzyContainer[_0x5d9c0b(0x2dd)]('click',handlePunch),ozzyContainer[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x2d7),_0x459a52=>{const _0x349ec1=_0x5d9c0b;_0x459a52[_0x349ec1(0x296)](),handlePunch(_0x459a52);},{'passive':!0x1}),showLeaderboardAfterGameButton['addEventListener'](_0x5d9c0b(0x299),()=>{const _0x5e7558=_0x5d9c0b;console[_0x5e7558(0x213)](_0x5e7558(0x1e9)),endScreen[_0x5e7558(0x260)][_0x5e7558(0x1ea)](_0x5e7558(0x1fa)),shopButton[_0x5e7558(0x260)][_0x5e7558(0x1ea)](_0x5e7558(0x1fa)),superpowerButtonsContainer[_0x5e7558(0x260)][_0x5e7558(0x1ea)]('hidden'),ozzyContainer[_0x5e7558(0x260)][_0x5e7558(0x1ea)](_0x5e7558(0x1fa)),gameInfoContainer['classList'][_0x5e7558(0x1ea)](_0x5e7558(0x1fa)),playerHealthContainer[_0x5e7558(0x260)][_0x5e7558(0x1ea)](_0x5e7558(0x1fa)),leaderboardScreen[_0x5e7558(0x260)]['remove'](_0x5e7558(0x1fa)),fetchAndDisplayLeaderboard();}),backToStartButton['addEventListener'](_0x5d9c0b(0x299),()=>{const _0x5efeef=_0x5d9c0b;console['log'](_0x5efeef(0x224)),leaderboardScreen[_0x5efeef(0x260)][_0x5efeef(0x1ea)](_0x5efeef(0x1fa)),resetGame();}),btnLightning[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),activateLightningStrike),btnFreeze[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),activateIceBlast),btnFrenzy[_0x5d9c0b(0x2dd)]('click',activateFrenzy),shopButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>{const _0x2ededa=_0x5d9c0b;isGameActive=!0x1,cancelAnimationFrame(bossMovementAnimationFrameId),isBossMovementPaused=!0x0,clearInterval(superpowerCooldownIntervalId),clearInterval(playerAttackIntervalId),cancelAnimationFrame(gameCanvasAnimationFrameId),gameEffectsCanvas[_0x2ededa(0x260)][_0x2ededa(0x1ea)]('hidden'),gameEffectsCanvas[_0x2ededa(0x260)]['remove'](_0x2ededa(0x298)),bossCanvasParticles=[],lightningCanvasParticles=[],freezeCanvasParticles=[],frenzyCanvasParticles=[],scratchCanvasParticles=[],stonksAttackClawParticles=[],stonksAttackPainParticles=[],clawMarks=[],gameEffectsCtx&&gameEffectsCtx['clearRect'](0x0,0x0,gameEffectsCanvas[_0x2ededa(0x313)],gameEffectsCtx[_0x2ededa(0x290)]),lightningEffect[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),lightningEffect[_0x2ededa(0x260)][_0x2ededa(0x203)]('flash-active'),freezeEffect[_0x2ededa(0x260)][_0x2ededa(0x1ea)]('hidden'),freezeEffect['classList'][_0x2ededa(0x203)](_0x2ededa(0x298)),frenzyEffect[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),frenzyEffect[_0x2ededa(0x260)][_0x2ededa(0x203)](_0x2ededa(0x298)),ozzyContainer['classList'][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),superpowerButtonsContainer[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),shopButton[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),gameInfoContainer[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),playerHealthContainer[_0x2ededa(0x260)][_0x2ededa(0x1ea)](_0x2ededa(0x1fa)),upgradeShopScreen['classList']['remove'](_0x2ededa(0x1fa)),updateUpgradeShopUI();}),closeShopButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>{const _0x148301=_0x5d9c0b;upgradeShopScreen[_0x148301(0x260)][_0x148301(0x1ea)]('hidden'),ozzyContainer[_0x148301(0x260)][_0x148301(0x203)]('hidden'),superpowerButtonsContainer[_0x148301(0x260)][_0x148301(0x203)](_0x148301(0x1fa)),shopButton[_0x148301(0x260)][_0x148301(0x203)](_0x148301(0x1fa)),gameInfoContainer['classList'][_0x148301(0x203)]('hidden'),playerHealthContainer[_0x148301(0x260)][_0x148301(0x203)](_0x148301(0x1fa)),isGameActive=!0x0,isBossMovementPaused=!0x1,isBossFight&&animateBossMovement(),gameCanvasAnimationFrameId=requestAnimationFrame(animateGameCanvasEffects),gameEffectsCanvas[_0x148301(0x260)][_0x148301(0x203)](_0x148301(0x1fa)),gameEffectsCanvas[_0x148301(0x260)]['add']('active'),clearInterval(superpowerCooldownIntervalId),superpowerCooldownIntervalId=setInterval(updateSuperpowerCooldownDisplays,0x3e8),updateSuperpowerButtons(),clearInterval(playerAttackIntervalId),playerAttackIntervalId=setInterval(stonksAttack,STONKS_ATTACK_INTERVAL_MS),freezeModeActive&&(freezeEffect[_0x148301(0x260)][_0x148301(0x203)](_0x148301(0x1fa)),freezeEffect[_0x148301(0x260)][_0x148301(0x1ea)](_0x148301(0x298))),frenzyModeActive&&(frenzyEffect[_0x148301(0x260)][_0x148301(0x203)]('hidden'),frenzyEffect[_0x148301(0x260)][_0x148301(0x1ea)]('active'));}),buyBaseDamageButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>buyUpgrade(_0x5d9c0b(0x217))),buyLightningDamageButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>buyUpgrade(_0x5d9c0b(0x27b))),buyFreezeDamageButton[_0x5d9c0b(0x2dd)]('click',()=>buyUpgrade(_0x5d9c0b(0x1f8))),buyFrenzyDamageButton['addEventListener'](_0x5d9c0b(0x299),()=>buyUpgrade(_0x5d9c0b(0x294))),buyMaxHealthButton['addEventListener'](_0x5d9c0b(0x299),()=>buyUpgrade(_0x5d9c0b(0x21e))),selectSkinButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),showSkinSelectionScreen),selectStonksSkinButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>selectSkin('stonks')),selectTinuSkinButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),()=>selectSkin(_0x5d9c0b(0x244))),closeSkinSelectionButton[_0x5d9c0b(0x2dd)](_0x5d9c0b(0x299),hideSkinSelectionScreen),updateUpgradeShopUI();});
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, limit, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+
+
+// === Firebase Configuration (You Must Replace With Your Own Keys!) ===
+const firebaseConfig = {
+    apiKey: "AIzaSyASSmHw3LVUu7lSql0QwGmmBcFkaNeMups", // Your Firebase API Key
+    authDomain: "ozzy-14c19.firebaseapp.com",
+    projectId: "ozzy-14c19",
+    storageBucket: "ozzy-14c19.firebaseapp.com",
+    messagingSenderId: "668337469201",
+    appId: "1:668337469201:web:cd9d84d45c93d9b6e3feb0"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ===================================================================
+
+// --- Declare ALL global DOM variables ---
+let backgroundTractor;
+let ozzyContainer;
+let ozzyImage;
+let healthBarFill;
+let gameContainer; 
+let gameInfoContainer;
+let scoreDisplay;
+let currentLevelDisplay;
+let startScreen;
+let startButton;
+let nicknameInput;
+let showLeaderboardButton;
+let endScreen;
+let finalScoreDisplay;
+let restartButton;
+let showLeaderboardAfterGameButton;
+let leaderboardScreen;
+let leaderboardList;
+let backToStartButton;
+let superpowerButtonsContainer;
+let btnLightning;
+let btnFreeze;
+let btnFrenzy;
+let lightningEffect; // Still used for full-screen flash
+let freezeEffect;    // Still used for full-screen tint/glow
+let frenzyEffect;    // Still used for full-screen tint/glow
+let backgroundMusic;
+let punchSound;
+let gameOverSound; // Now a global DOM variable
+let shopButton;
+let upgradeShopScreen;
+let closeShopButton;
+let baseDamageLevelDisplay;
+let baseDamageCostDisplay;
+let buyBaseDamageButton;
+let lightningDamageLevelDisplay;
+let lightningDamageCostDisplay;
+let buyLightningDamageButton;
+let freezeDamageLevelDisplay;
+let freezeDamageCostDisplay;
+let buyFreezeDamageButton;
+let frenzyDamageLevelDisplay;
+let frenzyDamageCostDisplay;
+let buyFrenzyDamageButton;
+let quoteImagesContainer; 
+let gameEffectsCanvas; // Canvas for all dynamic effects
+let gameEffectsCtx;    // 2D rendering context for the effects canvas
+// CHANGE: DOM variables for player health bar (already exist, just for clarity)
+let playerHealthContainer;
+let playerHealthDisplay;
+let playerHealthBarBg;
+let playerHealthBarFill;
+
+// NEW: DOM variables for skin selection
+let selectSkinButton;
+let skinSelectionScreen;
+let selectStonksSkinButton;
+let selectTinuSkinButton;
+let closeSkinSelectionButton;
+
+// NEW: DOM variables for max health upgrade
+let maxHealthLevelDisplay;
+let maxHealthCostDisplay;
+let buyMaxHealthButton;
+
+// NEW: DOM variables for superpower level display on buttons
+let btnLightningLvlDisplay;
+let btnFreezeLvlDisplay;
+let btnFrenzyLvlDisplay;
+
+
+// --- Other global variables (not directly related to DOM), with immediate assignments ---
+let playerNickname = "Player";
+let score = 0;
+let ozzyHealth = 100;
+let INITIAL_OZZY_HEALTH = 100; // This will be dynamic based on level and boss fights
+let PUNCH_DAMAGE = 10; 
+let currentUserId = null;
+let isGameActive = false; 
+
+let currentLevel = 0; // Starts at 0, becomes 1 on game start
+let isBossFight = false;
+
+let punchesSinceLastPowerup = 0;
+
+const quoteImagePaths = [
+    '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png',
+    '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png',
+    '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '25.png',
+    '26.png', '27.png', '28.png'
+];
+// QUOTE_SIZE_PX is now a maximum for responsive sizing in CSS
+const QUOTE_DISPLAY_DURATION_MS = 2000;
+
+const PUNCHES_PER_POWERUP = 10; 
+let COOLDOWN_DURATION_MS = 60 * 1000; // CHANGE: Changed to let, to modify
+
+let lastUsedLightningTime = 0; 
+let lastUsedFreezeTime = 0; 
+let lastUsedFrenzyTime = 0; 
+
+let frenzyModeActive = false;
+let frenzyTimerId;
+const FRENZY_DAMAGE_MULTIPLIER = 3; 
+const FRENZY_DURATION_MS = 5000; 
+
+let LIGHTNING_BASE_DAMAGE = 150; 
+let ICE_BLAST_INITIAL_DAMAGE = 50;
+let ICE_BLAST_DOT_DAMAGE_PER_SECOND = 25;
+const ICE_BLAST_DOT_DURATION_SECONDS = 5;
+let FRENZY_INITIAL_DAMAGE = 30;
+
+let superpowerCooldownIntervalId; 
+
+let freezeModeActive = false;
+let freezeDotIntervalId;
+
+// CHANGE: Default images and for other skins
+const SKIN_IMAGES = {
+    stonks: {
+        normal: 'stonks.png',
+        boss: 'stonksboss.png'
+    },
+    tinu: {
+        normal: 'tinu.png', // Replace with actual Tinu image path
+        boss: 'tinuboss.png' // Replace with actual Tinu Boss image path
+    }
+};
+let currentSkin = 'tinu'; // Default skin at game start
+
+const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
+
+const NORMAL_OZZY_INITIAL_HEALTH = 100;
+const NORMAL_OZZY_HEALTH_INCREMENT = 20; 
+// CHANGE: Reduced initial health and increment for boss
+const BOSS_INITIAL_HEALTH = 300; 
+const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100; 
+
+const BOSS_MOVEMENT_SPEED = 2; 
+const BOSS_QUOTES = [
+    "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
+    "TO DUBAI! WITH INVESTOR'S MONEY!", "Calculating next move!", 
+    "They call me a fraud!", "STONKS OR STINKS?", "My algorithms are superior!",
+];
+let bossMovementAnimationFrameId; 
+let bossDx = BOSS_MOVEMENT_SPEED; 
+let bossCurrentTransformX = 0; // Tracks additional X offset from center
+
+const CLIENT_SIDE_MAX_SCORE = 200; // This variable is no longer used for level verification, but remains for historical context.
+
+let upgradeLevels = {
+    baseDamage: 1, lightningDamage: 1, freezeDamage: 1, frenzyDamage: 1,
+    maxHealth: 1 // NEW: Max health upgrade level
+};
+
+const UPGRADE_COST_BASE = 10;
+const UPGRADE_COST_MULTIPLIER = 1.5; 
+const DAMAGE_INCREASE_PER_LEVEL = 5; 
+
+const LIGHTNING_DAMAGE_INCREASE_PER_LEVEL = 30; 
+const FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL = 10; 
+const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; 
+const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
+
+// NEW: Constants for player health upgrade
+let MAX_PLAYER_HEALTH = 100; // Changed to let, so it can be modified
+const PLAYER_HEALTH_BASE_VALUE = 100; // Base health value
+const PLAYER_HEALTH_INCREASE_PER_LEVEL = 25; // Max health increase per level
+
+// NEW: Constants for cooldown reduction and max levels
+const COOLDOWN_REDUCTION_PER_LEVEL_MS = 5 * 1000; // 5 seconds per level
+const MIN_COOLDOWN_MS = 15 * 1000; // Minimum cooldown 15 seconds
+const MAX_UPGRADE_LEVEL = 10; // Maximum upgrade level for superpowers
+
+// --- Variables for visual variants of Stonks ---
+let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
+const totalStonksVariants = 10;     // Number of available variants (0-9)
+let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
+const totalBossVariants = 10;       // Number of available Boss variants (0-9)
+
+// Original superpower button texts (for display when not on cooldown)
+const originalLightningText = 'Lightning Strike';
+const originalFreezeText = 'Ice Blast';
+const originalFrenzyText = 'Battle Frenzy';
+
+// NEW: Variables for player health and Stonks attacks (from previous changes)
+let playerHealth = 100;
+
+// CHANGE: Constant for Stonks damage increase AFTER DEFEATING A BOSS
+const STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE = 3; 
+
+let baseStonksDamage = 5; // Base Stonks damage, which increases after each boss
+let STONKS_ATTACK_DAMAGE = baseStonksDamage; // Current damage dealt by Stonks (can be modified by boss)
+
+const STONKS_ATTACK_INTERVAL_MS = 2000; // How often in ms Stonks attacks the player
+let playerAttackIntervalId; // Interval ID for Stonks' attack
+
+// === Canvas Particles System ===
+class CanvasParticle {
+    constructor(x, y, vx, vy, color, size, life, type, angle = 0, image = null, targetX = null, targetY = null) { // Added image parameter, and targetX/Y for lightning
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.size = size;
+        this.life = life; // Total life in milliseconds
+        this.currentLifeTime = 0; // Current elapsed time in milliseconds
+        this.alpha = 1;
+        this.type = type; 
+        this.angle = angle; // For rotation of some shapes
+        this.startSize = size; // Store initial size for scaling
+        this.image = image; // Store image for drawing (if type requires it)
+        this.targetX = targetX; // For lightning lines
+        this.targetY = targetY; // For lightning lines
+    }
+
+    update(deltaTime) { // Accept deltaTime
+        // Move particle based on velocity and deltaTime, normalized to 60 FPS base
+        const baseFps = 1000 / 60; // Approximate milliseconds per frame at 60 FPS
+        const dtRatio = deltaTime / baseFps;
+
+        this.x += this.vx * dtRatio;
+        this.y += this.vy * dtRatio;
+        
+        this.currentLifeTime += deltaTime; // Increase elapsed time
+
+        // Calculate alpha based on elapsed time vs total life time
+        this.alpha = 1 - (this.currentLifeTime / this.life); // Linear fade out
+
+        // Type-specific physics
+        if (this.type === 'iceShard') {
+            this.vy -= 0.05 * dtRatio; // Float upwards, scaled by deltaTime
+        } else if (this.type === 'frenzyPulse') {
+            this.size = this.startSize * (1 + 0.02 * (this.currentLifeTime / this.life)); // Grow slightly, scaled by deltaTime
+            this.alpha -= 0.05 * dtRatio; // Fade faster for quick pulse, scaled by deltaTime
+        } else if (this.type === 'lightningLine') {
+            // Lightning lines are static after creation, they just fade
+        } else if (this.type === 'scratch') {
+            this.alpha -= 0.02 * dtRatio; // Fade out slowly, scaled by deltaTime
+            this.vx *= (1 - 0.02 * dtRatio); // Slow down, scaled by deltaTime
+            this.vy *= (1 - 0.02 * dtRatio); // Slow down, scaled by deltaTime
+        } else if (this.type === 'stonksClaw') {
+            this.alpha -= 0.005 * dtRatio; // Fast fade, scaled
+            this.size = this.startSize * (1 - 0.002 * (this.currentLifeTime / this.life)); // Slight size reduction, scaled
+        } else if (this.type === 'painParticle') {
+            // Shape drawing is now in draw, not here
+            this.vy += 0.02 * dtRatio; // Gravity, scaled
+            this.alpha -= 0.008 * dtRatio; // Fast fade, scaled
+            this.size = this.startSize * (1 - 0.001 * (this.currentLifeTime / this.life)); // Decrease size, scaled
+        } else if (this.type === 'clawMark') { 
+            this.alpha = 1 - (this.currentLifeTime / this.life); // Fade out
+            // No movement, static mark
+        } else if (this.type === 'frenzyFlame') { // New type for Battle Frenzy
+            this.vy += 0.05 * dtRatio; // Slight gravity for flames to fall
+            this.vx *= (1 - 0.01 * dtRatio); // Slight slowdown
+            this.size = this.startSize * (1 - (this.currentLifeTime / this.life) * 0.5); // Decrease size by 50%
+        } else if (this.type === 'bossFire') { // Improved boss fire dynamics
+            this.vy -= 0.1 * dtRatio; // Rises faster
+            this.vx *= (1 - 0.03 * dtRatio); // Stronger lateral slowdown
+            this.size = this.startSize * (0.8 + 0.5 * (this.currentLifeTime / this.life)); // Expands
+            this.alpha = 1 - Math.pow(this.currentLifeTime / this.life, 2); // Fast fade
+        } else if (this.type === 'bossIce') { // Improved boss ice dynamics
+            this.vy += 0.02 * dtRatio; // Slight gravity
+            this.vx *= (1 - 0.01 * dtRatio); // Slight slowdown
+            this.angle += 0.1 * dtRatio; // Slow rotation
+            this.size = this.startSize * (1 - (this.currentLifeTime / this.life) * 0.7); // Shrinks
+        } else if (this.type === 'bossElectricity') { // Improved boss electricity dynamics
+             // Very short life and no significant movement after spawn
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+
+        if (this.type.startsWith('boss') || this.type === 'lightningSpark') {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            if (this.type === 'bossElectricity') { // Special drawing for electricity
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size / 4); // Thin, sharp rectangles
+            } else if (this.type === 'lightningSpark') {
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (this.type === 'bossFire') { // Drawing for fire
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(0, -this.size);
+                ctx.quadraticCurveTo(this.size / 2, -this.size / 2, this.size / 2, this.size / 2);
+                ctx.quadraticCurveTo(0, this.size / 4, -this.size / 2, this.size / 2);
+                ctx.quadraticCurveTo(-this.size / 2, -this.size / 2, 0, -this.size);
+                ctx.fill();
+            } else if (this.type === 'bossIce') { // Drawing for ice
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size / 2, this.size / 2);
+                ctx.lineTo(-this.size / 2, this.size / 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+        } else if (this.type === 'lightningLine') {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.targetX, this.targetY); // Correctly uses targetX/Y for lines
+            ctx.stroke();
+        } else if (this.type === 'iceShard') {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle * Math.PI / 180);
+            ctx.moveTo(0, -this.size);
+            ctx.lineTo(this.size / 2, this.size / 2);
+            ctx.lineTo(-this.size / 2, this.size / 2);
+            ctx.closePath();
+            ctx.fill();
+        } else if (this.type === 'frenzyPulse') { // Previous effect, leaving for safety
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+            ctx.stroke();
+        } else if (this.type === 'frenzyFlame') { // Drawing for Battle Frenzy (flames)
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            // Could add more complex flame shape, for now it's a simple circle
+        }
+        else if (this.type === 'scratch') {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + Math.cos(this.angle) * this.size * 8, this.y + Math.sin(this.angle) * this.size * 8);
+            ctx.stroke();
+        } else if (this.type === 'stonksClaw') {
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = this.size * 0.4; // Reduced thickness of the main line (40% size)
+            
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // Drawing a jagged claw - main cut with irregular edges
+            ctx.beginPath();
+            // Top edge
+            ctx.moveTo(-this.size * 2, 0);
+            ctx.lineTo(-this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
+            ctx.lineTo(-this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.1);
+            ctx.lineTo(-this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.2);
+            ctx.lineTo(0 + Math.random() * this.size * 0.5, this.size * 0.3);
+            ctx.lineTo(this.size * 0.5 + Math.random() * this.size * 0.5, -this.size * 0.1);
+            ctx.lineTo(this.size * 1 + Math.random() * this.size * 0.5, this.size * 0.2);
+            ctx.lineTo(this.size * 1.5 + Math.random() * this.size * 0.5, -this.size * 0.3);
+            ctx.lineTo(this.size * 2, 0);
+
+            ctx.stroke();
+
+            // Add a subtle shadow for depth
+            ctx.globalAlpha = Math.max(0, this.alpha * 0.3); // Less visible shadow
+            ctx.lineWidth = this.size * 0.2; // Shadow is thinner
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'; // Dark shadow color
+            ctx.stroke(); // Draw shadow
+            ctx.globalAlpha = Math.max(0, this.alpha); // Restore full alpha for main shape
+            
+        } else if (this.type === 'painParticle') {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            // Draw a more irregular, spiky shape for pain particles
+            ctx.moveTo(0, -this.size * 0.8); // Top point
+            ctx.lineTo(this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Right-bottom
+            ctx.lineTo(-this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Left-bottom
+            ctx.closePath();
+            ctx.fill();
+        } else if (this.type === 'clawMark' && this.image) {
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle); // Rotate the image
+
+            // Draw the image centered around its origin (which is at x,y after translate)
+            // Adjust to draw from top-left corner
+            ctx.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size * (this.image.naturalHeight / this.image.naturalWidth)); // Maintain aspect ratio
+        }
+
+        ctx.restore();
+    }
+
+    isDead() {
+        return this.currentLifeTime >= this.life || this.alpha <= 0; // Check based on time
+    }
+}
+
+
+// Global arrays for different types of canvas particles
+let bossCanvasParticles = [];
+let lightningCanvasParticles = [];
+let freezeCanvasParticles = [];
+let frenzyCanvasParticles = [];
+let scratchCanvasParticles = [];
+// NEW: Arrays for Stonks attack particles
+let stonksAttackClawParticles = [];
+let stonksAttackPainParticles = [];
+let clawMarks = []; // New array for claw effects
+let clawImage = new Image(); // Create a new Image object for the claw
+
+
+const MAX_CANVAS_PARTICLES = 200; // General limit for performance
+let lightningModeActive = false; // New state variable for lightning storm
+
+let gameCanvasAnimationFrameId;
+let lastFrameTime = 0; // Add variable to track last frame time
+
+function animateGameCanvasEffects(currentTime) {
+    if (!lastFrameTime) lastFrameTime = currentTime;
+    const deltaTime = currentTime - lastFrameTime; // Time in milliseconds since last frame
+    lastFrameTime = currentTime;
+
+    // Resize canvas to match gameContainer (do this first for correct drawing)
+    gameEffectsCanvas.width = gameContainer.offsetWidth;
+    gameEffectsCanvas.height = gameContainer.offsetHeight;
+    gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+
+    // Calculate Ozzy's center relative to the canvas
+    const ozzyRect = ozzyContainer.getBoundingClientRect();
+    const gameRect = gameContainer.getBoundingClientRect();
+    const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+    const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+
+    // Common multipliers for particle spawn area and speed
+    const spawnAreaMultiplier = isBossFight ? 1.5 : 1.2; // Larger area for boss
+    const baseParticleSpeed = 5; // Base speed for particles (increased from 1 to make them more visible/faster at base)
+    
+    // Boss particles (spawn only if boss fight is active)
+    if (isBossFight) {
+        gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for boss effects
+        gameEffectsCanvas.classList.add('active'); // Add active class for transition
+        // CHANGE: More dynamic boss particles
+        if (bossCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.6) { // Increased spawn chance
+            let color, type, size, life, vx, vy;
+            const spawnRadius = Math.min(ozzyRect.width, ozzyRect.height) * 0.8; // Larger spawn radius around boss
+            const angle = Math.random() * Math.PI * 2;
+            const spawnDistance = Math.random() * spawnRadius;
+
+            const startX = ozzyCanvasX + Math.cos(angle) * spawnDistance;
+            const startY = ozzyCanvasY + Math.sin(angle) * spawnDistance;
+
+            if (bossVisualVariantIndex === 0) { // Red/fiery boss
+                color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`;
+                type = 'bossFire';
+                size = Math.random() * 15 + 10; // Larger flames
+                life = 1000 + Math.random() * 500; // Longer life
+                vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.3); // Slower lateral movements
+                vy = -(Math.random() * baseParticleSpeed * 0.5) - 0.5; // Moves upwards
+            } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss (Ice)
+                color = `rgba(${Math.floor(Math.random() * 50) + 100}, ${Math.floor(Math.random() * 50) + 200}, 255, ${0.7 + Math.random() * 0.3})`;
+                type = 'bossIce';
+                size = Math.random() * 10 + 5; // Shard size
+                life = 800 + Math.random() * 400;
+                vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.8); // Fast dispersion
+                vy = (Math.random() - 0.5) * (baseParticleSpeed * 0.8);
+            } else { // Purple/intense boss (Electricity)
+                color = `rgba(${Math.floor(Math.random() * 50) + 200}, 0, ${Math.floor(Math.random() * 50) + 200}, ${0.8 + Math.random() * 0.2})`;
+                type = 'bossElectricity';
+                size = Math.random() * 20 + 10; // Spark length
+                life = 200 + Math.random() * 100; // Very short life
+                vx = 0; // No movement
+                vy = 0;
+            }
+            bossCanvasParticles.push(new CanvasParticle(startX, startY, vx, vy, color, size, life, type, Math.random() * Math.PI * 2));
+        }
+    }
+    // Update and draw boss particles (and remove dead ones)
+    for (let i = bossCanvasParticles.length - 1; i >= 0; i--) {
+        bossCanvasParticles[i].update(deltaTime); // Pass deltaTime
+        if (bossCanvasParticles[i].isDead()) {
+            bossCanvasParticles.splice(i, 1);
+        } else {
+            bossCanvasParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // Lightning particles (spawn only if lightning mode is active)
+    if (lightningModeActive) {
+        gameEffectsCanvas.classList.remove('hidden');
+        gameEffectsCanvas.classList.add('active');
+        lightningEffect.classList.remove('hidden'); // Ensure the overlay is visible
+        lightningEffect.classList.add('flash-active'); // Add active class for transition
+
+        // NEW: Generate lightning segments in animation loop
+        const lightningSpawnChance = 0.2; // Chance to generate a new lightning bolt in each frame (increased)
+        if (lightningCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < lightningSpawnChance) {
+            const boltLength = Math.random() * 100 + 100; // Length of the main lightning segment
+            const boltWidth = Math.random() * 5 + 5; // Lightning thickness
+            const boltLife = 800 + Math.random() * 700; // Lightning life (0.8 - 1.5s)
+
+            // Random starting point for lightning (at the top of the screen)
+            const startX = Math.random() * gameEffectsCanvas.width;
+            const startY = Math.random() * gameEffectsCanvas.height * 0.3; // Top 30% of the screen
+
+            // Random angle, mostly downwards
+            const angle = Math.PI / 2 + (Math.random() - 0.5) * (Math.PI / 4); // Between 45 and 135 degrees (mostly downwards)
+
+            let currentBoltX = startX;
+            let currentBoltY = startY;
+
+            // Generate main segments of the bolt
+            for (let i = 0; i < 3; i++) { // 3-4 segments per bolt for branching effect
+                const nextX = currentBoltX + Math.cos(angle + (Math.random() - 0.5) * 0.3) * (boltLength / 3 + Math.random() * 20);
+                const nextY = currentBoltY + Math.sin(angle + (Math.random() - 0.5) * 0.3) * (boltLength / 3 + Math.random() * 20);
+
+                lightningCanvasParticles.push(new CanvasParticle(
+                    currentBoltX, currentBoltY, 0, 0,
+                    `rgba(255, 255, ${Math.floor(Math.random() * 100) + 180}, ${0.8 + Math.random() * 0.2})`, // Brighter, more white-yellow
+                    boltWidth, boltLife, 'lightningLine', 0, nextX, nextY
+                ));
+                currentBoltX = nextX;
+                currentBoltY = nextY;
+
+                // Add small branches
+                if (Math.random() < 0.5) { // 50% chance to branch
+                    const branchLength = boltLength * (0.3 + Math.random() * 0.3); // 30-60% of main length
+                    const branchAngle = angle + (Math.random() < 0.5 ? 1 : -1) * (Math.PI / 4 + Math.random() * (Math.PI / 8)); // 45-67.5 degrees off main
+                    const branchX = currentBoltX + Math.cos(branchAngle) * branchLength;
+                    const branchY = currentBoltY + Math.sin(branchAngle) * branchLength;
+
+                    lightningCanvasParticles.push(new CanvasParticle(
+                        currentBoltX, currentBoltY, 0, 0,
+                        `rgba(255, 255, ${Math.floor(Math.random() * 100) + 180}, ${0.6 + Math.random() * 0.2})`,
+                        boltWidth * 0.6, boltLife * 0.8, 'lightningLine', 0, branchX, branchY
+                    ));
+                }
+            }
+
+            // Add some bright "sparks" at the end of the main bolt
+            for (let j = 0; j < Math.random() * 5 + 3; j++) { // 3-7 sparks per bolt
+                lightningCanvasParticles.push(new CanvasParticle(
+                    currentBoltX + (Math.random() - 0.5) * 20,
+                    currentBoltY + (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5), // Slower sparks
+                    (Math.random() - 0.5) * (baseParticleSpeed * 0.5),
+                    `rgba(255, 255, 255, ${0.7 + Math.random() * 0.3})`, // White sparks
+                    Math.random() * 6 + 2, // size (2-8)
+                    600, // life in ms (0.6 seconds)
+                    'lightningSpark' 
+                ));
+            }
+        }
+    } else if (!lightningModeActive && lightningEffect.classList.contains('flash-active')) {
+        // If lightning mode just ended, remove the flash effect
+        lightningEffect.classList.remove('flash-active');
+        lightningEffect.classList.add('hidden'); // Hide it
+    }
+
+    for (let i = lightningCanvasParticles.length - 1; i >= 0; i--) {
+        lightningCanvasParticles[i].update(deltaTime); // Pass deltaTime
+        if (lightningCanvasParticles[i].isDead()) {
+            lightningCanvasParticles.splice(i, 1);
+        } else {
+            lightningCanvasParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // Freeze particles (spawn only if freeze mode is active)
+    if (freezeModeActive) {
+        gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for freeze effects
+        gameEffectsCanvas.classList.add('active');
+        if (freezeCanvasParticles.length < MAX_CANVAS_PARTICLES / 2 && Math.random() < 0.3) {
+            freezeCanvasParticles.push(new CanvasParticle(
+                ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Increased area
+                ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Increased area
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // CHANGE: Reduced speed by 75%, but higher base
+                (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // CHANGE: Reduced speed by 75%, but higher base
+                `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
+                Math.random() * 15 + 8, // size (larger)
+                1200, // life in ms (1.2 seconds)
+                'iceShard',
+                Math.random() * 360 // random angle
+            ));
+        }
+    }
+    for (let i = freezeCanvasParticles.length - 1; i >= 0; i--) {
+        freezeCanvasParticles[i].update(deltaTime); // Pass deltaTime
+        if (freezeCanvasParticles[i].isDead()) {
+            freezeCanvasParticles.splice(i, 1);
+        } else {
+            freezeCanvasParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // Frenzy particles (spawn only if frenzy mode is active)
+    if (frenzyModeActive) {
+        gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for frenzy effects
+        gameEffectsCanvas.classList.add('active');
+        if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.8) { // Increased frequency for frenzy
+            const initialParticleX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8; // Start closer to ozzy
+            const initialParticleY = ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8;
+
+            const speed = (Math.random() * 3 + 2); // Faster particles (2-5)
+            const angle = Math.random() * Math.PI * 2;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+
+            frenzyCanvasParticles.push(new CanvasParticle(
+                initialParticleX, initialParticleY, vx, vy, 
+                `rgba(255, ${Math.floor(Math.random() * 80)}, 0, ${0.9 + Math.random() * 0.1})`, // Intense red-orange
+                Math.random() * 8 + 4, // Particle size (4-12)
+                500 + Math.random() * 300, // Short life (0.5-0.8s)
+                'frenzyFlame' // New type
+            ));
+        }
+    }
+    for (let i = frenzyCanvasParticles.length - 1; i >= 0; i--) {
+        frenzyCanvasParticles[i].update(deltaTime); // Pass deltaTime
+        if (frenzyCanvasParticles[i].isDead()) {
+            frenzyCanvasParticles.splice(i, 1);
+        } else {
+            frenzyCanvasParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // Update and draw scratch particles
+    for (let i = scratchCanvasParticles.length - 1; i >= 0; i--) {
+        scratchCanvasParticles[i].update(deltaTime); // Pass deltaTime
+        if (scratchCanvasParticles[i].isDead()) {
+            scratchCanvasParticles.splice(i, 1);
+        } else {
+            scratchCanvasParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // NEW: Update and draw Stonks attack particles
+    for (let i = stonksAttackClawParticles.length - 1; i >= 0; i--) {
+        stonksAttackClawParticles[i].update(deltaTime); // Pass deltaTime
+        if (stonksAttackClawParticles[i].isDead()) {
+            stonksAttackClawParticles.splice(i, 1);
+        } else {
+            stonksAttackClawParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    for (let i = stonksAttackPainParticles.length - 1; i >= 0; i--) {
+        stonksAttackPainParticles[i].update(deltaTime); // Pass deltaTime
+        if (stonksAttackPainParticles[i].isDead()) {
+            stonksAttackPainParticles.splice(i, 1);
+        } else {
+            stonksAttackPainParticles[i].draw(gameEffectsCtx);
+        }
+    }
+
+    // NEW: Update and draw Claw Marks
+    for (let i = clawMarks.length - 1; i >= 0; i--) {
+        clawMarks[i].update(deltaTime);
+        if (clawMarks[i].isDead()) {
+            clawMarks.splice(i, 1);
+        } else {
+            clawMarks[i].draw(gameEffectsCtx);
+        }
+    }
+
+
+    // Determine if there are *any* active particles or if game is active to keep canvas visible
+    const anyParticlesActive = bossCanvasParticles.length > 0 ||
+                               lightningCanvasParticles.length > 0 ||
+                               freezeCanvasParticles.length > 0 ||
+                               frenzyCanvasParticles.length > 0 ||
+                               scratchCanvasParticles.length > 0 ||
+                               stonksAttackClawParticles.length > 0 || // NEW
+                               stonksAttackPainParticles.length > 0 ||  // NEW
+                               clawMarks.length > 0; // NEW
+
+    // Only request next frame if game is active OR there are still particles to animate
+    if (isGameActive || anyParticlesActive) {
+        gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects);
+    } else {
+        // No particles and game is inactive, so hide and clear canvas
+        gameEffectsCanvas.classList.add('hidden');
+        gameEffectsCanvas.classList.remove('active');
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+        cancelAnimationFrame(gameCanvasAnimationFrameId); // Ensure it stops
+    }
+}
+
+/**
+ * NEW: Function to draw a scratch effect on the screen
+ * @param {CanvasRenderingContext2D} ctx Canvas context
+ * @param {number} x X position of the scratch center
+ * @param {number} y Y position of the scratch center
+ * @param {number} count Number of individual scratch lines
+ * @param {string} color Color of the scratch (e.g., 'rgba(255, 0, 0, 0.7)')
+ * @param {number} baseSize Base size of the scratch line
+ */
+function drawScratchEffect(x, y, count, color, baseSize) {
+    for (let i = 0; i < count; i++) {
+        // Random offset for each scratch line
+        const offsetX = (Math.random() - 0.5) * 50;
+        const offsetY = (Math.random() - 0.5) * 50;
+        // Random angle for each line to make them look like more natural scratches
+        const angle = Math.random() * Math.PI * 2; // Angle in radians
+        // Random size for each line
+        const size = baseSize + (Math.random() * baseSize / 2);
+        // Life of the scratch particle in ms (1 second)
+        const life = 1000; 
+
+        scratchCanvasParticles.push(new CanvasParticle(
+            x + offsetX, y + offsetY, 0, 0, color, size, life, 'scratch', angle
+        ));
+    }
+}
+
+/**
+ * NEW: Function to create dynamic Stonks attack effects (claws, pain splatter)
+ * @param {number} ozzyX X position of Stonks on canvas (center)
+ * @param {number} ozzyY Y position of Stonks on canvas (center)
+ */
+function spawnStonksAttackEffects(ozzyX, ozzyY) {
+    const gameContainerRect = gameContainer.getBoundingClientRect(); 
+    const gameContainerWidth = gameContainerRect.width;
+    const gameContainerHeight = gameContainerRect.height;
+
+    // Random starting point for claw attack on a larger screen area
+    // Ensuring claws don't go completely off-screen
+    const spawnAreaX = gameContainerWidth * 0.8; // 80% of screen width
+    const spawnAreaY = gameContainerHeight * 0.8; // 80% of screen height
+    
+    // Attack hit point (center of the claw set)
+    const attackHitX = (gameContainerWidth / 2) + (Math.random() - 0.5) * spawnAreaX;
+    const attackHitY = (gameContainerHeight / 2) + (Math.random() - 0.5) * spawnAreaY;
+
+    // --- Claw effects (clawMarks) ---
+    const numClawImages = 1; // Only one claw image per attack
+    // Claw size adjusted to screen size for readability
+    const clawImageSize = Math.min(gameContainerWidth * 0.3, gameContainerHeight * 0.3, 200); // Max 200px, responsive to screen
+    const clawLife = 1000; // Life of the claw image in ms (1 second)
+
+    for (let s = 0; s < numClawImages; s++) {
+        // Rotation angle of the claw image
+        const angle = Math.random() * Math.PI * 2; 
+
+        clawMarks.push(new CanvasParticle(
+            attackHitX, attackHitY, 0, 0, null, // No color needed for image, no velocity
+            clawImageSize, clawLife, 'clawMark', angle, clawImage // Pass the loaded image
+        ));
+    }
+
+    // --- Pain Particles ---
+    const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 points
+    const painParticleLife = 1200; // Life in ms (1.2 seconds)
+    const painParticleSize = Math.random() * 8 + 8; // Sizes (8-16, slightly larger)
+    const painParticleBaseSpeed = 1.2; // Increased base speed
+
+    // Pain points are clustered around attackHitX, attackHitY
+    const painSpawnRadius = clawImageSize * 0.5; // Radius around the claw hit location
+
+    for (let i = 0; i < numPainParticles; i++) {
+        const angle = Math.random() * Math.PI * 2; 
+        const distance = Math.random() * painSpawnRadius;
+
+        const startX = attackHitX + Math.cos(angle) * distance; 
+        const startY = attackHitY + Math.sin(angle) * distance;
+        
+        const vx = (Math.random() - 0.5) * painParticleBaseSpeed * 2; 
+        const vy = (Math.random() - 0.5) * painParticleBaseSpeed * 2 - 0.5; 
+
+        const color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`; 
+        
+        stonksAttackPainParticles.push(new CanvasParticle(
+            startX, startY, vx, vy, color, painParticleSize, painParticleLife, 'painParticle', angle
+        ));
+    }
+}
+
+
+// --- Leaderboard Functions ---
+async function saveScoreToLeaderboard(nickname, level) { // CHANGE: Changed parameter name from 'score' to 'level'
+    console.log("saveScoreToLeaderboard called with nickname:", nickname, "level:", level); // CHANGE: Changed logging
+
+    // CLIENT_SIDE_MAX_SCORE is no longer used for level verification.
+    // If a maximum level limit is needed, a new variable like MAX_LEVEL should be introduced.
+    // CHANGE: Removed client-side score/level verification condition.
+    // if (score > CLIENT_SIDE_MAX_SCORE) {
+    //     showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000);
+    //     console.warn(`Attempt to save unrealistic score (${score}) by ${nickname}. Blocked client-side.`);
+    //     setTimeout(resetGame, 3000); // Reset the game after cheating attempt
+    //     return;
+    // }
+
+    // Ensure the user is authenticated and the level is positive.
+    if (level > 0 && currentUserId) { // CHANGE: Check 'level' instead of 'score'
+        try {
+            // DIRECT FIRESTORE SAVE
+            // Use addDoc function from Firestore SDK to add a new document
+            // to the 'leaderboard' collection. Firestore will automatically generate an ID for the document.
+            await addDoc(collection(db, "leaderboard"), {
+                nickname: nickname,
+                score: level, // CHANGE: Save 'level' as 'score' in Firestore
+                // Use serverTimestamp() to get a server-side timestamp,
+                // which helps with sorting and prevents client-side time manipulation.
+                timestamp: serverTimestamp(), 
+                userId: currentUserId // Save anonymous user ID if needed (e.g., to filter results for a specific player)
+            });
+
+            showMessage("Score saved successfully!", 2000);
+            console.log(`Score (level ${level}) submitted by ${nickname} (${currentUserId}) and saved.`); // CHANGE: Logging
+
+        } catch (error) {
+            console.error("Error saving score directly to Firestore:", error);
+            showMessage(`Error saving score: ${error.message}`, 3000);
+        }
+    } else if (!currentUserId) {
+        console.warn("Cannot save score: User is not authenticated.");
+        showMessage("Error: No authentication to save score. Try refreshing.", 3000);
+    }
+}
+
+async function fetchAndDisplayLeaderboard() {
+    console.log("fetchAndDisplayLeaderboard called.");
+    leaderboardList.innerHTML = ''; 
+    try {
+        // Query remains 'score' because that's the field name in Firestore
+        const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), orderBy("timestamp", "asc"), limit(10));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            leaderboardList.innerHTML = '<li>No scores on the leaderboard. Be the first!</li>';
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const li = document.createElement('li'); // NEW: Create li element
+            // CHANGE: Display 'level' instead of 'knockouts'
+            li.textContent = `${data.nickname || 'Anonymous'}: Level ${data.score}`;
+            leaderboardList.appendChild(li);
+        });
+    } catch (e) {
+        console.error("Error fetching leaderboard: ", e);
+        leaderboardList.innerHTML = '<li>An error occurred while loading the leaderboard.</li>';
+    }
+}
+
+// --- Quote Functions ---
+function spawnRandomQuote() {
+    const randomImagePath = quoteImagePaths[Math.floor(Math.random() * quoteImagePaths.length)];
+
+    const img = document.createElement('img');
+    img.src = randomImagePath;
+    img.classList.add('quote-image'); 
+
+    const gameContainerRect = gameContainer.getBoundingClientRect();
+    // CHANGE: Randomize position across the entire screen so images are visible
+    const imgSize = Math.min(gameContainerRect.width * 0.15, gameContainerRect.height * 0.15, 150); // Use clamp in CSS
+
+    const randomX = Math.random() * (gameContainerRect.width - imgSize);
+    const randomY = Math.random() * (gameContainerRect.height - imgSize);
+
+    img.style.left = `${randomX}px`;
+    img.style.top = `${randomY}px`;
+
+    const randomRotation = Math.random() * 90 - 45; 
+    img.style.transform = `rotate(${randomRotation}deg)`;
+
+    quoteImagesContainer.appendChild(img);
+
+    setTimeout(() => {
+        img.classList.add('active');
+    }, 10); 
+
+    setTimeout(() => {
+        img.classList.remove('active'); 
+        setTimeout(() => {
+            img.remove(); 
+        }, 500); 
+    }, QUOTE_DISPLAY_DURATION_MS);
+}
+
+// --- Function: Unified damage application ---
+function applyDamageToOzzy(damageAmount) {
+    ozzyHealth -= damageAmount;
+    ozzyHealth = Math.max(0, ozzyHealth);
+    updateHealthBar();
+    if (ozzyHealth <= 0) {
+        handleOzzyKnockout();
+    }
+}
+
+// NEW: Stonks function to attack the player
+function stonksAttack() {
+    if (!isGameActive) {
+        clearInterval(playerAttackIntervalId); // Stop attacking if game is inactive
+        return;
+    }
+
+    // 1. Visual effect on Stonks character
+    // We will use a CSS class to quickly apply a filter (e.g., invert or brightness)
+    ozzyImage.classList.add('attacking'); // Class for movement animation (already exists)
+    ozzyImage.classList.add('stonks-attack-effect'); // NEW class for visual effect
+
+    // Remove visual effect class after a short time
+    setTimeout(() => {
+        ozzyImage.classList.remove('stonks-attack-effect');
+    }, 200); // Short flash/effect lasting 200ms
+
+    // Apply visual attack animation to Stonks (already exists)
+    setTimeout(() => {
+        ozzyImage.classList.remove('attacking');
+    }, 800); // Duration of the attack animation
+
+    // CHANGE: Add screen shake (already exists)
+    gameContainer.classList.add('screen-shake');
+    setTimeout(() => {
+        gameContainer.classList.remove('screen-shake');
+    }, 400); // Shake duration, matched to CSS animation
+
+    // Apply damage to player (already exists)
+    playerHealth -= STONKS_ATTACK_DAMAGE;
+    playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
+    updatePlayerHealthUI();
+
+    // Call NEW Stonks attack effect on canvas (changed)
+    const ozzyRect = ozzyContainer.getBoundingClientRect();
+    const gameRect = gameContainer.getBoundingClientRect();
+    const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
+    const ozzyCanvasY = ozzyRect.top - gameRect.top + ozzyRect.height / 2;
+    
+    // Use the new function to generate improved effects
+    spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY); // Pass Ozzy's position for reference
+
+    if (playerHealth <= 0) {
+        endGame("YOU DIED!"); // Game over if player health reaches 0
+    }
+}
+
+// NEW: Function to update player health bar UI (from previous changes)
+function updatePlayerHealthUI() {
+    playerHealthDisplay.textContent = `${playerHealth}/${MAX_PLAYER_HEALTH}`;
+    const healthPercentage = (playerHealth / MAX_PLAYER_HEALTH) * 100;
+    playerHealthBarFill.style.width = `${healthPercentage}%`;
+
+    // Change player health bar color
+    if (healthPercentage > 60) {
+        playerHealthBarFill.style.backgroundColor = '#00BFFF'; // Blue
+    } else if (healthPercentage > 30) {
+        playerHealthBarFill.style.backgroundColor = '#FFD700'; // Gold/Yellow
+    } else {
+        playerHealthBarFill.style.backgroundColor = '#FF0000'; // Red
+    }
+}
+
+
+// --- Superpower Functions ---
+function updateSuperpowerButtons() {
+    const now = Date.now();
+
+    // Helper function to get effective cooldown
+    const getEffectiveCooldown = (upgradeLevel) => {
+        return Math.max(MIN_COOLDOWN_MS, COOLDOWN_DURATION_MS - (upgradeLevel - 1) * COOLDOWN_REDUCTION_PER_LEVEL_MS);
+    };
+
+    const canUseLightning = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                            ((now - lastUsedLightningTime >= getEffectiveCooldown(upgradeLevels.lightningDamage)) || lastUsedLightningTime === 0) &&
+                            isGameActive; 
+
+    const canUseFreeze = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                         ((now - lastUsedFreezeTime >= getEffectiveCooldown(upgradeLevels.freezeDamage)) || lastUsedFreezeTime === 0) &&
+                         isGameActive; 
+
+    const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
+                         ((now - lastUsedFrenzyTime >= getEffectiveCooldown(upgradeLevels.frenzyDamage)) || lastUsedFrenzyTime === 0) &&
+                             isGameActive; 
+
+    btnLightning.disabled = !canUseLightning;
+    btnFreeze.disabled = !canUseFreeze;
+    btnFrenzy.disabled = !canUseFrenzy;
+
+    if (canUseLightning || canUseFreeze || canUseFrenzy) {
+        superpowerButtonsContainer.style.pointerEvents = 'auto';
+    } else {
+        superpowerButtonsContainer.style.pointerEvents = 'none';
+    }
+
+    updateSuperpowerCooldownDisplays();
+}
+
+function updateSuperpowerCooldownDisplays() {
+    const now = Date.now();
+
+    const updateButtonInfo = (button, lastUsedTime, originalText, upgradeLevel, levelDisplayElement) => {
+        const superpowerNameCooldownSpan = button.querySelector('.superpower-name-cooldown');
+        
+        const effectiveCooldown = Math.max(MIN_COOLDOWN_MS, COOLDOWN_DURATION_MS - (upgradeLevel - 1) * COOLDOWN_REDUCTION_PER_LEVEL_MS);
+        const timeElapsed = now - lastUsedTime;
+        const timeLeft = Math.ceil((lastUsedTime + effectiveCooldown - now) / 1000);
+        
+        // Update level display (always visible)
+        if (levelDisplayElement) {
+            levelDisplayElement.textContent = `Lvl ${upgradeLevel}`;
+        }
+
+        if (isGameActive && timeLeft > 0) {
+            // Calculate cooldown progress percentage
+            const progressPercentage = (timeElapsed / effectiveCooldown) * 100;
+            button.style.setProperty('--cooldown-percentage', `${progressPercentage}%`);
+            if (superpowerNameCooldownSpan) {
+                superpowerNameCooldownSpan.textContent = ` ${timeLeft}s`;
+            }
+        } else {
+            // Cooldown is finished or game is inactive
+            button.style.setProperty('--cooldown-percentage', '100%'); // Fully charged visually
+            if (superpowerNameCooldownSpan) {
+                superpowerNameCooldownSpan.textContent = ` ${originalText}`;
+            }
+        }
+    };
+
+    updateButtonInfo(btnLightning, lastUsedLightningTime, originalLightningText, upgradeLevels.lightningDamage, btnLightningLvlDisplay);
+    updateButtonInfo(btnFreeze, lastUsedFreezeTime, originalFreezeText, upgradeLevels.freezeDamage, btnFreezeLvlDisplay);
+    updateButtonInfo(btnFrenzy, lastUsedFrenzyTime, originalFrenzyText, upgradeLevels.frenzyDamage, btnFrenzyLvlDisplay);
+}
+
+
+function activateLightningStrike() {
+    if (!isGameActive || btnLightning.disabled) return;
+
+    showMessage("LIGHTNING STRIKE!", 1500);
+    punchesSinceLastPowerup = 0; 
+    lastUsedLightningTime = Date.now(); 
+    updateSuperpowerButtons(); 
+
+    const actualLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage - 1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
+    applyDamageToOzzy(actualLightningDamage); 
+
+    lightningModeActive = true; // Activate lightning storm mode
+    // Clear existing lightning particles to prevent accumulation from previous activations
+    lightningCanvasParticles = [];
+    // Set a timeout to deactivate lightning mode after 2.5 seconds
+    setTimeout(() => {
+        lightningModeActive = false;
+    }, 2500); // Duration for the lightning storm (2.5 seconds)
+
+    lightningEffect.classList.remove('hidden'); // Show the overlay for general flash
+    lightningEffect.classList.add('flash-active'); // Add active class for animation
+
+    // Hide CSS flash and clear canvas particles after animation
+    setTimeout(() => {
+        lightningEffect.classList.remove('flash-active');
+        lightningEffect.classList.add('hidden');
+    }, 1500); 
+}
+
+
+function activateIceBlast() {
+    if (!isGameActive || btnFreeze.disabled) return;
+
+    showMessage("ICE BLAST!", 1500);
+    punchesSinceLastPowerup = 0; 
+    lastUsedFreezeTime = Date.now(); 
+    updateSuperpowerButtons(); 
+
+    const actualIceBlastInitialDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
+    const actualIceBlastDotDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
+
+    freezeEffect.classList.remove('hidden');
+    freezeEffect.classList.add('active'); // Activate CSS overlay
+
+    applyDamageToOzzy(actualIceBlastInitialDamage); 
+
+    freezeModeActive = true; 
+    let dotTicks = 0;
+    const maxDotTicks = ICE_BLAST_DOT_DURATION_SECONDS;
+
+    clearInterval(freezeDotIntervalId); 
+    freezeDotIntervalId = setInterval(() => {
+        if (!isGameActive && !upgradeShopScreen.classList.contains('hidden')) { 
+            clearInterval(freezeDotIntervalId);
+            return;
+        }
+        if (!isGameActive) { 
+            clearInterval(freezeDotIntervalId);
+            freezeModeActive = false; 
+            freezeEffect.classList.remove('active'); 
+            freezeCanvasParticles = []; // Clear particles on deactivation
+            return;
+        }
+        applyDamageToOzzy(actualIceBlastDotDamage);
+        dotTicks++;
+
+        // Ice shards are now spawned directly in animateGameCanvasEffects if freezeModeActive
+        
+        if (dotTicks >= maxDotTicks) {
+            clearInterval(freezeDotIntervalId);
+            freezeModeActive = false; 
+            freezeEffect.classList.remove('active'); 
+            freezeCanvasParticles = []; // Clear particles
+            showMessage("Ice Blast weakened.", 1000); 
+        }
+    }, 1000); 
+}
+
+function activateFrenzy() {
+    if (!isGameActive || btnFrenzy.disabled) return;
+
+    showMessage("BATTLE FRENZY!", 1500);
+    punchesSinceLastPowerup = 0; 
+    lastUsedFrenzyTime = Date.now(); 
+    updateSuperpowerButtons(); 
+
+    const actualFrenzyInitialDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
+    applyDamageToOzzy(actualFrenzyInitialDamage); 
+
+    frenzyModeActive = true;
+    PUNCH_DAMAGE *= FRENZY_DAMAGE_MULTIPLIER; 
+    frenzyEffect.classList.remove('hidden');
+    frenzyEffect.classList.add('active'); // Activate CSS overlay
+
+    clearTimeout(frenzyTimerId); 
+    frenzyTimerId = setTimeout(() => {
+        frenzyModeActive = false;
+        PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL; 
+        frenzyEffect.classList.add('hidden');
+        frenzyEffect.classList.remove('active');
+        frenzyCanvasParticles = []; // Clear particles
+        showMessage("Frenzy ended. Normal punches.", 1500);
+    }, FRENZY_DURATION_MS);
+}
+
+
+// --- Boss Movement Animation Function ---
+let isBossMovementPaused = false; 
+function animateBossMovement() {
+    if (!isGameActive || !isBossFight || isBossMovementPaused) { 
+        cancelAnimationFrame(bossMovementAnimationFrameId); 
+        return;
+    }
+
+    const gameContainerRect = gameContainer.getBoundingClientRect();
+    const ozzyRect = ozzyContainer.getBoundingClientRect(); // Current visual size of Ozzy
+
+    // Calculate the maximum offset from the center
+    // Total movement space for the CENTER of the boss from edge to edge of the container
+    const maxOffset = (gameContainerRect.width - ozzyRect.width) / 2;
+
+    let nextTransformX = bossCurrentTransformX + bossDx;
+
+    // Check and correct position and direction
+    if (nextTransformX > maxOffset) {
+        nextTransformX = maxOffset; // Snap to the right boundary
+        bossDx *= -1; // Reverse direction
+        ozzyImage.classList.add('flipped-x'); // Flip image to the left
+    } else if (nextTransformX < -maxOffset) { // Left boundary
+        nextTransformX = -maxOffset; // Snap to the left boundary
+        bossDx *= -1; // Reverse direction
+        ozzyImage.classList.remove('flipped-x'); // Flip image to the right
+    }
+
+    // Apply transformation. calc(-50% + ${nextTransformX}px) is key!
+    // -50% is base centering, and ${nextTransformX}px is additional offset.
+    ozzyContainer.style.transform = `translate(calc(-50% + ${nextTransformX}px), -50%)`;
+    bossCurrentTransformX = nextTransformX; // Update state variable
+
+    bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement);
+}
+
+/**
+ * Updates Ozzy's appearance based on the current level and boss status.
+ * Uses CSS classes to dynamically change filters.
+ */
+function updateOzzyAppearance() {
+    // Remove all previous variant classes
+    for (let i = 0; i < totalStonksVariants; i++) {
+        ozzyImage.classList.remove(`stonks-variant-${i}`);
+    }
+    for (let i = 0; i < totalBossVariants; i++) {
+        ozzyImage.classList.remove(`boss-mode-variant-${i}`);
+    }
+
+    // Add Stonks variant class based on level (for normal Stonks)
+    // If it's a boss fight, the boss-mode class takes precedence for core appearance
+    if (!isBossFight) {
+            ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
+    } else {
+        // If it's a boss fight, apply specific boss variant on top of default boss styling
+        ozzyImage.classList.add('boss-mode'); 
+        ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
+    }
+}
+
+
+// --- Game Functions ---
+function resetGame() {
+    console.log("resetGame called.");
+    score = 0;
+    scoreDisplay.textContent = score;
+    currentLevel = 0; // Reset level to 0
+    currentLevelDisplay.textContent = currentLevel;
+
+    isBossFight = false;
+    // CHANGE: Use image path based on selected skin
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    ozzyImage.classList.remove('boss-mode');
+    ozzyImage.classList.remove('flipped-x'); 
+    ozzyImage.classList.remove('attacking'); // NEW: Remove attack class
+    ozzyImage.classList.remove('stonks-attack-effect'); // NEW: Remove Stonks attack effect class
+    gameContainer.classList.remove('screen-shake'); // NEW: Remove shake class
+
+    // Reset visual variants
+    stonksVisualVariantIndex = 0;
+    bossVisualVariantIndex = 0;
+    updateOzzyAppearance(); // Apply default appearance
+
+    INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
+
+    PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
+
+    ozzyHealth = INITIAL_OZZY_HEALTH;
+    updateHealthBar();
+    ozzyImage.classList.remove('hit-effect');
+    ozzyImage.classList.remove('spawn-ozzy');
+    ozzyContainer.classList.add('hidden'); 
+
+    // Reset Ozzy's position to center for normal Stonks
+    bossCurrentTransformX = 0; 
+    ozzyContainer.style.transform = `translate(-50%, -50%)`; 
+
+    cancelAnimationFrame(bossMovementAnimationFrameId); 
+    isBossMovementPaused = false; 
+
+    quoteImagesContainer.innerHTML = '';
+
+    punchesSinceLastPowerup = 0;
+    lastUsedLightningTime = 0;
+    lastUsedFreezeTime = 0;
+    lastUsedFrenzyTime = 0;
+
+    frenzyModeActive = false;
+    clearTimeout(frenzyTimerId); 
+
+    freezeModeActive = false;
+    clearInterval(freezeDotIntervalId);
+    // Ensure effect overlays are hidden
+    freezeEffect.classList.add('hidden');
+    freezeEffect.classList.remove('active'); 
+    frenzyEffect.classList.add('hidden');
+    frenzyEffect.classList.remove('active');
+    lightningEffect.classList.add('hidden');
+    lightningEffect.classList.remove('flash-active');
+    
+    // Clear all canvas effect particles
+    cancelAnimationFrame(gameCanvasAnimationFrameId); // CHANGE: Cancel canvas animation
+    gameEffectsCanvas.classList.add('hidden'); // CHANGE: Hide canvas
+    gameEffectsCanvas.classList.remove('active'); // CHANGE: Remove active class
+    bossCanvasParticles = [];
+    lightningCanvasParticles = [];
+    freezeCanvasParticles = [];
+    frenzyCanvasParticles = [];
+    scratchCanvasParticles = [];
+    stonksAttackClawParticles = []; // NEW
+    stonksAttackPainParticles = [];   // NEW
+    clawMarks = []; // NEW: Clear claw marks
+    if (gameEffectsCtx) {
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+    }
+
+    document.querySelectorAll('.knockout-message').forEach(el => el.remove());
+    document.querySelectorAll('.boss-message').forEach(el => el.remove());
+
+    // CHANGE: Reset player health and hide bar
+    upgradeLevels.maxHealth = 1; // Reset max health upgrade level
+    MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
+    playerHealth = MAX_PLAYER_HEALTH; // Set player health to max base
+    updatePlayerHealthUI();
+    playerHealthContainer.classList.add('hidden');
+    clearInterval(playerAttackIntervalId); // Stop Stonks attack
+
+    // NEW: Reset superpower upgrade levels to 1
+    upgradeLevels.lightningDamage = 1;
+    upgradeLevels.freezeDamage = 1;
+    upgradeLevels.frenzyDamage = 1;
+
+    isGameActive = false;
+    endScreen.classList.add('hidden');
+    leaderboardScreen.classList.add('hidden');
+    upgradeShopScreen.classList.add('hidden'); 
+    startScreen.classList.remove('hidden'); 
+    shopButton.classList.remove('hidden'); 
+    superpowerButtonsContainer.classList.add('hidden'); 
+    
+    gameInfoContainer.classList.add('hidden');
+
+    clearInterval(superpowerCooldownIntervalId);
+    updateSuperpowerCooldownDisplays(); // Ensure level display is up to date
+
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    }
+    if (gameOverSound) { // NEW: Stop game over sound (if playing)
+        gameOverSound.pause();
+        gameOverSound.currentTime = 0;
+    }
+    baseStonksDamage = 5; // Reset base Stonks damage to initial value
+    STONKS_ATTACK_DAMAGE = baseStonksDamage; // Set current damage to base
+}
+
+function showMessage(message, duration = 1500) {
+    const dynamicMessageElement = document.createElement('div');
+    dynamicMessageElement.classList.add('knockout-message'); 
+    dynamicMessageElement.textContent = message;
+
+    gameContainer.appendChild(dynamicMessageElement);
+
+    setTimeout(() => {
+        dynamicMessageElement.remove();
+    }, duration);
+}
+
+function showBossMessage(message, duration = 2500) {
+    const dynamicMessageElement = document.createElement('div');
+    dynamicMessageElement.classList.add('boss-message'); 
+    dynamicMessageElement.textContent = message;
+    gameContainer.appendChild(dynamicMessageElement);
+    setTimeout(() => {
+        dynamicMessageElement.remove();
+    }, duration);
+}
+
+
+function updateHealthBar() {
+    const healthPercentage = (ozzyHealth / INITIAL_OZZY_HEALTH) * 100;
+    healthBarFill.style.width = `${healthPercentage}%`;
+    if (healthPercentage > 50) {
+        healthBarFill.style.backgroundColor = 'limegreen';
+    } else if (healthPercentage > 20) {
+        healthBarFill.style.backgroundColor = 'orange';
+    } else {
+        healthBarFill.style.backgroundColor = 'red';
+    }
+}
+
+function startGame() {
+    console.log("startGame called.");
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) {
+        showMessage("You must enter your nickname!", 2000);
+        return;
+    }
+
+    playerNickname = nickname;
+    
+    resetGame(); // This function already resets variants and basic game state
+    
+    isGameActive = true;
+    startScreen.classList.add('hidden');
+    ozzyContainer.classList.remove('hidden');
+    gameInfoContainer.classList.remove('hidden');
+    superpowerButtonsContainer.classList.remove('hidden');
+    shopButton.classList.remove('hidden');
+    
+    // Initialize level and score for the *new* game
+    currentLevel = 1; // Start from level 1
+    currentLevelDisplay.textContent = currentLevel;
+    score = 0; 
+    scoreDisplay.textContent = score;
+
+    // Reset Ozzy's health for the new game based on level 1
+    INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; // No scaling for level 1
+    ozzyHealth = INITIAL_OZZY_HEALTH;
+    updateHealthBar();
+    
+    // Apply initial Stonks appearance for level 1 (always variant 0)
+    stonksVisualVariantIndex = 0; 
+    updateOzzyAppearance(); 
+
+    // Start superpower cooldown interval
+    clearInterval(superpowerCooldownIntervalId); 
+    superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
+    updateSuperpowerButtons(); 
+
+    // Start the main canvas animation loop
+    gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // CHANGE: Ensure canvas animation starts
+    gameEffectsCanvas.classList.remove('hidden'); // CHANGE: Ensure canvas is visible
+    gameEffectsCanvas.classList.add('active');
+
+    // CHANGE: Set player health, show bar, and start Stonks attack
+    MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
+    playerHealth = MAX_PLAYER_HEALTH;
+    updatePlayerHealthUI();
+    playerHealthContainer.classList.remove('hidden');
+    clearInterval(playerAttackIntervalId); // Clear any previous interval first
+    STONKS_ATTACK_DAMAGE = baseStonksDamage; // Set current damage to base for level 1
+    playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Stonks starts attacking
+
+    if (backgroundMusic) {
+        backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
+    }
+}
+
+function endGame(message) {
+    console.log("endGame called with message:", message);
+    isGameActive = false;
+    ozzyContainer.classList.add('hidden'); 
+    
+    gameInfoContainer.classList.add('hidden');
+    playerHealthContainer.classList.add('hidden'); // NEW: Hide player health bar
+    
+    quoteImagesContainer.innerHTML = ''; 
+    document.querySelectorAll('.knockout-message').forEach(el => el.remove());
+    document.querySelectorAll('.boss-message').forEach(el => el.remove());
+
+    gameContainer.classList.remove('screen-shake'); // NEW: Remove shake class
+
+    frenzyModeActive = false;
+    PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
+    clearTimeout(frenzyTimerId);
+    frenzyEffect.classList.add('hidden'); // Ensure frenzy effect is hidden
+    frenzyEffect.classList.remove('active');
+
+    freezeModeActive = false;
+    clearInterval(freezeDotIntervalId);
+    freezeEffect.classList.add('hidden');
+    freezeEffect.classList.remove('active'); 
+
+
+    lightningEffect.classList.add('hidden');
+    lightningEffect.classList.remove('flash-active');
+    
+    punchesSinceLastPowerup = 0; 
+    lastUsedLightningTime = 0;
+    lastUsedFreezeTime = 0;
+    lastUsedFrenzyTime = 0;
+    updateSuperpowerButtons(); 
+
+    clearInterval(superpowerCooldownIntervalId);
+    clearInterval(playerAttackIntervalId); // NEW: Stop Stonks attack
+    cancelAnimationFrame(bossMovementAnimationFrameId);
+    isBossMovementPaused = false; 
+
+    // Clear all canvas effect particles
+    cancelAnimationFrame(gameCanvasAnimationFrameId);
+    gameEffectsCanvas.classList.add('hidden');
+    gameEffectsCanvas.classList.remove('active');
+    bossCanvasParticles = [];
+    lightningCanvasParticles = [];
+    freezeCanvasParticles = [];
+    frenzyCanvasParticles = [];
+    scratchCanvasParticles = [];
+    stonksAttackClawParticles = []; // NEW
+    stonksAttackPainParticles = [];   // NEW
+    clawMarks = []; // NEW: Clear claw marks
+    if (gameEffectsCtx) {
+        gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+    }
+
+    document.getElementById('end-message').textContent = message; // End game message
+    document.getElementById('final-score').textContent = currentLevel; // CHANGE: Display achieved level
+    saveScoreToLeaderboard(playerNickname, currentLevel); // CHANGE: Save level, not points
+
+    endScreen.classList.remove('hidden');
+
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    }
+    if (gameOverSound) { // NEW: Play game over sound
+        gameOverSound.play().catch(e => console.error("Error playing gameOverSound:", e));
+    }
+}
+
+function handleOzzyKnockout() {
+    score++; // Increment score for every knockout
+    scoreDisplay.textContent = score;
+
+    document.querySelectorAll('.knockout-message').forEach(el => el.remove());
+    document.querySelectorAll('.boss-message').forEach(el => el.remove());
+
+    ozzyContainer.classList.add('hidden');
+
+    // NEW: Regenerate player health after defeating Stonks - RESTORED TO 100%
+    playerHealth = MAX_PLAYER_HEALTH; // Set player health to maximum
+    updatePlayerHealthUI();
+
+    // Determine if the *next* level is a boss level
+    const nextLevelCandidate = currentLevel + 1; // Temporary variable to check for boss
+    
+    if (nextLevelCandidate > 0 && nextLevelCandidate % BOSS_LEVEL_INTERVAL === 0) {
+        // It's time for a boss fight
+        currentLevel = nextLevelCandidate; // Set currentLevel to the boss level (e.g., 10, 20)
+        currentLevelDisplay.textContent = currentLevel; // Update display
+        isBossFight = true; // Set boss flag 
+        
+        // INCREASE BASE STONKS DAMAGE AFTER DEFEATING THE PREVIOUS BOSS
+        baseStonksDamage += STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE;
+        console.log(`Base Stonks damage increased to ${baseStonksDamage} after boss cycle.`);
+
+        startBossFight(); // This function will set boss damage
+        
+        clearInterval(playerAttackIntervalId); // Stop current interval
+        playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restart with new damage
+    } else {
+        // Normal Stonks knockout
+        currentLevel = nextLevelCandidate; // Increment level for normal stonks
+        currentLevelDisplay.textContent = currentLevel; // Update display
+
+        isBossFight = false;
+        // CHANGE: Use image path based on selected skin
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; 
+        ozzyImage.classList.remove('boss-mode'); 
+        ozzyImage.classList.remove('flipped-x'); 
+        
+        // CHANGE: Stonks variant selection logic: changes every 10 levels from level 11
+        if (currentLevel >= 1 && currentLevel <= 10) {
+            stonksVisualVariantIndex = 0; // Variant 0 for levels 1-10
+        } else {
+            // For levels 11 and higher, change variant every 10 levels, looping through 0-9
+            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
+        }
+        console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
+        
+        // CHANGE: Calculate normal Stonks health based on number of bosses defeated
+        // This will ensure health scales every 10 levels, after each boss fight.
+        // bossCyclesCompletedForNormalStonks: 0 for levels 1-10, 1 for 11-20, 2 for 21-30 etc.
+        const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
+        console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
+
+        updateOzzyAppearance(); // Apply the new Stonks variant
+
+        bossCurrentTransformX = 0; // Reset position for normal Stonks
+        ozzyContainer.style.transform = `translate(-50%, -50%)`; 
+        cancelAnimationFrame(bossMovementAnimationFrameId); 
+        isBossMovementPaused = false; 
+        
+        const knockoutMsgElement = document.createElement('div');
+        knockoutMsgElement.classList.add('knockout-message'); 
+        knockoutMsgElement.textContent = '+1 to respect!'; // Restored original text
+        gameContainer.appendChild(knockoutMsgElement);
+
+        setTimeout(() => {
+            knockoutMsgElement.remove();
+        }, 2000); 
+
+        // CHANGE: Normal Stonks damage is just base damage
+        STONKS_ATTACK_DAMAGE = baseStonksDamage;
+        console.log(`Normal Stonks attack damage set to: ${STONKS_ATTACK_DAMAGE} for level ${currentLevel}`);
+    }
+
+    ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
+    updateHealthBar(); 
+
+    // Rest of the common respawn logic
+    setTimeout(() => {
+        ozzyContainer.classList.remove('hidden');
+        ozzyImage.classList.remove('hit-effect');
+        if (!isBossFight) {
+            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Clean centering for normal Stonks
+        } else {
+            // If it's a boss, movement animation continues, so we keep bossCurrentTransformX
+            ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
+        }
+        ozzyImage.classList.add('spawn-ozzy'); 
+
+        setTimeout(() => {
+            ozzyImage.classList.remove('spawn-ozzy');
+        }, 500); 
+        gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // CHANGE: Ensure canvas animation starts after knockout
+        gameEffectsCanvas.classList.remove('hidden'); // CHANGE: Ensure canvas is visible
+        gameEffectsCanvas.classList.add('active');
+    }, 200); 
+}
+
+function startBossFight() {
+    // `isBossFight` and `currentLevel` are already correctly set by `handleOzzyKnockout`
+    // CHANGE: Use image path based on selected skin
+    ozzyImage.src = SKIN_IMAGES[currentSkin].boss; 
+    ozzyImage.classList.add('boss-mode'); 
+    
+    // Scale boss health based on encounter count (currentLevel is already correct)
+    const bossEncounterCount = currentLevel / BOSS_LEVEL_INTERVAL;
+    INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
+    INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); // Ensure it doesn't go below base
+
+    // CHANGE: Boss message depends on selected skin
+    const bossMessageText = currentSkin === 'stonks' ? "WARNING! BOSS STONKS! BEAT HIM UP!" : "WARNING! BOSS TINU! BEAT HIM UP!";
+    showBossMessage(bossMessageText, 2500); 
+
+    // CHANGE: Calculate boss damage: base damage + 25%
+    STONKS_ATTACK_DAMAGE = Math.ceil(baseStonksDamage * 1.25); // Apply 25% increase, round up
+    console.log(`BOSS SPAWN! Level: ${currentLevel}, Encounter: ${bossEncounterCount}, Health: ${INITIAL_OZZY_HEALTH}, Attack Damage: ${STONKS_ATTACK_DAMAGE}`);
+
+
+    // CHANGE: Boss variant selection logic: changes for each subsequent boss
+    bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
+    updateOzzyAppearance(); // Apply the new boss variant
+
+    cancelAnimationFrame(bossMovementAnimationFrameId); 
+    isBossMovementPaused = false; 
+
+    bossCurrentTransformX = 0; // Reset boss position to center initially
+    ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
+
+    bossDx = BOSS_MOVEMENT_SPEED * (Math.random() < 0.5 ? 1 : -1); 
+    if (bossDx < 0) {
+        ozzyImage.classList.add('flipped-x');
+    } else {
+        ozzyImage.classList.remove('flipped-x');
+    }
+    bossMovementAnimationFrameId = requestAnimationFrame(animateBossMovement); 
+
+    // Activate boss canvas effects
+    gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects); // CHANGE: Ensure canvas animation starts for boss
+    gameEffectsCanvas.classList.remove('hidden');
+    gameEffectsCanvas.classList.add('active');
+}
+
+
+function handlePunch(event) {
+    console.log("handlePunch called.");
+    if (!isGameActive) {
+        return;
+    }
+
+    const punchSoundInstance = new Audio('punch.mp3');
+    punchSoundInstance.play().catch(e => console.error("Error playing punchSoundInstance:", e));
+    punchSoundInstance.onended = () => {
+        punchSoundInstance.remove();
+    };
+
+    applyDamageToOzzy(PUNCH_DAMAGE); 
+
+    ozzyImage.classList.add('hit-effect');
+    setTimeout(() => {
+        ozzyImage.classList.remove('hit-effect');
+    }, 150);
+
+    if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { 
+        spawnRandomQuote();
+    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.45) { // CHANGE: Increased frequency of boss quotes
+        if (document.querySelectorAll('.knockout-message').length === 0 && document.querySelectorAll('.boss-message').length === 0) {
+            const randomBossQuote = BOSS_QUOTES[Math.floor(Math.random() * BOSS_QUOTES.length)];
+            showBossMessage(randomBossQuote, 2000); 
+        }
+    }
+
+    punchesSinceLastPowerup++;
+    updateSuperpowerButtons(); 
+}
+
+// --- NEW: Upgrade Shop Functions ---
+function calculateUpgradeCost(currentLevel) {
+    return Math.ceil(UPGRADE_COST_BASE * Math.pow(UPGRADE_COST_MULTIPLIER, currentLevel - 1));
+}
+
+function updateUpgradeShopUI() {
+    // NEW: Update points display in shop
+    document.getElementById('current-score-shop').textContent = score;
+
+    baseDamageLevelDisplay.textContent = upgradeLevels.baseDamage;
+    const nextBaseDamageCost = calculateUpgradeCost(upgradeLevels.baseDamage);
+    baseDamageCostDisplay.textContent = nextBaseDamageCost;
+    buyBaseDamageButton.disabled = score < nextBaseDamageCost;
+
+    lightningDamageLevelDisplay.textContent = upgradeLevels.lightningDamage;
+    const nextLightningDamageCost = calculateUpgradeCost(upgradeLevels.lightningDamage);
+    lightningDamageCostDisplay.textContent = nextLightningDamageCost;
+    // NEW: Check max level for Lightning Strike
+    buyLightningDamageButton.disabled = score < nextLightningDamageCost || upgradeLevels.lightningDamage >= MAX_UPGRADE_LEVEL;
+
+    freezeDamageLevelDisplay.textContent = upgradeLevels.freezeDamage;
+    const nextFreezeDamageCost = calculateUpgradeCost(upgradeLevels.freezeDamage);
+    freezeDamageCostDisplay.textContent = nextFreezeDamageCost;
+    // NEW: Check max level for Ice Blast
+    buyFreezeDamageButton.disabled = score < nextFreezeDamageCost || upgradeLevels.freezeDamage >= MAX_UPGRADE_LEVEL;
+
+    frenzyDamageLevelDisplay.textContent = upgradeLevels.frenzyDamage;
+    const nextFrenzyDamageCost = calculateUpgradeCost(upgradeLevels.frenzyDamage);
+    frenzyDamageCostDisplay.textContent = nextFrenzyDamageCost;
+    // NEW: Check max level for Battle Frenzy
+    buyFrenzyDamageButton.disabled = score < nextFrenzyDamageCost || upgradeLevels.frenzyDamage >= MAX_UPGRADE_LEVEL;
+
+    // NEW: Max player health upgrade
+    maxHealthLevelDisplay.textContent = upgradeLevels.maxHealth;
+    const nextMaxHealthCost = calculateUpgradeCost(upgradeLevels.maxHealth);
+    maxHealthCostDisplay.textContent = nextMaxHealthCost;
+    buyMaxHealthButton.disabled = score < nextMaxHealthCost;
+}
+
+function buyUpgrade(upgradeType) {
+    let currentLevel = upgradeLevels[upgradeType];
+
+    // NEW: Check max level for superpowers
+    if (['lightningDamage', 'freezeDamage', 'frenzyDamage'].includes(upgradeType) && currentLevel >= MAX_UPGRADE_LEVEL) {
+        showMessage(`Max level (${MAX_UPGRADE_LEVEL}) reached for this upgrade!`, 3000);
+        return;
+    }
+
+    const cost = calculateUpgradeCost(currentLevel);
+
+    if (score >= cost) {
+        score -= cost;
+        scoreDisplay.textContent = score;
+        upgradeLevels[upgradeType]++;
+
+        if (upgradeType === 'baseDamage') {
+            PUNCH_DAMAGE = 10 + (upgradeLevels.baseDamage - 1) * DAMAGE_INCREASE_PER_LEVEL;
+            showMessage(`Base Damage Upgraded! New damage: ${PUNCH_DAMAGE}`, 3000); 
+        } else if (upgradeType === 'lightningDamage') {
+            const nextLightningDamage = LIGHTNING_BASE_DAMAGE + (upgradeLevels.lightningDamage -1) * LIGHTNING_DAMAGE_INCREASE_PER_LEVEL;
+            showMessage(`Lightning Strike Upgraded! Level: ${upgradeLevels.lightningDamage} (Damage: ~${nextLightningDamage})`, 3000); 
+        } else if (upgradeType === 'freezeDamage') {
+            const nextInitialFreezeDamage = ICE_BLAST_INITIAL_DAMAGE + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL;
+            const nextDotFreezeDamage = ICE_BLAST_DOT_DAMAGE_PER_SECOND + (upgradeLevels.freezeDamage - 1) * FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL;
+            showMessage(`Ice Blast Upgraded! Level: ${upgradeLevels.freezeDamage} (Damage: ~${nextInitialFreezeDamage}, DOT: ~${nextDotFreezeDamage}/s)`, 3000); 
+        } else if (upgradeType === 'frenzyDamage') {
+            const nextFrenzyDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
+            showMessage(`Battle Frenzy Upgraded! Level: ${upgradeLevels.frenzyDamage} (Damage: ~${nextFrenzyDamage})`, 3000); 
+        } else if (upgradeType === 'maxHealth') { // NEW: Max player health upgrade
+            MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
+            playerHealth = MAX_PLAYER_HEALTH; // Heal to new max
+            updatePlayerHealthUI();
+            showMessage(`Max Health Upgraded! New Max HP: ${MAX_PLAYER_HEALTH}`, 3000);
+        }
+
+        updateUpgradeShopUI(); 
+        updateSuperpowerButtons(); // Update buttons after purchase (for cooldown)
+    } else {
+        showMessage("Not enough points!", 3000); 
+    }
+}
+
+
+// NEW: Functions to handle skin selection
+function showSkinSelectionScreen() {
+    startScreen.classList.add('hidden');
+    shopButton.classList.add('hidden'); // Hide shop button on skin selection screen
+    superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons
+    ozzyContainer.classList.add('hidden'); // Hide Stonks/Ozzy
+    gameInfoContainer.classList.add('hidden'); // Hide game info
+    playerHealthContainer.classList.add('hidden'); // Hide player health bar
+    leaderboardScreen.classList.add('hidden'); // Hide leaderboard
+    endScreen.classList.add('hidden'); // Hide end screen
+
+    skinSelectionScreen.classList.remove('hidden');
+}
+
+function hideSkinSelectionScreen() {
+    skinSelectionScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    // Other UI elements will be hidden/shown by resetGame/startGame
+}
+
+function selectSkin(skinName) {
+    currentSkin = skinName;
+    console.log(`Skin selected: ${currentSkin}`);
+    // Update image source for ozzyImage immediately after skin selection
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    // Optional: update skin preview in menu, if visible
+    // In this simple implementation, the change will be visible after starting the game.
+    hideSkinSelectionScreen();
+}
+
+
+console.log("Script.js is running!");
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("DOMContentLoaded: DOM has been loaded!");
+
+    // === ASSIGN VALUES to global DOM variables ===
+    backgroundTractor = document.getElementById('animated-background-tractor');
+    ozzyContainer = document.getElementById('ozzy-container');
+    ozzyImage = document.getElementById('ozzy-image');
+    healthBarFill = document.getElementById('health-bar-fill');
+    gameContainer = document.getElementById('game-container'); 
+    gameInfoContainer = document.getElementById('game-info-container');
+    scoreDisplay = document.getElementById('score');
+    currentLevelDisplay = document.getElementById('current-level');
+    startScreen = document.getElementById('start-screen');
+    startButton = document.getElementById('start-button');
+    nicknameInput = document.getElementById('nickname-input');
+    showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    endScreen = document.getElementById('end-screen');
+    finalScoreDisplay = document.getElementById('final-score');
+    restartButton = document.getElementById('restart-button');
+    showLeaderboardAfterGameButton = document.getElementById('show-leaderboard-after-game-button');
+    leaderboardScreen = document.getElementById('leaderboard-screen');
+    leaderboardList = document.getElementById('leaderboard-list');
+    backToStartButton = document.getElementById('back-to-start-button');
+    superpowerButtonsContainer = document.getElementById('superpower-buttons-container');
+    btnLightning = document.getElementById('btn-lightning');
+    btnFreeze = document.getElementById('btn-freeze');
+    btnFrenzy = document.getElementById('btn-frenzy');
+    lightningEffect = document.getElementById('lightning-effect');
+    freezeEffect = document.getElementById('freeze-effect');
+    frenzyEffect = document.getElementById('frenzy-effect');
+    backgroundMusic = document.getElementById('background-music');
+    punchSound = document.getElementById('punch-sound');
+    gameOverSound = document.getElementById('game-over-sound'); // NEW: Audio element assignment (moved from above, ensured)
+    shopButton = document.getElementById('shop-button');
+    upgradeShopScreen = document.getElementById('upgrade-shop-screen');
+    closeShopButton = document.getElementById('close-shop-button');
+    baseDamageLevelDisplay = document.getElementById('base-damage-level');
+    baseDamageCostDisplay = document.getElementById('base-damage-cost');
+    buyBaseDamageButton = document.getElementById('buy-base-damage');
+    lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
+    lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
+    buyLightningDamageButton = document.getElementById('buy-lightning-damage');
+    freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
+    freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
+    buyFreezeDamageButton = document.getElementById('buy-freeze-damage');
+    frenzyDamageLevelDisplay = document.getElementById('frenzy-damage-level');
+    frenzyDamageCostDisplay = document.getElementById('frenzy-cost'); 
+    buyFrenzyDamageButton = document.getElementById('buy-frenzy-damage');
+    quoteImagesContainer = document.getElementById('quote-images-container'); 
+    gameEffectsCanvas = document.getElementById('boss-effect-canvas'); // Reusing this canvas for all effects
+    gameEffectsCtx = gameEffectsCanvas.getContext('2d'); // Get 2D context
+    // CHANGE: DOM variables for player health bar (already exist, just for clarity)
+    playerHealthContainer = document.getElementById('player-health-container');
+    playerHealthDisplay = document.getElementById('player-health-display');
+    playerHealthBarBg = document.getElementById('player-health-bar-bg');
+    playerHealthBarFill = document.getElementById('player-health-bar-fill');
+
+    // NEW: Assign DOM variables for skin selection
+    selectSkinButton = document.getElementById('select-skin-button');
+    skinSelectionScreen = document.getElementById('skin-selection-screen');
+    selectStonksSkinButton = document.getElementById('select-stonks-skin');
+    selectTinuSkinButton = document.getElementById('select-tinu-skin');
+    closeSkinSelectionButton = document.getElementById('close-skin-selection-button');
+
+    // NEW: Assign DOM variables for max health upgrade
+    maxHealthLevelDisplay = document.getElementById('max-health-level');
+    maxHealthCostDisplay = document.getElementById('max-health-cost');
+    buyMaxHealthButton = document.getElementById('buy-max-health');
+
+    // NEW: Assign DOM variables for superpower level display on buttons
+    btnLightningLvlDisplay = btnLightning.querySelector('.superpower-level-display');
+    btnFreezeLvlDisplay = btnFreeze.querySelector('.superpower-level-display');
+    btnFrenzyLvlDisplay = btnFrenzy.querySelector('.superpower-level-display');
+
+
+    // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
+    upgradeShopScreen.classList.add('hidden');
+
+    // Ensure all screens are initially hidden
+    endScreen.classList.add('hidden');
+    leaderboardScreen.classList.add('hidden');
+    ozzyContainer.classList.add('hidden');
+    gameInfoContainer.classList.add('hidden'); 
+    quoteImagesContainer.innerHTML = ''; 
+    skinSelectionScreen.classList.add('hidden'); // Hide skin selection screen on start
+
+    // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
+    resetGame(); 
+
+    // Set canvas dimensions on load and resize
+    const setCanvasDimensions = () => {
+        gameEffectsCanvas.width = gameContainer.offsetWidth;
+        gameEffectsCanvas.height = gameContainer.offsetHeight;
+    };
+    setCanvasDimensions();
+    window.addEventListener('resize', setCanvasDimensions);
+
+    // Load the claw image once
+    clawImage.src = 'pazury.png';
+    clawImage.onerror = () => {
+        console.error("Failed to load pazury.png. Please check the image path.");
+        // Fallback or show an error to the user if image is critical
+    };
+
+
+    console.log("Initial game container dimensions:", gameContainer.offsetWidth, gameContainer.offsetHeight);
+    console.log("Initial target image (Ozzy) dimensions:", ozzyImage.offsetWidth, ozzyImage.offsetHeight);
+
+    try {
+        const userCredential = await signInAnonymously(auth);
+        currentUserId = userCredential.user.uid;
+        console.log("Logged in anonymously. UID:", currentUserId);
+    } catch (error) {
+        console.error("Error with anonymous login:", error);
+        showMessage("Leaderboard connection error. Try refreshing the page.", 5000);
+    }
+    console.log("DOMContentLoaded: Authentication completed.");
+
+    // --- Event Handlers ---
+    startButton.addEventListener('click', () => {
+        console.log("START button clicked!");
+        startGame();
+    });
+
+    showLeaderboardButton.addEventListener('click', () => {
+        console.log("LEADERBOARD button clicked!");
+        startScreen.classList.add('hidden');
+        shopButton.classList.add('hidden'); 
+        superpowerButtonsContainer.classList.add('hidden'); 
+        ozzyContainer.classList.add('hidden'); 
+        gameInfoContainer.classList.add('hidden'); 
+        playerHealthContainer.classList.add('hidden'); // NEW: Hide player bar when going to leaderboard
+        leaderboardScreen.classList.remove('hidden');
+        fetchAndDisplayLeaderboard();
+    });
+
+    restartButton.addEventListener('click', () => {
+        console.log("RESTART button clicked!");
+        resetGame();
+    });
+
+    ozzyContainer.addEventListener('click', handlePunch);
+    ozzyContainer.addEventListener('touchstart', (event) => {
+        event.preventDefault(); 
+        handlePunch(event);
+    }, { passive: false });
+
+    showLeaderboardAfterGameButton.addEventListener('click', () => {
+        console.log("SHOW LEADERBOARD (after game) button clicked!");
+        endScreen.classList.add('hidden');
+        shopButton.classList.add('hidden'); 
+        superpowerButtonsContainer.classList.add('hidden'); 
+        ozzyContainer.classList.add('hidden'); 
+        gameInfoContainer.classList.add('hidden'); 
+        playerHealthContainer.classList.add('hidden'); // NEW: Hide player bar when going to leaderboard
+        leaderboardScreen.classList.remove('hidden');
+        fetchAndDisplayLeaderboard();
+    });
+
+    backToStartButton.addEventListener('click', () => {
+        console.log("BACK TO MENU button clicked!");
+        leaderboardScreen.classList.add('hidden');
+        resetGame(); 
+    });
+
+    btnLightning.addEventListener('click', activateLightningStrike);
+    btnFreeze.addEventListener('click', activateIceBlast);
+    btnFrenzy.addEventListener('click', activateFrenzy);
+
+    shopButton.addEventListener('click', () => {
+        isGameActive = false; 
+        cancelAnimationFrame(bossMovementAnimationFrameId); 
+        isBossMovementPaused = true; 
+        clearInterval(superpowerCooldownIntervalId); 
+        clearInterval(playerAttackIntervalId); // NEW: Stop Stonks attack in shop
+
+        // Stop all canvas effects when going to shop
+        cancelAnimationFrame(gameCanvasAnimationFrameId); // CHANGE: Cancel canvas animation
+        gameEffectsCanvas.classList.add('hidden'); // CHANGE: Hide canvas
+        gameEffectsCanvas.classList.remove('active'); // CHANGE: Remove active class
+        // CHANGE: Clear particle arrays so they don't display in the shop
+        bossCanvasParticles = [];
+        lightningCanvasParticles = [];
+        freezeCanvasParticles = [];
+        frenzyCanvasParticles = [];
+        scratchCanvasParticles = [];
+        stonksAttackClawParticles = []; // NEW
+        stonksAttackPainParticles = [];   // NEW
+        clawMarks = []; // NEW: Clear claw marks
+        if (gameEffectsCtx) {
+            gameEffectsCtx.clearRect(0, 0, gameEffectsCanvas.width, gameEffectsCtx.height);
+        }
+
+        // Also hide CSS overlays
+        lightningEffect.classList.add('hidden');
+        lightningEffect.classList.remove('flash-active');
+        freezeEffect.classList.add('hidden');
+        freezeEffect.classList.remove('active');
+        frenzyEffect.classList.add('hidden');
+        frenzyEffect.classList.remove('active');
+
+
+        ozzyContainer.classList.add('hidden'); 
+        superpowerButtonsContainer.classList.add('hidden'); 
+        shopButton.classList.add('hidden'); 
+        gameInfoContainer.classList.add('hidden'); 
+        playerHealthContainer.classList.add('hidden'); // NEW: Hide player bar in shop
+
+        upgradeShopScreen.classList.remove('hidden'); 
+        updateUpgradeShopUI(); 
+    });
+
+    closeShopButton.addEventListener('click', () => {
+        upgradeShopScreen.classList.add('hidden'); 
+
+        ozzyContainer.classList.remove('hidden'); 
+        superpowerButtonsContainer.classList.remove('hidden'); 
+        shopButton.classList.remove('hidden'); 
+        gameInfoContainer.classList.remove('hidden'); 
+        playerHealthContainer.classList.remove('hidden'); // NEW: Show player bar after leaving shop
+
+
+        isGameActive = true; 
+        isBossMovementPaused = false; 
+        if (isBossFight) { 
+            animateBossMovement();
+        }
+        // CHANGE: Ensure canvas animation starts after leaving shop
+        gameCanvasAnimationFrameId = requestAnimationFrame(animateGameCanvasEffects);
+        gameEffectsCanvas.classList.remove('hidden');
+        gameEffectsCanvas.classList.add('active');
+
+
+        clearInterval(superpowerCooldownIntervalId); 
+        superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
+        updateSuperpowerButtons(); 
+
+        // NEW: Resume Stonks attack after leaving shop
+        clearInterval(playerAttackIntervalId);
+        playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS);
+
+
+        if (freezeModeActive) { // If freeze mode was active, re-activate CSS overlay and particles
+            freezeEffect.classList.remove('hidden');
+            freezeEffect.classList.add('active'); 
+        }
+        if (frenzyModeActive) { // If frenzy mode was active, re-activate CSS overlay
+            frenzyEffect.classList.remove('hidden');
+            frenzyEffect.classList.add('active');
+        }
+    });
+
+    buyBaseDamageButton.addEventListener('click', () => buyUpgrade('baseDamage'));
+    buyLightningDamageButton.addEventListener('click', () => buyUpgrade('lightningDamage'));
+    buyFreezeDamageButton.addEventListener('click', () => buyUpgrade('freezeDamage'));
+    buyFrenzyDamageButton.addEventListener('click', () => buyUpgrade('frenzyDamage'));
+    buyMaxHealthButton.addEventListener('click', () => buyUpgrade('maxHealth')); // NEW: Added button handler for health upgrade
+
+    // NEW: Skin selection button handlers
+    selectSkinButton.addEventListener('click', showSkinSelectionScreen);
+    selectStonksSkinButton.addEventListener('click', () => selectSkin('stonks'));
+    selectTinuSkinButton.addEventListener('click', () => selectSkin('tinu'));
+    closeSkinSelectionButton.addEventListener('click', hideSkinSelectionScreen);
+
+
+    updateUpgradeShopUI();
+});
