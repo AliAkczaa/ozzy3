@@ -86,6 +86,12 @@ let maxHealthLevelDisplay;
 let maxHealthCostDisplay;
 let buyMaxHealthButton;
 
+// NOWE: Zmienne DOM dla wyświetlania poziomu supermocy na przyciskach
+let btnLightningLvlDisplay;
+let btnFreezeLvlDisplay;
+let btnFrenzyLvlDisplay;
+
+
 // --- Other global variables (not directly related to DOM), with immediate assignments ---
 let playerNickname = "Gracz";
 let score = 0;
@@ -110,7 +116,7 @@ const quoteImagePaths = [
 const QUOTE_DISPLAY_DURATION_MS = 2000;
 
 const PUNCHES_PER_POWERUP = 10; 
-const COOLDOWN_DURATION_MS = 60 * 1000; 
+let COOLDOWN_DURATION_MS = 60 * 1000; // ZMIANA: Zmieniono na let, aby modyfikować
 
 let lastUsedLightningTime = 0; 
 let lastUsedFreezeTime = 0; 
@@ -183,6 +189,11 @@ const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15;
 let MAX_PLAYER_HEALTH = 100; // Zmieniono na let, aby można było modyfikować
 const PLAYER_HEALTH_BASE_VALUE = 100; // Bazowa wartość zdrowia
 const PLAYER_HEALTH_INCREASE_PER_LEVEL = 25; // Zwiększenie max zdrowia na poziom
+
+// NOWE: Stałe dla redukcji cooldownu i limitu poziomów
+const COOLDOWN_REDUCTION_PER_LEVEL_MS = 5 * 1000; // 5 sekund na poziom
+const MIN_COOLDOWN_MS = 15 * 1000; // Minimalny cooldown 15 sekund
+const MAX_UPGRADE_LEVEL = 10; // Maksymalny poziom ulepszeń dla supermocy
 
 // --- Variables for visual variants of Stonks ---
 let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
@@ -971,16 +982,21 @@ function updatePlayerHealthUI() {
 function updateSuperpowerButtons() {
     const now = Date.now();
 
+    // Funkcja pomocnicza do pobierania efektywnego cooldownu
+    const getEffectiveCooldown = (upgradeLevel) => {
+        return Math.max(MIN_COOLDOWN_MS, COOLDOWN_DURATION_MS - (upgradeLevel - 1) * COOLDOWN_REDUCTION_PER_LEVEL_MS);
+    };
+
     const canUseLightning = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
-                            ((now - lastUsedLightningTime >= COOLDOWN_DURATION_MS) || lastUsedLightningTime === 0) &&
+                            ((now - lastUsedLightningTime >= getEffectiveCooldown(upgradeLevels.lightningDamage)) || lastUsedLightningTime === 0) &&
                             isGameActive; 
 
     const canUseFreeze = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
-                         ((now - lastUsedFreezeTime >= COOLDOWN_DURATION_MS) || lastUsedFreezeTime === 0) &&
+                         ((now - lastUsedFreezeTime >= getEffectiveCooldown(upgradeLevels.freezeDamage)) || lastUsedFreezeTime === 0) &&
                          isGameActive; 
 
     const canUseFrenzy = (punchesSinceLastPowerup >= PUNCHES_PER_POWERUP) &&
-                         ((now - lastUsedFrenzyTime >= COOLDOWN_DURATION_MS) || lastUsedFrenzyTime === 0) &&
+                         ((now - lastUsedFrenzyTime >= getEffectiveCooldown(upgradeLevels.frenzyDamage)) || lastUsedFrenzyTime === 0) &&
                              isGameActive; 
 
     btnLightning.disabled = !canUseLightning;
@@ -999,46 +1015,35 @@ function updateSuperpowerButtons() {
 function updateSuperpowerCooldownDisplays() {
     const now = Date.now();
 
-    const updateButtonText = (button, lastUsedTime, originalText) => {
-        const superpowerTextSpan = button.querySelector('.superpower-text');
-        // ZMIANA: Sprawdzamy czy span istnieje i jest widoczny (nie ukryty przez CSS media query)
-        const isSuperpowerTextVisible = superpowerTextSpan && getComputedStyle(superpowerTextSpan).display !== 'none';
+    const updateButtonInfo = (button, lastUsedTime, originalText, upgradeLevel, levelDisplayElement) => {
+        const superpowerNameCooldownSpan = button.querySelector('.superpower-name-cooldown');
+        // Check if the name/cooldown span is visible (desktop)
+        const isSuperpowerNameCooldownVisible = superpowerNameCooldownSpan && getComputedStyle(superpowerNameCooldownSpan).display !== 'none';
         
-        const targetElement = isSuperpowerTextVisible ? superpowerTextSpan : button; 
+        const effectiveCooldown = Math.max(MIN_COOLDOWN_MS, COOLDOWN_DURATION_MS - (upgradeLevel - 1) * COOLDOWN_REDUCTION_PER_LEVEL_MS);
 
-        if (!isGameActive && button.classList.contains('hidden')) {
-            if (isSuperpowerTextVisible) {
-                targetElement.textContent = ` ${originalText}`;
-            }
-            return;
-        }
-        if (!isGameActive) {
-             if (isSuperpowerTextVisible) {
-                targetElement.textContent = ` ${originalText}`;
-            }
-            return;
+        const timeLeft = Math.ceil((lastUsedTime + effectiveCooldown - now) / 1000);
+        
+        // Update level display (always visible)
+        if (levelDisplayElement) {
+            levelDisplayElement.textContent = `Lvl ${upgradeLevel}`;
         }
 
-        const timeLeft = Math.ceil((lastUsedTime + COOLDOWN_DURATION_MS - now) / 1000);
-        if (timeLeft > 0) {
-            if (isSuperpowerTextVisible) {
-                targetElement.textContent = ` ${timeLeft}s`;
-            } else {
-                // Jeśli tekst jest niewidoczny, nie zmieniaj emoji na licznik
-                // Ikona emoji będzie zawsze widoczna, a cooldown będzie "w tle"
+        // Update name/cooldown display
+        if (isGameActive && timeLeft > 0) {
+            if (superpowerNameCooldownSpan) {
+                superpowerNameCooldownSpan.textContent = ` ${timeLeft}s`;
             }
         } else {
-            if (isSuperpowerTextVisible) {
-                targetElement.textContent = ` ${originalText}`; 
-            } else {
-                // Jeśli tekst jest niewidoczny, pozostaw samo emoji
+            if (superpowerNameCooldownSpan) {
+                superpowerNameCooldownSpan.textContent = ` ${originalText}`;
             }
         }
     };
 
-    updateButtonText(btnLightning, lastUsedLightningTime, originalLightningText);
-    updateButtonText(btnFreeze, lastUsedFreezeTime, originalFreezeText);
-    updateButtonText(btnFrenzy, lastUsedFrenzyTime, originalFrenzyText);
+    updateButtonInfo(btnLightning, lastUsedLightningTime, originalLightningText, upgradeLevels.lightningDamage, btnLightningLvlDisplay);
+    updateButtonInfo(btnFreeze, lastUsedFreezeTime, originalFreezeText, upgradeLevels.freezeDamage, btnFreezeLvlDisplay);
+    updateButtonInfo(btnFrenzy, lastUsedFrenzyTime, originalFrenzyText, upgradeLevels.frenzyDamage, btnFrenzyLvlDisplay);
 }
 
 
@@ -1295,6 +1300,11 @@ function resetGame() {
     playerHealthContainer.classList.add('hidden');
     clearInterval(playerAttackIntervalId); // Zatrzymaj atak Stonksa
 
+    // NOWE: Zresetuj poziomy ulepszeń supermocy do 1
+    upgradeLevels.lightningDamage = 1;
+    upgradeLevels.freezeDamage = 1;
+    upgradeLevels.frenzyDamage = 1;
+
     isGameActive = false;
     endScreen.classList.add('hidden');
     leaderboardScreen.classList.add('hidden');
@@ -1306,7 +1316,7 @@ function resetGame() {
     gameInfoContainer.classList.add('hidden');
 
     clearInterval(superpowerCooldownIntervalId);
-    updateSuperpowerCooldownDisplays(); 
+    updateSuperpowerCooldownDisplays(); // Upewnij się, że wyświetlanie poziomów jest aktualne
 
     if (backgroundMusic) {
         backgroundMusic.pause();
@@ -1681,17 +1691,20 @@ function updateUpgradeShopUI() {
     lightningDamageLevelDisplay.textContent = upgradeLevels.lightningDamage;
     const nextLightningDamageCost = calculateUpgradeCost(upgradeLevels.lightningDamage);
     lightningDamageCostDisplay.textContent = nextLightningDamageCost;
-    buyLightningDamageButton.disabled = score < nextLightningDamageCost;
+    // NOWE: Sprawdzenie maksymalnego poziomu dla Pioruna Zagłady
+    buyLightningDamageButton.disabled = score < nextLightningDamageCost || upgradeLevels.lightningDamage >= MAX_UPGRADE_LEVEL;
 
     freezeDamageLevelDisplay.textContent = upgradeLevels.freezeDamage;
     const nextFreezeDamageCost = calculateUpgradeCost(upgradeLevels.freezeDamage);
     freezeDamageCostDisplay.textContent = nextFreezeDamageCost;
-    buyFreezeDamageButton.disabled = score < nextFreezeDamageCost;
+    // NOWE: Sprawdzenie maksymalnego poziomu dla Lodowego Wybuchu
+    buyFreezeDamageButton.disabled = score < nextFreezeDamageCost || upgradeLevels.freezeDamage >= MAX_UPGRADE_LEVEL;
 
     frenzyDamageLevelDisplay.textContent = upgradeLevels.frenzyDamage;
     const nextFrenzyDamageCost = calculateUpgradeCost(upgradeLevels.frenzyDamage);
     frenzyDamageCostDisplay.textContent = nextFrenzyDamageCost;
-    buyFrenzyDamageButton.disabled = score < nextFrenzyDamageCost;
+    // NOWE: Sprawdzenie maksymalnego poziomu dla Szału Bojowego
+    buyFrenzyDamageButton.disabled = score < nextFrenzyDamageCost || upgradeLevels.frenzyDamage >= MAX_UPGRADE_LEVEL;
 
     // NOWE: Ulepszenie maksymalnego zdrowia
     maxHealthLevelDisplay.textContent = upgradeLevels.maxHealth;
@@ -1702,6 +1715,13 @@ function updateUpgradeShopUI() {
 
 function buyUpgrade(upgradeType) {
     let currentLevel = upgradeLevels[upgradeType];
+
+    // NOWE: Sprawdzenie maksymalnego poziomu dla supermocy
+    if (['lightningDamage', 'freezeDamage', 'frenzyDamage'].includes(upgradeType) && currentLevel >= MAX_UPGRADE_LEVEL) {
+        showMessage(`Osiągnięto maksymalny poziom (${MAX_UPGRADE_LEVEL}) dla tego ulepszenia!`, 3000);
+        return;
+    }
+
     const cost = calculateUpgradeCost(currentLevel);
 
     if (score >= cost) {
@@ -1730,6 +1750,7 @@ function buyUpgrade(upgradeType) {
         }
 
         updateUpgradeShopUI(); 
+        updateSuperpowerButtons(); // Zaktualizuj przyciski po zakupie (dla cooldownu)
     } else {
         showMessage("Za mało punktów!", 3000); 
     }
@@ -1837,6 +1858,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     maxHealthLevelDisplay = document.getElementById('max-health-level');
     maxHealthCostDisplay = document.getElementById('max-health-cost');
     buyMaxHealthButton = document.getElementById('buy-max-health');
+
+    // NOWE: Przypisanie zmiennych DOM dla wyświetlania poziomu supermocy na przyciskach
+    btnLightningLvlDisplay = btnLightning.querySelector('.superpower-level-display');
+    btnFreezeLvlDisplay = btnFreeze.querySelector('.superpower-level-display');
+    btnFrenzyLvlDisplay = btnFrenzy.querySelector('.superpower-level-display');
 
 
     // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
