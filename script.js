@@ -1180,6 +1180,7 @@ function animateBossMovement() {
         ozzyImage.classList.add('flipped-x'); // Flip image to the left
     } else if (nextTransformX < -maxOffset) { // Left boundary
         nextTransformX = -maxOffset; // Snap to the left boundary
+        bossDx *= -1;
         ozzyImage.classList.remove('flipped-x'); // Flip image to the right
     }
 
