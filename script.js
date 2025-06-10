@@ -149,7 +149,7 @@ const SKIN_IMAGES = {
         boss: 'tinuboss.png' // Replace with actual Tinu Boss image path
     }
 };
-let currentSkin = 'stonks'; // Default skin at game start
+let currentSkin = 'tinu'; // Default skin at game start
 
 const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -161,9 +161,9 @@ const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100;
 
 const BOSS_MOVEMENT_SPEED = 2; 
 const BOSS_QUOTES = [
-    "CRYPTO GUYS ARE FARMING!", "TTB IS GARBAGE! ONLY STONKS!", 
-    "TO DUBAI! WITH INVESTOR'S MONEY!", "1 LAUNCHPAD, 1 BOT, 1 DEX!", 
-    "BSC FARMER - TOM - SAYS I'M A SCAMMER!"
+    "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
+    "TO DUBAI! WITH INVESTOR'S MONEY!", "Calculating next move!", 
+    "They call me a fraud!", "STONKS OR STINKS?", "My algorithms are superior!",
 ];
 let bossMovementAnimationFrameId; 
 let bossDx = BOSS_MOVEMENT_SPEED; 
@@ -957,7 +957,7 @@ function stonksAttack() {
     spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY); // Pass Ozzy's position for reference
 
     if (playerHealth <= 0) {
-        endGame("YOU DIED FIGHTING STONKS!"); // Game over if player health reaches 0
+        endGame("YOU DIED!"); // Game over if player health reaches 0
     }
 }
 
@@ -1530,7 +1530,6 @@ function handleOzzyKnockout() {
         // Normal Stonks knockout
         currentLevel = nextLevelCandidate; // Increment level for normal stonks
         currentLevelDisplay.textContent = currentLevel; // Update display
-        console.log(`Normal Stonks knockout. New level: ${currentLevel}`);
 
         isBossFight = false;
         // CHANGE: Use image path based on selected skin
@@ -1665,7 +1664,7 @@ function handlePunch(event) {
 
     if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { 
         spawnRandomQuote();
-    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.4) { // CHANGE: Increased frequency of boss quotes
+    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.45) { // CHANGE: Increased frequency of boss quotes
         if (document.querySelectorAll('.knockout-message').length === 0 && document.querySelectorAll('.boss-message').length === 0) {
             const randomBossQuote = BOSS_QUOTES[Math.floor(Math.random() * BOSS_QUOTES.length)];
             showBossMessage(randomBossQuote, 2000); 
