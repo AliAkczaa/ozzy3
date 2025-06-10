@@ -1017,11 +1017,9 @@ function updateSuperpowerCooldownDisplays() {
 
     const updateButtonInfo = (button, lastUsedTime, originalText, upgradeLevel, levelDisplayElement) => {
         const superpowerNameCooldownSpan = button.querySelector('.superpower-name-cooldown');
-        // Check if the name/cooldown span is visible (desktop)
-        const isSuperpowerNameCooldownVisible = superpowerNameCooldownSpan && getComputedStyle(superpowerNameCooldownSpan).display !== 'none';
         
         const effectiveCooldown = Math.max(MIN_COOLDOWN_MS, COOLDOWN_DURATION_MS - (upgradeLevel - 1) * COOLDOWN_REDUCTION_PER_LEVEL_MS);
-
+        const timeElapsed = now - lastUsedTime;
         const timeLeft = Math.ceil((lastUsedTime + effectiveCooldown - now) / 1000);
         
         // Update level display (always visible)
@@ -1029,12 +1027,16 @@ function updateSuperpowerCooldownDisplays() {
             levelDisplayElement.textContent = `Lvl ${upgradeLevel}`;
         }
 
-        // Update name/cooldown display
         if (isGameActive && timeLeft > 0) {
+            // Calculate cooldown progress percentage
+            const progressPercentage = (timeElapsed / effectiveCooldown) * 100;
+            button.style.setProperty('--cooldown-percentage', `${progressPercentage}%`);
             if (superpowerNameCooldownSpan) {
                 superpowerNameCooldownSpan.textContent = ` ${timeLeft}s`;
             }
         } else {
+            // Cooldown is finished or game is inactive
+            button.style.setProperty('--cooldown-percentage', '100%'); // Fully charged visually
             if (superpowerNameCooldownSpan) {
                 superpowerNameCooldownSpan.textContent = ` ${originalText}`;
             }
