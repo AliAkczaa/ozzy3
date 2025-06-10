@@ -124,7 +124,7 @@ let lastUsedFrenzyTime = 0;
 
 let frenzyModeActive = false;
 let frenzyTimerId;
-const FRENZY_DAMAGE_MULTIPLIER = 2; 
+const FRENZY_DAMAGE_MULTIPLIER = 3; 
 const FRENZY_DURATION_MS = 5000; 
 
 let LIGHTNING_BASE_DAMAGE = 150; 
@@ -138,6 +138,10 @@ let superpowerCooldownIntervalId;
 let freezeModeActive = false;
 let freezeDotIntervalId;
 
+// NEW: Paths for Tinu NFT images
+const TINU_NFT_PATH = 'tinu_nfts/'; // Directory where your 200 Tinu NFT PNGs are located
+const NUM_TINU_NFTS = 200; // Total number of Tinu NFT images (1.png to 200.png)
+
 // CHANGE: Default images and for other skins
 const SKIN_IMAGES = {
     stonks: {
@@ -145,11 +149,13 @@ const SKIN_IMAGES = {
         boss: 'stonksboss.png'
     },
     tinu: {
-        normal: 'tinu.png', // Replace with actual Tinu image path
-        boss: 'tinuboss.png' // Replace with actual Tinu Boss image path
+        normal: '', // Will be dynamically set for Tinu
+        boss: '' // Will be dynamically set for Tinu Boss
     }
 };
 let currentSkin = 'tinu'; // Domyślna skórka na Tinu
+let currentTinuImageIndex = 1; // Current Tinu NFT image index (for normal bot)
+let currentTinuBossImageIndex = 1; // Current Tinu NFT image index (for boss)
 
 const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -1208,11 +1214,25 @@ function updateOzzyAppearance() {
     // Add Stonks variant class based on level (for normal Stonks)
     // If it's a boss fight, the boss-mode class takes precedence for core appearance
     if (!isBossFight) {
+        // If currentSkin is 'tinu', use currentTinuImageIndex, otherwise use stonksVisualVariantIndex
+        if (currentSkin === 'tinu') {
+            ozzyImage.src = `${TINU_NFT_PATH}${currentTinuImageIndex}.png`;
+            ozzyImage.classList.remove('stonks-variant-0'); // Ensure no default stonks filter
+        } else {
+            ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
             ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
+        }
     } else {
         // If it's a boss fight, apply specific boss variant on top of default boss styling
-        ozzyImage.classList.add('boss-mode'); 
-        ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
+        ozzyImage.classList.add('boss-mode');
+        // If currentSkin is 'tinu', use currentTinuBossImageIndex, otherwise use bossVisualVariantIndex
+        if (currentSkin === 'tinu') {
+            ozzyImage.src = `${TINU_NFT_PATH}${currentTinuBossImageIndex}.png`;
+            ozzyImage.classList.remove('boss-mode-variant-0'); // Ensure no default boss filter
+        } else {
+            ozzyImage.src = SKIN_IMAGES[currentSkin].boss;
+            ozzyImage.classList.add(`boss-mode-variant-${bossVisualVariantIndex}`);
+        }
     }
 }
 
@@ -1227,17 +1247,24 @@ function resetGame() {
 
     isBossFight = false;
     // CHANGE: Use image path based on selected skin
-    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    // Update image source based on selected skin and random Tinu NFT if applicable
+    if (currentSkin === 'tinu') {
+        currentTinuImageIndex = Math.floor(Math.random() * NUM_TINU_NFTS) + 1; // Random from 1 to 200
+        ozzyImage.src = `${TINU_NFT_PATH}${currentTinuImageIndex}.png`;
+    } else {
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    }
+
     ozzyImage.classList.remove('boss-mode');
     ozzyImage.classList.remove('flipped-x'); 
     ozzyImage.classList.remove('attacking'); // NEW: Remove attack class
     ozzyImage.classList.remove('stonks-attack-effect'); // NEW: Remove Stonks attack effect class
     gameContainer.classList.remove('screen-shake'); // NEW: Remove shake class
 
-    // Reset visual variants
+    // Reset visual variants (these will be set again by updateOzzyAppearance)
     stonksVisualVariantIndex = 0;
     bossVisualVariantIndex = 0;
-    updateOzzyAppearance(); // Apply default appearance
+    updateOzzyAppearance(); // Apply default appearance (or initial Tinu NFT)
 
     INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH; 
 
@@ -1398,8 +1425,7 @@ function startGame() {
     ozzyHealth = INITIAL_OZZY_HEALTH;
     updateHealthBar();
     
-    // Apply initial Stonks appearance for level 1 (always variant 0)
-    stonksVisualVariantIndex = 0; 
+    // Apply initial Ozzy appearance (this will now select a Tinu NFT if skin is 'tinu')
     updateOzzyAppearance(); 
 
     // Start superpower cooldown interval
@@ -1457,7 +1483,6 @@ function endGame(message) {
     
     punchesSinceLastPowerup = 0; 
     lastUsedLightningTime = 0;
-    lastUsedFreezeTime = 0;
     lastUsedFrenzyTime = 0;
     updateSuperpowerButtons(); 
 
@@ -1534,7 +1559,13 @@ function handleOzzyKnockout() {
         console.log(`Normal bot knockout. New level: ${currentLevel}`); // ZMIANA: Neutralny tekst
 
         isBossFight = false;
-        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; // ZMIANA: Używaj obrazu z wybranej skórki
+        // If currentSkin is 'tinu', select a new random Tinu NFT for the normal bot
+        if (currentSkin === 'tinu') {
+            currentTinuImageIndex = Math.floor(Math.random() * NUM_TINU_NFTS) + 1; // Random from 1 to 200
+            ozzyImage.src = `${TINU_NFT_PATH}${currentTinuImageIndex}.png`;
+        } else {
+            ozzyImage.src = SKIN_IMAGES[currentSkin].normal; // Use fixed Stonks image
+        }
         ozzyImage.classList.remove('boss-mode'); 
         ozzyImage.classList.remove('flipped-x'); 
         
@@ -1553,7 +1584,7 @@ function handleOzzyKnockout() {
         INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalTinus * NORMAL_OZZY_HEALTH_INCREMENT);
         console.log(`Normal bot HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalTinus} completed boss cycles)`); // ZMIANA: Neutralny tekst
 
-        updateOzzyAppearance(); // Apply the new bot variant
+        updateOzzyAppearance(); // Apply the new bot variant (or new Tinu NFT)
 
         bossCurrentTransformX = 0; // Reset position for normal bot
         ozzyContainer.style.transform = `translate(-50%, -50%)`; 
@@ -1601,7 +1632,13 @@ function handleOzzyKnockout() {
 function startBossFight() {
     // `isBossFight` and `currentLevel` are already correctly set by `handleOzzyKnockout`
     // CHANGE: Use image path based on selected skin
-    ozzyImage.src = SKIN_IMAGES[currentSkin].boss; 
+    // If currentSkin is 'tinu', select a new random Tinu NFT for the boss
+    if (currentSkin === 'tinu') {
+        currentTinuBossImageIndex = Math.floor(Math.random() * NUM_TINU_NFTS) + 1; // Random from 1 to 200
+        ozzyImage.src = `${TINU_NFT_PATH}${currentTinuBossImageIndex}.png`;
+    } else {
+        ozzyImage.src = SKIN_IMAGES[currentSkin].boss; // Use fixed Stonks boss image
+    }
     ozzyImage.classList.add('boss-mode'); 
     
     // Scale boss health based on encounter count (currentLevel is already correct)
@@ -1621,7 +1658,7 @@ function startBossFight() {
     // CHANGE: Boss variant selection logic: changes for each subsequent boss
     // ZMIANA: Nowa logika dla 20 wariantów.
     bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
-    updateOzzyAppearance(); // Apply the new boss variant
+    updateOzzyAppearance(); // Apply the new boss variant (or new Tinu NFT boss)
 
     cancelAnimationFrame(bossMovementAnimationFrameId); 
     isBossMovementPaused = false; 
@@ -1783,7 +1820,15 @@ function selectSkin(skinName) {
     currentSkin = skinName;
     console.log(`Skin selected: ${currentSkin}`);
     // Update image source for ozzyImage immediately after skin selection
-    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    // If Tinu skin is selected, choose a random NFT. Otherwise, use the predefined image.
+    if (currentSkin === 'tinu') {
+        currentTinuImageIndex = Math.floor(Math.random() * NUM_TINU_NFTS) + 1; // Random from 1 to 200
+        ozzyImage.src = `${TINU_NFT_PATH}${currentTinuImageIndex}.png`;
+        // For boss, also pre-select a random Tinu NFT
+        currentTinuBossImageIndex = Math.floor(Math.random() * NUM_TINU_NFTS) + 1;
+    } else {
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    }
     // Optional: update skin preview in menu, if visible
     // In this simple implementation, the change will be visible after starting the game.
     hideSkinSelectionScreen();
