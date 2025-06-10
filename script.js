@@ -162,9 +162,9 @@ const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100;
 const BOSS_MOVEMENT_SPEED = 2; 
 // ZMIANA: Zneutralizowane cytaty bossa
 const BOSS_QUOTES = [
-    "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
-    "TO DUBAI! WITH INVESTOR'S MONEY!", "Calculating next move!", 
-    "They call me a fraud!", "STONKS OR STINKS?", "My algorithms are superior!",
+    "CRYPTON TEAM IS FARMING!", "TTB IS BEST!", 
+    "TO DUBAI!", "WITH INVESTOR'S MONEY!", 
+    "REFUND FOR V1?", "STONKS OR STINKS?"
 ];
 let bossMovementAnimationFrameId; 
 let bossDx = BOSS_MOVEMENT_SPEED; 
