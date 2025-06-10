@@ -149,7 +149,7 @@ const SKIN_IMAGES = {
         boss: 'tinuboss.png' // Replace with actual Tinu Boss image path
     }
 };
-let currentSkin = 'tinu'; // Default skin at game start
+let currentSkin = 'tinu'; // Domyślna skórka na Tinu
 
 const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -160,6 +160,14 @@ const BOSS_INITIAL_HEALTH = 300;
 const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100; 
 
 const BOSS_MOVEMENT_SPEED = 2; 
+const BOSS_QUOTES = [
+    "WHERE V1 AIRDROP?", 
+    "STONKS OR STINKS?", 
+    "WITH INVESTOR'S MONEY!", 
+    "TO DUBAI!", 
+    "TTB IS BEST!",
+    "CRYPTON TEAM IS FARMING?!",
+]; // ZMIANA: Zneutralizowane cytaty bossa
 const BOSS_QUOTES = [
     "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
     "TO DUBAI! WITH INVESTOR'S MONEY!", "Calculating next move!", 
@@ -197,9 +205,9 @@ const MAX_UPGRADE_LEVEL = 10; // Maximum upgrade level for superpowers
 
 // --- Variables for visual variants of Stonks ---
 let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
-const totalStonksVariants = 20;     // Number of available variants (0-9)
+const totalStonksVariants = 20;     // ZMIANA: Zwiększona liczba wariantów (0-19)
 let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
-const totalBossVariants = 20;       // Number of available Boss variants (0-9)
+const totalBossVariants = 20;       // ZMIANA: Zwiększona liczba wariantów (0-19)
 
 // Original superpower button texts (for display when not on cooldown)
 const originalLightningText = 'Lightning Strike';
@@ -479,21 +487,21 @@ function animateGameCanvasEffects(currentTime) {
                 color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossFire';
                 size = Math.random() * 15 + 10; // Larger flames
-                life = 800 + Math.random() * 500; // Longer life
+                life = 1000 + Math.random() * 500; // Longer life
                 vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.3); // Slower lateral movements
                 vy = -(Math.random() * baseParticleSpeed * 0.5) - 0.5; // Moves upwards
             } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss (Ice)
                 color = `rgba(${Math.floor(Math.random() * 50) + 100}, ${Math.floor(Math.random() * 50) + 200}, 255, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossIce';
                 size = Math.random() * 10 + 5; // Shard size
-                life = 600 + Math.random() * 400;
+                life = 800 + Math.random() * 400;
                 vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.8); // Fast dispersion
                 vy = (Math.random() - 0.5) * (baseParticleSpeed * 0.8);
             } else { // Purple/intense boss (Electricity)
                 color = `rgba(${Math.floor(Math.random() * 50) + 200}, 0, ${Math.floor(Math.random() * 50) + 200}, ${0.8 + Math.random() * 0.2})`;
                 type = 'bossElectricity';
                 size = Math.random() * 20 + 10; // Spark length
-                life = 100 + Math.random() * 100; // Very short life
+                life = 200 + Math.random() * 100; // Very short life
                 vx = 0; // No movement
                 vy = 0;
             }
@@ -633,7 +641,7 @@ function animateGameCanvasEffects(currentTime) {
 
             frenzyCanvasParticles.push(new CanvasParticle(
                 initialParticleX, initialParticleY, vx, vy, 
-                `rgba(255, ${Math.floor(Math.random() * 80)}, 0, ${0.9 + Math.random() * 0.1})`, // Intense red-orange
+                `rgba(255, ${Math.floor(Math.random() * 80)}, 0, ${0.9 + Math.random() * 0.1})`, // Intensywny czerwono-pomarańczowy
                 Math.random() * 8 + 4, // Particle size (4-12)
                 500 + Math.random() * 300, // Short life (0.5-0.8s)
                 'frenzyFlame' // New type
@@ -957,7 +965,7 @@ function stonksAttack() {
     spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY); // Pass Ozzy's position for reference
 
     if (playerHealth <= 0) {
-        endGame("YOU DIED!"); // Game over if player health reaches 0
+        endGame("YOU DIED FIGHTING THE BOT!"); // ZMIANA: Neutralny tekst
     }
 }
 
@@ -1179,7 +1187,6 @@ function animateBossMovement() {
         ozzyImage.classList.add('flipped-x'); // Flip image to the left
     } else if (nextTransformX < -maxOffset) { // Left boundary
         nextTransformX = -maxOffset; // Snap to the left boundary
-        bossDx *= -1; // Reverse direction
         ozzyImage.classList.remove('flipped-x'); // Flip image to the right
     }
 
@@ -1505,7 +1512,7 @@ function handleOzzyKnockout() {
 
     ozzyContainer.classList.add('hidden');
 
-    // NEW: Regenerate player health after defeating Stonks - RESTORED TO 100%
+    // NEW: Regenerate player health after defeating the bot - RESTORED TO 100%
     playerHealth = MAX_PLAYER_HEALTH; // Set player health to maximum
     updatePlayerHealthUI();
 
@@ -1518,44 +1525,43 @@ function handleOzzyKnockout() {
         currentLevelDisplay.textContent = currentLevel; // Update display
         isBossFight = true; // Set boss flag 
         
-        // INCREASE BASE STONKS DAMAGE AFTER DEFEATING THE PREVIOUS BOSS
+        // INCREASE BASE BOT DAMAGE AFTER DEFEATING THE PREVIOUS BOSS
         baseStonksDamage += STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE;
-        console.log(`Base Stonks damage increased to ${baseStonksDamage} after boss cycle.`);
+        console.log(`Base bot damage increased to ${baseStonksDamage} after boss cycle.`); // ZMIANA: Neutralny tekst
 
-        startBossFight(); // This function will set boss damage
+        startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
         
         clearInterval(playerAttackIntervalId); // Stop current interval
         playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Restart with new damage
     } else {
-        // Normal Stonks knockout
-        currentLevel = nextLevelCandidate; // Increment level for normal stonks
+        // Normal bot knockout
+        currentLevel = nextLevelCandidate; // Increment level for normal bot
         currentLevelDisplay.textContent = currentLevel; // Update display
+        console.log(`Normal bot knockout. New level: ${currentLevel}`); // ZMIANA: Neutralny tekst
 
         isBossFight = false;
-        // CHANGE: Use image path based on selected skin
-        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; 
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; // ZMIANA: Używaj obrazu z wybranej skórki
         ozzyImage.classList.remove('boss-mode'); 
         ozzyImage.classList.remove('flipped-x'); 
         
-        // CHANGE: Stonks variant selection logic: changes every 10 levels from level 11
-        if (currentLevel >= 1 && currentLevel <= 10) {
-            stonksVisualVariantIndex = 0; // Variant 0 for levels 1-10
-        } else {
-            // For levels 11 and higher, change variant every 10 levels, looping through 0-9
-            stonksVisualVariantIndex = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL) % totalStonksVariants;
-        }
-        console.log(`Stonks visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`);
+        // CHANGE: Bot variant selection logic: changes every 10 levels from level 11
+        // ZMIANA: Nowa logika dla 20 wariantów. Co 10 poziomów wariant bossa się zmienia, a co 10 poziomów wariant normalnego bota też się zmienia.
+        // Jeśli aktualny poziom jest np. 11, bossCyclesCompletedForNormalTinus = 1, więc indeks wariantu = 1 (drugi wariant).
+        // Jeśli aktualny poziom jest np. 21, bossCyclesCompletedForNormalTinus = 2, więc indeks wariantu = 2 (trzeci wariant).
+        const bossCyclesCompletedForNormalTinus = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
+        stonksVisualVariantIndex = bossCyclesCompletedForNormalTinus % totalStonksVariants;
         
-        // CHANGE: Calculate normal Stonks health based on number of bosses defeated
+        console.log(`Bot visual variant set to: stonks-variant-${stonksVisualVariantIndex} for level ${currentLevel}`); // ZMIANA: Neutralny tekst
+        
+        // CHANGE: Calculate normal bot health based on number of bosses defeated
         // This will ensure health scales every 10 levels, after each boss fight.
-        // bossCyclesCompletedForNormalStonks: 0 for levels 1-10, 1 for 11-20, 2 for 21-30 etc.
-        const bossCyclesCompletedForNormalStonks = Math.floor((currentLevel - 1) / BOSS_LEVEL_INTERVAL); 
-        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalStonks * NORMAL_OZZY_HEALTH_INCREMENT);
-        console.log(`Normal Stonks HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalStonks} boss cycles completed)`);
+        // bossCyclesCompletedForNormalTinus: 0 for levels 1-10, 1 for 11-20, 2 for 21-30 etc.
+        INITIAL_OZZY_HEALTH = NORMAL_OZZY_INITIAL_HEALTH + (bossCyclesCompletedForNormalTinus * NORMAL_OZZY_HEALTH_INCREMENT);
+        console.log(`Normal bot HP set to: ${INITIAL_OZZY_HEALTH} (based on ${bossCyclesCompletedForNormalTinus} completed boss cycles)`); // ZMIANA: Neutralny tekst
 
-        updateOzzyAppearance(); // Apply the new Stonks variant
+        updateOzzyAppearance(); // Apply the new bot variant
 
-        bossCurrentTransformX = 0; // Reset position for normal Stonks
+        bossCurrentTransformX = 0; // Reset position for normal bot
         ozzyContainer.style.transform = `translate(-50%, -50%)`; 
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = false; 
@@ -1569,9 +1575,9 @@ function handleOzzyKnockout() {
             knockoutMsgElement.remove();
         }, 2000); 
 
-        // CHANGE: Normal Stonks damage is just base damage
+        // CHANGE: Normal bot damage is just base damage
         STONKS_ATTACK_DAMAGE = baseStonksDamage;
-        console.log(`Normal Stonks attack damage set to: ${STONKS_ATTACK_DAMAGE} for level ${currentLevel}`);
+        console.log(`Normal bot attack damage set to: ${STONKS_ATTACK_DAMAGE} for level ${currentLevel}`); // ZMIANA: Neutralny tekst
     }
 
     ozzyHealth = INITIAL_OZZY_HEALTH; // Set Ozzy's health to the new scaled max health
@@ -1582,7 +1588,7 @@ function handleOzzyKnockout() {
         ozzyContainer.classList.remove('hidden');
         ozzyImage.classList.remove('hit-effect');
         if (!isBossFight) {
-            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Clean centering for normal Stonks
+            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Clean centering for normal bot
         } else {
             // If it's a boss, movement animation continues, so we keep bossCurrentTransformX
             ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
@@ -1609,8 +1615,8 @@ function startBossFight() {
     INITIAL_OZZY_HEALTH = BOSS_INITIAL_HEALTH + (bossEncounterCount - 1) * BOSS_HEALTH_INCREMENT_PER_ENCOUNTER;
     INITIAL_OZZY_HEALTH = Math.max(BOSS_INITIAL_HEALTH, INITIAL_OZZY_HEALTH); // Ensure it doesn't go below base
 
-    // CHANGE: Boss message depends on selected skin
-    const bossMessageText = currentSkin === 'stonks' ? "WARNING! BOSS STONKS! BEAT HIM UP!" : "WARNING! BOSS TINU! BEAT HIM UP!";
+    // CHANGE: Boss message depends on selected skin, but more neutral
+    const bossMessageText = `WARNING! BOSS ${currentSkin.toUpperCase()}! BEAT IT UP!`; // ZMIANA: Dynamiczny i neutralny tekst bossa
     showBossMessage(bossMessageText, 2500); 
 
     // CHANGE: Calculate boss damage: base damage + 25%
@@ -1619,6 +1625,7 @@ function startBossFight() {
 
 
     // CHANGE: Boss variant selection logic: changes for each subsequent boss
+    // ZMIANA: Nowa logika dla 20 wariantów.
     bossVisualVariantIndex = (bossEncounterCount - 1) % totalBossVariants;
     updateOzzyAppearance(); // Apply the new boss variant
 
@@ -1763,7 +1770,7 @@ function showSkinSelectionScreen() {
     startScreen.classList.add('hidden');
     shopButton.classList.add('hidden'); // Hide shop button on skin selection screen
     superpowerButtonsContainer.classList.add('hidden'); // Hide superpower buttons
-    ozzyContainer.classList.add('hidden'); // Hide Stonks/Ozzy
+    ozzyContainer.classList.add('hidden'); // Hide bot
     gameInfoContainer.classList.add('hidden'); // Hide game info
     playerHealthContainer.classList.add('hidden'); // Hide player health bar
     leaderboardScreen.classList.add('hidden'); // Hide leaderboard
@@ -1965,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = true; 
         clearInterval(superpowerCooldownIntervalId); 
-        clearInterval(playerAttackIntervalId); // NEW: Stop Stonks attack in shop
+        clearInterval(playerAttackIntervalId); // NEW: Stop bot attack in shop
 
         // Stop all canvas effects when going to shop
         cancelAnimationFrame(gameCanvasAnimationFrameId); // CHANGE: Cancel canvas animation
@@ -2028,7 +2035,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         superpowerCooldownIntervalId = setInterval(updateSuperpowerCooldownDisplays, 1000);
         updateSuperpowerButtons(); 
 
-        // NEW: Resume Stonks attack after leaving shop
+        // NEW: Resume bot attack after leaving shop
         clearInterval(playerAttackIntervalId);
         playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS);
 
