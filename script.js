@@ -124,7 +124,7 @@ let lastUsedFrenzyTime = 0;
 
 let frenzyModeActive = false;
 let frenzyTimerId;
-const FRENZY_DAMAGE_MULTIPLIER = 3; 
+const FRENZY_DAMAGE_MULTIPLIER = 2; 
 const FRENZY_DURATION_MS = 5000; 
 
 let LIGHTNING_BASE_DAMAGE = 150; 
