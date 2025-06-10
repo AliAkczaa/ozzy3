@@ -158,7 +158,7 @@ let bossMovementAnimationFrameId;
 let bossDx = BOSS_MOVEMENT_SPEED; 
 let bossCurrentTransformX = 0; // Tracks additional X offset from center
 
-const CLIENT_SIDE_MAX_SCORE = 200; // Ta zmienna nie jest już używana do weryfikacji poziomu, ale zostaje dla kontekstu historycznego.
+const CLIENT_SIDE_MAX_SCORE = 200;
 
 let upgradeLevels = {
     baseDamage: 1, lightningDamage: 1, freezeDamage: 1, frenzyDamage: 1
@@ -246,17 +246,6 @@ class CanvasParticle {
             this.alpha -= 0.005 * dtRatio; // Szybkie zanikanie, skalowane
             this.size = this.startSize * (1 - 0.002 * (this.currentLifeTime / this.life)); // Lekkie zmniejszenie rozmiaru, skalowane
         } else if (this.type === 'painParticle') {
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
-
-            // Draw a more irregular, spiky shape for pain particles
-            ctx.moveTo(0, -this.size * 0.8); // Top point
-            ctx.lineTo(this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Right-bottom
-            ctx.lineTo(-this.size * (0.8 + Math.random() * 0.2), this.size * (0.5 + Math.random() * 0.2)); // Left-bottom
-            ctx.closePath();
-            ctx.fill();
             this.vy += 0.02 * dtRatio; // Grawitacja, skalowana
             this.alpha -= 0.008 * dtRatio; // Szybkie zanikanie, skalowane
             this.size = this.startSize * (1 - 0.001 * (this.currentLifeTime / this.life)); // Zmniejszaj rozmiar, skalowane
@@ -791,28 +780,28 @@ function spawnStonksAttackEffects(ozzyX, ozzyY) {
 
 
 // --- Leaderboard Functions ---
-async function saveScoreToLeaderboard(nickname, level) { // ZMIANA: Zmieniono nazwę parametru z 'score' na 'level'
-    console.log("saveScoreToLeaderboard called with nickname:", nickname, "level:", level); // ZMIANA: Zmieniono logowanie
+async function saveScoreToLeaderboard(nickname, score) {
+    console.log("saveScoreToLeaderboard called with nickname:", nickname, "score:", score);
 
-    // CLIENT_SIDE_MAX_SCORE nie jest już używany do weryfikacji poziomu.
-    // Jeśli potrzebne będzie ograniczenie maksymalnego poziomu, należy wprowadzić nową zmienną np. MAX_LEVEL.
-    // ZMIANA: Usunięto warunek weryfikacji score/level z klient-side.
-    // if (score > CLIENT_SIDE_MAX_SCORE) {
-    //     showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000);
-    //     console.warn(`Attempt to save unrealistic score (${score}) by ${nickname}. Blocked client-side.`);
-    //     setTimeout(resetGame, 3000); // Resetujemy grę po próbie oszustwa
-    //     return;
-    // }
+    // Klienckie zabezpieczenie przed nierealistycznymi wynikami.
+    // Pamiętaj, że to zabezpieczenie jest podatne na modyfikację przez gracza.
+    const CLIENT_SIDE_MAX_SCORE = 200; 
+    if (score > CLIENT_SIDE_MAX_SCORE) {
+        showMessage("Spierdalaj frajerze cheaterze! Wynik nierealny!", 3000);
+        console.warn(`Attempt to save unrealistic score (${score}) by ${nickname}. Blocked client-side.`);
+        setTimeout(resetGame, 3000); // Resetujemy grę po próbie oszustwa
+        return;
+    }
 
-    // Upewniamy się, że użytkownik jest uwierzytelniony i poziom jest dodatni.
-    if (level > 0 && currentUserId) { // ZMIANA: Sprawdzamy 'level' zamiast 'score'
+    // Upewniamy się, że użytkownik jest uwierzytelniony i wynik jest dodatni.
+    if (score > 0 && currentUserId) {
         try {
             // BEZPOŚREDNI ZAPIS DO FIRESTORE
             // Używamy funkcji addDoc z Firestore SDK, aby dodać nowy dokument
             // do kolekcji 'leaderboard'. Firestore automatycznie wygeneruje ID dla dokumentu.
             await addDoc(collection(db, "leaderboard"), {
                 nickname: nickname,
-                score: level, // ZMIANA: Zapisujemy 'level' jako 'score' w Firestore
+                score: score,
                 // Używamy serverTimestamp() do uzyskania znacznika czasu z serwera Firestore,
                 // co pomaga w sortowaniu i zapobiega manipulacji czasem przez klienta.
                 timestamp: serverTimestamp(), 
@@ -820,7 +809,7 @@ async function saveScoreToLeaderboard(nickname, level) { // ZMIANA: Zmieniono na
             });
 
             showMessage("Wynik zapisany pomyślnie!", 2000);
-            console.log(`Wynik (poziom ${level}) przesłany przez ${nickname} (${currentUserId}) i zapisany.`); // ZMIANA: Logowanie
+            console.log(`Wynik (${score}) przesłany przez ${nickname} (${currentUserId}) i zapisany.`);
 
         } catch (error) {
             console.error("Error saving score directly to Firestore:", error);
@@ -836,7 +825,6 @@ async function fetchAndDisplayLeaderboard() {
     console.log("fetchAndDisplayLeaderboard called.");
     leaderboardList.innerHTML = ''; 
     try {
-        // Query remains 'score' because that's the field name in Firestore
         const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), orderBy("timestamp", "asc"), limit(10));
         const snapshot = await getDocs(q);
 
@@ -847,8 +835,8 @@ async function fetchAndDisplayLeaderboard() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // ZMIANA: Wyświetlamy 'poziom' zamiast 'znokautowań'
-            li.textContent = `${data.nickname || 'Anonim'}: Poziom ${data.score}`;
+            const li = document.createElement('li');
+            li.textContent = `${data.nickname || 'Anonim'}: ${data.score} znokautowań`;
             leaderboardList.appendChild(li);
         });
     } catch (e) {
@@ -1450,8 +1438,9 @@ function endGame(message) {
     }
 
     document.getElementById('end-message').textContent = message; // Komunikat o zakończeniu gry
-    document.getElementById('final-score').textContent = currentLevel; // ZMIANA: Wyświetl osiągnięty poziom
-    saveScoreToLeaderboard(playerNickname, currentLevel); // ZMIANA: Zapisz poziom, a nie punkty
+    document.getElementById('final-score').textContent = score; 
+
+    saveScoreToLeaderboard(playerNickname, score);
 
     endScreen.classList.remove('hidden');
 
