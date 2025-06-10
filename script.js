@@ -177,7 +177,7 @@ const BOSS_MOVEMENT_SPEED = 2;
 const BOSS_QUOTES = [
     "CRYPTON TEAM IS FARMING!", "TTB IS BEST!", 
     "TO DUBAI!", "WITH INVESTOR'S MONEY!", 
-    "REFUND FOR V1?", "STONKS OR STINKS?"
+    "WANT V1 REFUND?", "STONKS OR STINKS?"
 ];
 let bossMovementAnimationFrameId; 
 let bossDx = BOSS_MOVEMENT_SPEED; 
@@ -1907,9 +1907,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     quoteImagesContainer.innerHTML = ''; 
     skinSelectionScreen.classList.add('hidden'); // Hide skin selection screen on start
 
-    // Set initial text based on default skin (Tinu)
-    // PRZENIESIONE: Wywołaj updateMainScreenText po przypisaniu zmiennych DOM
-    updateMainScreenText(); 
     
     // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
     resetGame(); 
@@ -2091,4 +2088,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     updateUpgradeShopUI();
+    // Set initial text based on default skin (Tinu) - PRZENIESIONE TUTAJ
+    updateMainScreenText(); 
 });
