@@ -1778,7 +1778,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     baseDamageCostDisplay = document.getElementById('base-damage-cost');
     buyBaseDamageButton = document.getElementById('buy-base-damage');
     lightningDamageLevelDisplay = document.getElementById('lightning-damage-level');
-    lightningDamageCostDisplay = document = document.getElementById('lightning-damage-cost');
+    lightningDamageCostDisplay = document.getElementById('lightning-damage-cost');
     buyLightningDamageButton = document.getElementById('buy-lightning-damage');
     freezeDamageLevelDisplay = document.getElementById('freeze-damage-level');
     freezeDamageCostDisplay = document.getElementById('freeze-damage-cost');
