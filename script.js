@@ -197,9 +197,9 @@ const MAX_UPGRADE_LEVEL = 10; // Maximum upgrade level for superpowers
 
 // --- Variables for visual variants of Stonks ---
 let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
-const totalStonksVariants = 10;     // Number of available variants (0-9)
+const totalStonksVariants = 20;     // Number of available variants (0-9)
 let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
-const totalBossVariants = 10;       // Number of available Boss variants (0-9)
+const totalBossVariants = 20;       // Number of available Boss variants (0-9)
 
 // Original superpower button texts (for display when not on cooldown)
 const originalLightningText = 'Lightning Strike';
@@ -479,21 +479,21 @@ function animateGameCanvasEffects(currentTime) {
                 color = `rgba(255, ${Math.floor(Math.random() * 100)}, 0, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossFire';
                 size = Math.random() * 15 + 10; // Larger flames
-                life = 1000 + Math.random() * 500; // Longer life
+                life = 800 + Math.random() * 500; // Longer life
                 vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.3); // Slower lateral movements
                 vy = -(Math.random() * baseParticleSpeed * 0.5) - 0.5; // Moves upwards
             } else if (bossVisualVariantIndex === 1) { // Blue/glitchy boss (Ice)
                 color = `rgba(${Math.floor(Math.random() * 50) + 100}, ${Math.floor(Math.random() * 50) + 200}, 255, ${0.7 + Math.random() * 0.3})`;
                 type = 'bossIce';
                 size = Math.random() * 10 + 5; // Shard size
-                life = 800 + Math.random() * 400;
+                life = 600 + Math.random() * 400;
                 vx = (Math.random() - 0.5) * (baseParticleSpeed * 0.8); // Fast dispersion
                 vy = (Math.random() - 0.5) * (baseParticleSpeed * 0.8);
             } else { // Purple/intense boss (Electricity)
                 color = `rgba(${Math.floor(Math.random() * 50) + 200}, 0, ${Math.floor(Math.random() * 50) + 200}, ${0.8 + Math.random() * 0.2})`;
                 type = 'bossElectricity';
                 size = Math.random() * 20 + 10; // Spark length
-                life = 200 + Math.random() * 100; // Very short life
+                life = 100 + Math.random() * 100; // Very short life
                 vx = 0; // No movement
                 vy = 0;
             }
