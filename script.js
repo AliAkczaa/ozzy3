@@ -160,7 +160,7 @@ const BOSS_INITIAL_HEALTH = 300;
 const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100; 
 
 const BOSS_MOVEMENT_SPEED = 2; 
-]; // ZMIANA: Zneutralizowane cytaty bossa
+// ZMIANA: Zneutralizowane cytaty bossa
 const BOSS_QUOTES = [
     "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
     "TO DUBAI! WITH INVESTOR'S MONEY!", "Calculating next move!", 
