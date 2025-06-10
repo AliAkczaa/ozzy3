@@ -160,13 +160,6 @@ const BOSS_INITIAL_HEALTH = 300;
 const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100; 
 
 const BOSS_MOVEMENT_SPEED = 2; 
-const BOSS_QUOTES = [
-    "WHERE V1 AIRDROP?", 
-    "STONKS OR STINKS?", 
-    "WITH INVESTOR'S MONEY!", 
-    "TO DUBAI!", 
-    "TTB IS BEST!",
-    "CRYPTON TEAM IS FARMING?!",
 ]; // ZMIANA: Zneutralizowane cytaty bossa
 const BOSS_QUOTES = [
     "CRYPTO GUYS ARE FARMING!", "TTB IS BEST!", 
