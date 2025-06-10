@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zabij Stonksa!</title>
     <!-- Czcionka Press Start 2P jest importowana w style.css -->
     <link rel="stylesheet" href="style.css">
@@ -105,37 +105,37 @@
             <p id="shop-points">Twoje punkty: <span id="current-score-shop">0</span></p>
             
             <div class="upgrade-category">
-                <h3>Obrażenia Podstawowe</h3>
+                <h3>Obrażenia</h3>
                 <p>Poziom: <span id="base-damage-level">1</span></p>
                 <p>Koszt: <span id="base-damage-cost">10</span> points</p>
-                <button id="buy-base-damage">Kup Ulepszenie</button>
+                <button id="buy-base-damage">Kup</button>
             </div>
+            <div class="upgrade-category">
+                <h3>Maksymalne Zdrowie</h3>
+                <p>Poziom: <span id="max-health-level">1</span></p>
+                <p>Koszt: <span id="max-health-cost">10</span> points</p>
+                <button id="buy-max-health">Kup</button>
+            </div>
+            <button id="close-shop-button">Zamknij Sklep</button>
             <div class="upgrade-category">
                 <h3>Piorun Zagłady</h3>
                 <p>Poziom: <span id="lightning-damage-level">1</span></p>
                 <p>Koszt: <span id="lightning-damage-cost">10</span> points</p>
-                <button id="buy-lightning-damage">Kup Ulepszenie</button>
+                <button id="buy-lightning-damage">Kup</button>
             </div>
             <div class="upgrade-category">
                 <h3>Lodowy Wybuch</h3>
                 <p>Poziom: <span id="freeze-damage-level">1</span></p>
                 <p>Koszt: <span id="freeze-damage-cost">10</span> points</p>
-                <button id="buy-freeze-damage">Kup Ulepszenie</button>
+                <button id="buy-freeze-damage">Kup</button>
             </div>
             <div class="upgrade-category">
                 <h3>Szał Bojowy</h3>
                 <p>Poziom: <span id="frenzy-damage-level">1</span></p>
                 <p>Koszt: <span id="frenzy-cost">10</span> points</p>
-                <button id="buy-frenzy-damage">Kup Ulepszenie</button>
+                <button id="buy-frenzy-damage">Kup</button>
             </div>
             <!-- NOWE: Kategoria ulepszenia maksymalnego zdrowia -->
-            <div class="upgrade-category">
-                <h3>Maksymalne Zdrowie Gracza</h3>
-                <p>Poziom: <span id="max-health-level">1</span></p>
-                <p>Koszt: <span id="max-health-cost">10</span> points</p>
-                <button id="buy-max-health">Kup Ulepszenie</button>
-            </div>
-            <button id="close-shop-button">Zamknij Sklep</button>
         </div>
 
         <!-- NOWY PRZYCISK SKLEPU NA EKRANIE GRY -->
