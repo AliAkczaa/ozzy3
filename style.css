@@ -1,5 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-body{margin:0;position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(to bottom,#4a0000,#000000);font-family:'Press Start 2P',cursive;color:#eee;text-shadow:2px 2px 4px rgba(0,0,0,0.7);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;user-select:none;-webkit-user-drag:none}
+body{
+    margin:0;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:linear-gradient(to bottom,#4a0000,#000000);
+    font-family:'Press Start 2P',cursive;
+    color:#eee;
+    text-shadow:2px 2px 4px rgba(0,0,0,0.7);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    user-select: none; /* Blokowanie zaznaczania tekstu */
+    -webkit-user-drag: none; /* Blokowanie przeciągania na WebKit (np. Safari) */
+    user-drag: none; /* Standardowa właściwość blokująca przeciąganie */
+}
 .hidden{display:none!important}
 
 #game-container{position:fixed;top:0;left:0;width:100vw;height:100vh;max-width:1200px;max-height:800px;overflow:hidden;border:5px solid #8B0000;box-shadow:0 0 50px rgba(255,0,0,0.5);background-color:#000;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box}
@@ -28,7 +45,20 @@ body{margin:0;position:relative;overflow:hidden;display:flex;justify-content:cen
     40%,60%{transform:translate(-48%,-50%)}
     50%{transform:translate(-50%,-50%)}
 }
-#animated-background-tractor{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.7)grayscale(0.5);animation:background-pan 30s linear infinite alternate}
+#animated-background-tractor{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:1;
+    filter:brightness(0.7)grayscale(0.5);
+    animation:background-pan 30s linear infinite alternate;
+    user-select: none; /* Blokowanie zaznaczania */
+    -webkit-user-drag: none; /* Blokowanie przeciągania */
+    user-drag: none; /* Blokowanie przeciągania */
+}
 @keyframes background-pan{
     0%{transform:scale(1)}
     100%{transform:scale(1.1)}
@@ -51,11 +81,43 @@ body{margin:0;position:relative;overflow:hidden;display:flex;justify-content:cen
     100%{background-color:rgba(255,69,0,0.5);transform:scale(1.02)}
 }
 #quote-images-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:hidden}
-.quote-image{position:absolute;width:clamp(80px,15vw,150px);height:clamp(80px,15vw,150px);object-fit:contain;opacity:0;transform:scale(0.5);transition:opacity 0.3s ease-out,transform 0.3s ease-out;z-index:55}
+.quote-image{
+    position:absolute;
+    width:clamp(80px,15vw,150px);
+    height:clamp(80px,15vw,150px);
+    object-fit:contain;
+    opacity:0;
+    transform:scale(0.5);
+    transition:opacity 0.3s ease-out,transform 0.3s ease-out;
+    z-index:55;
+    user-select: none; /* Blokowanie zaznaczania */
+    -webkit-user-drag: none; /* Blokowanie przeciągania */
+    user-drag: none; /* Blokowanie przeciągania */
+}
 .quote-image.active{opacity:1;transform:scale(1)}
 
-#ozzy-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;cursor:url('stonks.png'),auto;transition:transform 0.1s ease-out;user-select:none;-webkit-user-drag:none}
-#ozzy-image{width:clamp(150px,40vw,300px);height:auto;display:block;filter:drop-shadow(0 0 15px rgba(255,255,255,0.5));transition:filter 0.1s ease-out,transform 0.1s ease-out}
+#ozzy-container{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    z-index:20;
+    cursor:url('stonks.png'),auto;
+    transition:transform 0.1s ease-out;
+    user-select:none; /* Blokowanie zaznaczania */
+    -webkit-user-drag:none; /* Blokowanie przeciągania */
+    user-drag: none; /* Blokowanie przeciągania */
+}
+#ozzy-image{
+    width:clamp(150px,40vw,300px);
+    height:auto;
+    display:block;
+    filter:drop-shadow(0 0 15px rgba(255,255,255,0.5));
+    transition:filter 0.1s ease-out,transform 0.1s ease-out;
+    user-select: none; /* Blokowanie zaznaczania */
+    -webkit-user-drag: none; /* Blokowanie przeciągania */
+    user-drag: none; /* Blokowanie przeciągania */
+}
 #ozzy-image.hit-effect{filter:brightness(1.5)grayscale(0.5)drop-shadow(0 0 20px yellow);transform:scale(1.05)}
 #ozzy-image.spawn-ozzy{animation:spawn-pop 0.5s cubic-bezier(0.68,-0.55,0.27,1.55)}
 @keyframes spawn-pop{
