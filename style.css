@@ -139,6 +139,18 @@ body{
 #ozzy-image.stonks-variant-7{filter:sepia(70%)contrast(150%)brightness(1.1)}
 #ozzy-image.stonks-variant-8{filter:hue-rotate(270deg)saturate(180%)drop-shadow(0 0 10px #FF00FF)}
 #ozzy-image.stonks-variant-9{filter:brightness(0.7)contrast(200%)}
+/* NOWE WARIANTY DLA ZWYKŁYCH BOTÓW (STONKS/TINU) */
+#ozzy-image.stonks-variant-10 { filter: hue-rotate(300deg) saturate(200%) brightness(1.2); }
+#ozzy-image.stonks-variant-11 { filter: grayscale(100%) contrast(1.5) brightness(0.8); }
+#ozzy-image.stonks-variant-12 { filter: sepia(100%) brightness(1.3) hue-rotate(90deg); }
+#ozzy-image.stonks-variant-13 { filter: invert(70%) saturate(1.8) drop-shadow(0 0 7px blue); }
+#ozzy-image.stonks-variant-14 { filter: opacity(0.8) contrast(200%) brightness(1.1); }
+#ozzy-image.stonks-variant-15 { filter: blur(0.5px) hue-rotate(180deg) saturate(250%); }
+#ozzy-image.stonks-variant-16 { filter: drop-shadow(0 0 12px yellow) brightness(1.5) contrast(1.2); }
+#ozzy-image.stonks-variant-17 { filter: hue-rotate(60deg) sepia(50%) saturate(1.7); }
+#ozzy-image.stonks-variant-18 { filter: brightness(0.5) contrast(300%) invert(50%); }
+#ozzy-image.stonks-variant-19 { filter: saturate(0) sepia(100%) hue-rotate(200deg) brightness(1.2); }
+
 
 /* Boss Visual Variants (applied in addition to boss-mode class) */
 #ozzy-image.boss-mode-variant-0{filter:brightness(1.2)contrast(1.2)hue-rotate(180deg)drop-shadow(0 0 30px #FF0000)}
@@ -151,6 +163,17 @@ body{
 #ozzy-image.boss-mode-variant-7{filter:sepia(90%)invert(60%)brightness(1.3)saturate(200%)contrast(1.5)drop-shadow(0 0 75px #FFFF00)}
 #ozzy-image.boss-mode-variant-8{filter:contrast(400%)brightness(0.4)hue-rotate(150deg)drop-shadow(0 0 80px #0000FF)}
 #ozzy-image.boss-mode-variant-9{filter:hue-rotate(320deg)saturate(200%)blur(1.2px)brightness(1.1)drop-shadow(0 0 85px #FF007F)}
+/* NOWE WARIANTY DLA BOSSÓW */
+#ozzy-image.boss-mode-variant-10 { filter: brightness(1.8) contrast(1.5) saturate(200%) hue-rotate(30deg) drop-shadow(0 0 90px orange); }
+#ozzy-image.boss-mode-variant-11 { filter: grayscale(100%) brightness(1.2) contrast(1.8) drop-shadow(0 0 95px white); }
+#ozzy-image.boss-mode-variant-12 { filter: invert(100%) saturate(150%) hue-rotate(220deg) drop-shadow(0 0 100px purple); }
+#ozzy-image.boss-mode-variant-13 { filter: sepia(80%) hue-rotate(150deg) brightness(1.6) drop-shadow(0 0 105px green); }
+#ozzy-image.boss-mode-variant-14 { filter: opacity(0.7) contrast(250%) brightness(1.3) drop-shadow(0 0 110px cyan); }
+#ozzy-image.boss-mode-variant-15 { filter: blur(1px) saturate(300%) hue-rotate(300deg) drop-shadow(0 0 115px magenta); }
+#ozzy-image.boss-mode-variant-16 { filter: drop-shadow(0 0 120px red) brightness(2.0) contrast(1.0); }
+#ozzy-image.boss-mode-variant-17 { filter: hue-rotate(90deg) invert(80%) saturate(200%) drop-shadow(0 0 125px lime); }
+#ozzy-image.boss-mode-variant-18 { filter: brightness(0.6) contrast(400%) grayscale(50%) drop-shadow(0 0 130px darkblue); }
+#ozzy-image.boss-mode-variant-19 { filter: saturate(0) sepia(100%) hue-rotate(40deg) brightness(1.5) drop-shadow(0 0 135px brown); }
 
 @keyframes boss-flicker{
     0%,100%{opacity:1}
