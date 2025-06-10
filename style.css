@@ -157,7 +157,7 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    max-height: 95vh;
+    max-height: 80vh; /* Zmieniono z 95vh na 80vh */
     overflow-y: auto;
     box-sizing: border-box; /* Ważne dla paddingu i borderów */
 }
