@@ -189,19 +189,37 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     z-index:30;
 }
 .superpower-button{
-    background-color:#004d00;
+    --cooldown-percentage: 0%; /* Zmienna CSS dla postępu cooldownu */
+    --superpower-base-bg: #004d00;
+    --superpower-cooldown-bg: #228B22; /* Ciemniejsza zieleń dla paska cooldownu */
+
+    background-color: var(--superpower-base-bg);
+    background-image: linear-gradient(to top, var(--superpower-cooldown-bg) var(--cooldown-percentage), transparent var(--cooldown-percentage));
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: bottom; /* Pasek zaczyna się od dołu */
+    transition: background-image 1s linear; /* Płynne przejście dla paska */
+
     border-color:#00FF00;
     color:#FFF;
     padding:10px 15px;
     font-size:clamp(0.7em,2.5vw,1em);
     display:flex; /* Ustawienie na flexbox */
+    flex-direction: row; /* Domyślnie w rzędzie */
     align-items:center; /* Wyśrodkowanie w pionie */
     justify-content:center; /* Wyśrodkowanie w poziomie */
     gap:5px; /* Odstęp między elementami flex */
     flex-wrap:nowrap;
     width:auto;
+    position: relative; /* Ważne dla nakładania elementów */
+    overflow: hidden; /* Upewnij się, że pasek nie wychodzi poza przycisk */
 }
 /* ZMIANA: Style dla nowych spanów w przyciskach supermocy */
+.superpower-button > span {
+    position: relative; /* Upewnij się, że tekst jest nad paskiem */
+    z-index: 1;
+    pointer-events: none; /* Zapobiegaj blokowaniu kliknięć przez spany */
+}
 .superpower-button .superpower-icon {
     font-size: 1.5em; /* Rozmiar ikony */
     line-height: 1; /* Zapobiega dodatkowemu odstępowi */
@@ -216,7 +234,11 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
 }
 
 .superpower-button:hover{background-color:#008000;border-color:#7FFF00}
-.superpower-button span{white-space:nowrap}
+.superpower-button:disabled { /* Dodatkowe style dla wyłączonych przycisków */
+    background-color: #555 !important; /* Ważne, aby nadpisać gradient */
+    background-image: none !important;
+    border-color: #777 !important;
+}
 
 .knockout-message,.boss-message{position:absolute;left:50%;transform:translate(-50%,-50%);background-color:rgba(0,0,0,0.8);padding:20px 30px;border-radius:10px;border:4px solid #FFD700;font-size:clamp(1em,3.5vw,2em);text-align:center;color:#FFD700;z-index:1000;animation:message-pop-fade 2s ease-out forwards;white-space:normal;word-break:break-word;max-width:90%;box-sizing:border-box}
 .boss-message{border-color:#FF0000;color:#FF0000;text-shadow:0 0 10px #FF4500;animation:message-pop-fade-boss 2.5s ease-out forwards}
@@ -381,13 +403,22 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     #health-bar-container{height:20px}
     #player-health-container{top:unset;bottom:75px;left:50%;transform:translateX(-50%);width:clamp(100px,45vw,200px);padding:8px 12px;font-size:clamp(0.6em,2.5vw,1em)}
     #player-health-bar-bg{height:10px}
-    #superpower-buttons-container{top:unset;bottom:5px;left:50%;transform:translateX(-50%);flex-direction:row;width:95%;padding:5px;justify-content:space-around;gap:5px}
+    #superpower-buttons-container{
+        top:unset;
+        bottom:5px;
+        left:50%;
+        transform:translateX(-50%);
+        flex-direction:row;
+        width:95%;
+        padding:5px;
+        justify-content:space-around;
+        gap:5px;
+    }
     .superpower-button{
         flex:1;
-        padding:8px;
-        font-size:1.5em; /* Utrzymujemy duży rozmiar dla ikony */
-        width:50px;
-        height:50px;
+        padding:5px; /* Zmniejszony padding przycisku */
+        font-size:1.2em; /* Mniejszy rozmiar dla ikony */
+        height:45px; /* Mniejsza wysokość przycisku */
         display:flex;
         justify-content:center;
         align-items:center;
@@ -396,12 +427,23 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     .superpower-button .superpower-name-cooldown {
         display: none; /* Ukryj pełną nazwę/cooldown na mobilnych */
     }
+    .superpower-button .superpower-icon {
+        font-size: 1.5em; /* Zachowaj duży rozmiar ikony na mobilnych */
+        line-height: 1;
+    }
     .superpower-button .superpower-level-display {
-        font-size: clamp(0.7em, 2.5vw, 1em); /* Rozmiar tekstu poziomu na mobilnych */
+        font-size: clamp(0.6em, 2.2vw, 0.9em); /* Mniejszy rozmiar tekstu poziomu na mobilnych */
         margin-left: 0; /* Brak dodatkowego marginesu */
     }
     #game-info-container{top:10px;left:10px;right:unset;bottom:unset}
-    #shop-button{top:2px;right:3px;left:unset;bottom:unset;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em)}.knockout-message,.boss-message{top:30%;transform:translate(-50%,-50%);font-size:clamp(0.7em,3vw,1.2em);padding:12px 18px}
+    #shop-button{top:2px;right:3px;left:unset;bottom:unset;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em)}
+    /* ZMIANA: Podniesienie komunikatów na mobilnych */
+    .knockout-message, .boss-message {
+        top: 20%; /* Przesunięcie wyżej */
+        transform: translate(-50%, -50%); /* Nadal centrowane poziomo */
+        font-size: clamp(0.7em, 3vw, 1.2em); /* Zmniejszona czcionka */
+        padding: 12px 18px; /* Zmniejszony padding */
+    }
     
     /* ZMIANA: Sklep na mobilnych - elementy wypełniają całą szerokość i są bardziej kompaktowe */
     #upgrade-shop-screen {
@@ -436,4 +478,4 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     .skin-options{flex-direction:column;align-items:center}
     .skin-button{width:clamp(150px,40vw,250px)}
 }
-@media(min-width:769px){.knockout-message,.boss-message{top:75%;transform:translate(-50%,-50%)}}
+@media(min-width:769px){.knockout-message,.boss-message{top:80%;transform:translate(-50%,-50%)}}
