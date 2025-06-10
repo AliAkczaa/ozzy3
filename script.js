@@ -81,6 +81,11 @@ let selectStonksSkinButton;
 let selectTinuSkinButton;
 let closeSkinSelectionButton;
 
+// NOWE: Zmienne DOM dla ulepszenia maksymalnego zdrowia
+let maxHealthLevelDisplay;
+let maxHealthCostDisplay;
+let buyMaxHealthButton;
+
 // --- Other global variables (not directly related to DOM), with immediate assignments ---
 let playerNickname = "Gracz";
 let score = 0;
@@ -161,7 +166,8 @@ let bossCurrentTransformX = 0; // Tracks additional X offset from center
 const CLIENT_SIDE_MAX_SCORE = 200; // Ta zmienna nie jest już używana do weryfikacji poziomu, ale zostaje dla kontekstu historycznego.
 
 let upgradeLevels = {
-    baseDamage: 1, lightningDamage: 1, freezeDamage: 1, frenzyDamage: 1
+    baseDamage: 1, lightningDamage: 1, freezeDamage: 1, frenzyDamage: 1,
+    maxHealth: 1 // NOWE: Poziom ulepszenia maksymalnego zdrowia
 };
 
 const UPGRADE_COST_BASE = 10;
@@ -172,6 +178,11 @@ const LIGHTNING_DAMAGE_INCREASE_PER_LEVEL = 30;
 const FREEZE_DAMAGE_INITIAL_INCREASE_PER_LEVEL = 10; 
 const FREEZE_DAMAGE_DOT_INCREASE_PER_LEVEL = 5; 
 const FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL = 15; 
+
+// NOWE: Stałe dla ulepszenia zdrowia gracza
+let MAX_PLAYER_HEALTH = 100; // Zmieniono na let, aby można było modyfikować
+const PLAYER_HEALTH_BASE_VALUE = 100; // Bazowa wartość zdrowia
+const PLAYER_HEALTH_INCREASE_PER_LEVEL = 25; // Zwiększenie max zdrowia na poziom
 
 // --- Variables for visual variants of Stonks ---
 let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
@@ -186,7 +197,6 @@ const originalFrenzyText = 'Szał Bojowy';
 
 // NOWE: Zmienne dla życia gracza i ataków Stonksa (z poprzednich zmian)
 let playerHealth = 100;
-const MAX_PLAYER_HEALTH = 100;
 
 // ZMIANA: Stała dla zwiększenia obrażeń Stonksa PO POKONANIU BOSSA
 const STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE = 3; 
@@ -997,11 +1007,15 @@ function updateSuperpowerCooldownDisplays() {
         const targetElement = isSuperpowerTextVisible ? superpowerTextSpan : button; 
 
         if (!isGameActive && button.classList.contains('hidden')) {
-            targetElement.textContent = ` ${originalText}`;
+            if (isSuperpowerTextVisible) {
+                targetElement.textContent = ` ${originalText}`;
+            }
             return;
         }
         if (!isGameActive) {
-            targetElement.textContent = ` ${originalText}`;
+             if (isSuperpowerTextVisible) {
+                targetElement.textContent = ` ${originalText}`;
+            }
             return;
         }
 
@@ -1274,7 +1288,9 @@ function resetGame() {
     document.querySelectorAll('.boss-message').forEach(el => el.remove());
 
     // ZMIANA: Zresetuj życie gracza i ukryj pasek
-    playerHealth = MAX_PLAYER_HEALTH;
+    upgradeLevels.maxHealth = 1; // Resetuj poziom ulepszenia maksymalnego zdrowia
+    MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
+    playerHealth = MAX_PLAYER_HEALTH; // Ustaw życie gracza na maksymalne bazowe
     updatePlayerHealthUI();
     playerHealthContainer.classList.add('hidden');
     clearInterval(playerAttackIntervalId); // Zatrzymaj atak Stonksa
@@ -1384,6 +1400,7 @@ function startGame() {
     gameEffectsCanvas.classList.add('active');
 
     // ZMIANA: Ustaw życie gracza, pokaż pasek i rozpocznij atak Stonksa
+    MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
     playerHealth = MAX_PLAYER_HEALTH;
     updatePlayerHealthUI();
     playerHealthContainer.classList.remove('hidden');
@@ -1675,6 +1692,12 @@ function updateUpgradeShopUI() {
     const nextFrenzyDamageCost = calculateUpgradeCost(upgradeLevels.frenzyDamage);
     frenzyDamageCostDisplay.textContent = nextFrenzyDamageCost;
     buyFrenzyDamageButton.disabled = score < nextFrenzyDamageCost;
+
+    // NOWE: Ulepszenie maksymalnego zdrowia
+    maxHealthLevelDisplay.textContent = upgradeLevels.maxHealth;
+    const nextMaxHealthCost = calculateUpgradeCost(upgradeLevels.maxHealth);
+    maxHealthCostDisplay.textContent = nextMaxHealthCost;
+    buyMaxHealthButton.disabled = score < nextMaxHealthCost;
 }
 
 function buyUpgrade(upgradeType) {
@@ -1699,6 +1722,11 @@ function buyUpgrade(upgradeType) {
         } else if (upgradeType === 'frenzyDamage') {
             const nextFrenzyDamage = FRENZY_INITIAL_DAMAGE + (upgradeLevels.frenzyDamage - 1) * FRENZY_INITIAL_DAMAGE_INCREASE_PER_LEVEL;
             showMessage(`Ulepszono Szał Bojowy! Poziom: ${upgradeLevels.frenzyDamage} (Obrażenia: ~${nextFrenzyDamage})`, 3000); 
+        } else if (upgradeType === 'maxHealth') { // NOWE: Ulepszenie maksymalnego zdrowia gracza
+            MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
+            playerHealth = MAX_PLAYER_HEALTH; // Heal to new max
+            updatePlayerHealthUI();
+            showMessage(`Ulepszono Maksymalne Zdrowie! Nowe Max HP: ${MAX_PLAYER_HEALTH}`, 3000);
         }
 
         updateUpgradeShopUI(); 
@@ -1804,6 +1832,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectStonksSkinButton = document.getElementById('select-stonks-skin');
     selectTinuSkinButton = document.getElementById('select-tinu-skin');
     closeSkinSelectionButton = document.getElementById('close-skin-selection-button');
+
+    // NOWE: Przypisanie zmiennych DOM dla ulepszenia maksymalnego zdrowia
+    maxHealthLevelDisplay = document.getElementById('max-health-level');
+    maxHealthCostDisplay = document.getElementById('max-health-cost');
+    buyMaxHealthButton = document.getElementById('buy-max-health');
 
 
     // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
@@ -1987,6 +2020,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     buyLightningDamageButton.addEventListener('click', () => buyUpgrade('lightningDamage'));
     buyFreezeDamageButton.addEventListener('click', () => buyUpgrade('freezeDamage'));
     buyFrenzyDamageButton.addEventListener('click', () => buyUpgrade('frenzyDamage'));
+    buyMaxHealthButton.addEventListener('click', () => buyUpgrade('maxHealth')); // NOWE: Dodano obsługę przycisku dla ulepszenia zdrowia
 
     // NOWE: Obsługa przycisków wyboru skórki
     selectSkinButton.addEventListener('click', showSkinSelectionScreen);
