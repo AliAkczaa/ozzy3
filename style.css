@@ -194,10 +194,11 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
     --superpower-cooldown-bg: #228B22; /* Ciemniejsza zieleń dla paska cooldownu */
 
     background-color: var(--superpower-base-bg);
-    background-image: linear-gradient(to top, var(--superpower-cooldown-bg) var(--cooldown-percentage), transparent var(--cooldown-percentage));
+    /* ZMIANA: Zmieniono kierunek gradientu na 'to right' i pozycję na 'left' */
+    background-image: linear-gradient(to right, var(--superpower-cooldown-bg) var(--cooldown-percentage), transparent var(--cooldown-percentage));
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    background-position: bottom; /* Pasek zaczyna się od dołu */
+    background-position: left; /* Pasek zaczyna się od lewej */
     transition: background-image 1s linear; /* Płynne przejście dla paska */
 
     border-color:#00FF00;
