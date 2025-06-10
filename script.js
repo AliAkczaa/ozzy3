@@ -467,7 +467,7 @@ function animateGameCanvasEffects(currentTime) {
         gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for boss effects
         gameEffectsCanvas.classList.add('active'); // Add active class for transition
         // CHANGE: More dynamic boss particles
-        if (bossCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.6) { // Increased spawn chance
+        if (bossCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.3) { // Increased spawn chance
             let color, type, size, life, vx, vy;
             const spawnRadius = Math.min(ozzyRect.width, ozzyRect.height) * 0.8; // Larger spawn radius around boss
             const angle = Math.random() * Math.PI * 2;
@@ -519,11 +519,11 @@ function animateGameCanvasEffects(currentTime) {
         lightningEffect.classList.add('flash-active'); // Add active class for transition
 
         // NEW: Generate lightning segments in animation loop
-        const lightningSpawnChance = 0.2; // Chance to generate a new lightning bolt in each frame (increased)
+        const lightningSpawnChance = 0.1; // Chance to generate a new lightning bolt in each frame (increased)
         if (lightningCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < lightningSpawnChance) {
             const boltLength = Math.random() * 100 + 100; // Length of the main lightning segment
             const boltWidth = Math.random() * 5 + 5; // Lightning thickness
-            const boltLife = 800 + Math.random() * 700; // Lightning life (0.8 - 1.5s)
+            const boltLife = 300 + Math.random() * 700; // Lightning life (0.8 - 1.5s)
 
             // Random starting point for lightning (at the top of the screen)
             const startX = Math.random() * gameEffectsCanvas.width;
@@ -596,7 +596,7 @@ function animateGameCanvasEffects(currentTime) {
     if (freezeModeActive) {
         gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for freeze effects
         gameEffectsCanvas.classList.add('active');
-        if (freezeCanvasParticles.length < MAX_CANVAS_PARTICLES / 2 && Math.random() < 0.3) {
+        if (freezeCanvasParticles.length < MAX_CANVAS_PARTICLES / 2 && Math.random() < 0.15) {
             freezeCanvasParticles.push(new CanvasParticle(
                 ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 1.5, // Increased area
                 ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 1.5, // Increased area
@@ -604,7 +604,7 @@ function animateGameCanvasEffects(currentTime) {
                 (Math.random() - 0.5) * (baseParticleSpeed * 0.25), // CHANGE: Reduced speed by 75%, but higher base
                 `rgba(173, 216, 230, ${0.7 + Math.random() * 0.3})`, // Vary alpha
                 Math.random() * 15 + 8, // size (larger)
-                1200, // life in ms (1.2 seconds)
+                1000, // life in ms (1.2 seconds)
                 'iceShard',
                 Math.random() * 360 // random angle
             ));
@@ -623,7 +623,7 @@ function animateGameCanvasEffects(currentTime) {
     if (frenzyModeActive) {
         gameEffectsCanvas.classList.remove('hidden'); // Ensure canvas is visible for frenzy effects
         gameEffectsCanvas.classList.add('active');
-        if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.8) { // Increased frequency for frenzy
+        if (frenzyCanvasParticles.length < MAX_CANVAS_PARTICLES && Math.random() < 0.4) { // Increased frequency for frenzy
             const initialParticleX = ozzyCanvasX + (Math.random() - 0.5) * ozzyRect.width * 0.8; // Start closer to ozzy
             const initialParticleY = ozzyCanvasY + (Math.random() - 0.5) * ozzyRect.height * 0.8;
 
@@ -636,7 +636,7 @@ function animateGameCanvasEffects(currentTime) {
                 initialParticleX, initialParticleY, vx, vy, 
                 `rgba(255, ${Math.floor(Math.random() * 80)}, 0, ${0.9 + Math.random() * 0.1})`, // Intensywny czerwono-pomarańczowy
                 Math.random() * 8 + 4, // Particle size (4-12)
-                500 + Math.random() * 300, // Short life (0.5-0.8s)
+                400 + Math.random() * 300, // Short life (0.5-0.8s)
                 'frenzyFlame' // New type
             ));
         }
@@ -775,7 +775,7 @@ function spawnStonksAttackEffects(ozzyX, ozzyY) {
     }
 
     // --- Pain Particles ---
-    const numPainParticles = Math.floor(Math.random() * 15) + 15; // 15-29 points
+    const numPainParticles = Math.floor(Math.random() * 7) + 7; // 15-29 points
     const painParticleLife = 1200; // Life in ms (1.2 seconds)
     const painParticleSize = Math.random() * 8 + 8; // Sizes (8-16, slightly larger)
     const painParticleBaseSpeed = 1.2; // Increased base speed
