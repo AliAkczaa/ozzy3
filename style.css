@@ -1,0 +1,325 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+body{margin:0;position:relative;overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(to bottom,#4a0000,#000000);font-family:'Press Start 2P',cursive;color:#eee;text-shadow:2px 2px 4px rgba(0,0,0,0.7);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;user-select:none;-webkit-user-drag:none}
+.hidden{display:none!important}
+
+#game-container{position:fixed;top:0;left:0;width:100vw;height:100vh;max-width:1200px;max-height:800px;overflow:hidden;border:5px solid #8B0000;box-shadow:0 0 50px rgba(255,0,0,0.5);background-color:#000;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box}
+
+/* ZMIANA: Przyspieszenie animacji ataku Stonksa */
+#ozzy-image.attacking{animation:ozzy-attack 0.4s ease-out} /* Zmieniono z 1.2s na 0.4s */
+@keyframes ozzy-attack{
+    0%{transform:scale(1)}
+    25%{transform:scale(1.15)rotate(7deg)}
+    50%{transform:scale(0.95)rotate(-7deg)}
+    75%{transform:scale(1.1)rotate(4deg)}
+    100%{transform:scale(1)rotate(0deg)}
+}
+
+#ozzy-image.stonks-attack-effect{animation:stonksAttackFlash 0.2s ease-out}
+@keyframes stonksAttackFlash{
+    0%{filter:brightness(100%)grayscale(0%)}
+    50%{filter:brightness(200%)grayscale(100%)}
+    100%{filter:brightness(100%)grayscale(0%)}
+}
+.screen-shake{animation:shake 0.6s cubic-bezier(.36,.07,.19,.97)both;transform:translate(-50%,-50%);backface-visibility:hidden;perspective:1000px}
+@keyframes shake{
+    10%,90%{transform:translate(-52%,-50%)}
+    20%,80%{transform:translate(-48%,-50%)}
+    30%,70%{transform:translate(-52%,-50%)}
+    40%,60%{transform:translate(-48%,-50%)}
+    50%{transform:translate(-50%,-50%)}
+}
+#animated-background-tractor{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;filter:brightness(0.7)grayscale(0.5);animation:background-pan 30s linear infinite alternate}
+@keyframes background-pan{
+    0%{transform:scale(1)}
+    100%{transform:scale(1.1)}
+}
+#boss-effect-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:150;pointer-events:none;opacity:0;transition:opacity 0.5s ease-in-out}
+#boss-effect-canvas.active{opacity:1}
+.effect-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;pointer-events:none;opacity:0;transition:opacity 0.3s ease-out}
+.effect-overlay.active{opacity:1}
+#lightning-effect.flash-active{opacity:1;background:radial-gradient(circle,rgba(255,255,0,0.4)0%,rgba(255,140,0,0)70%)}
+#freeze-effect{background-color:transparent;opacity:0;transition:background-color 0.5s ease-out,opacity 0.5s ease-out}
+#freeze-effect.active{background-color:rgba(173,216,230,0.3);animation:freezeEffectGlow 1s infinite alternate;opacity:1}
+@keyframes freezeEffectGlow{
+    0%{background-color:rgba(173,216,230,0.3)}
+    100%{background-color:rgba(173,216,230,0.6)}
+}
+#frenzy-effect{background:radial-gradient(circle,rgba(255,69,0,0.3)0%,rgba(139,0,0,0)70%)}
+#frenzy-effect.active{animation:frenzyEffectPulse 0.5s infinite alternate}
+@keyframes frenzyEffectPulse{
+    0%{background-color:rgba(255,69,0,0.3);transform:scale(1)}
+    100%{background-color:rgba(255,69,0,0.5);transform:scale(1.02)}
+}
+#quote-images-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:15;pointer-events:none;overflow:hidden}
+.quote-image{position:absolute;width:clamp(80px,15vw,150px);height:clamp(80px,15vw,150px);object-fit:contain;opacity:0;transform:scale(0.5);transition:opacity 0.3s ease-out,transform 0.3s ease-out;z-index:55}
+.quote-image.active{opacity:1;transform:scale(1)}
+
+#ozzy-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;cursor:url('stonks.png'),auto;transition:transform 0.1s ease-out;user-select:none;-webkit-user-drag:none}
+#ozzy-image{width:clamp(150px,40vw,300px);height:auto;display:block;filter:drop-shadow(0 0 15px rgba(255,255,255,0.5));transition:filter 0.1s ease-out,transform 0.1s ease-out}
+#ozzy-image.hit-effect{filter:brightness(1.5)grayscale(0.5)drop-shadow(0 0 20px yellow);transform:scale(1.05)}
+#ozzy-image.spawn-ozzy{animation:spawn-pop 0.5s cubic-bezier(0.68,-0.55,0.27,1.55)}
+@keyframes spawn-pop{
+    0%{transform:scale(0.5)rotateY(180deg);opacity:0}
+    70%{transform:scale(1.1)rotateY(-10deg);opacity:1}
+    100%{transform:scale(1)rotateY(0deg)}
+}
+#ozzy-image.boss-mode{filter:brightness(1.2)contrast(1.2)hue-rotate(180deg)drop-shadow(0 0 30px #FF0000);transform:scale(1.2);animation:boss-flicker 1s infinite alternate,boss-pulsate 2s infinite infinite alternate}
+#ozzy-image.flipped-x{transform:scaleX(-1)}
+
+/* Stonks Visual Variants (general styles for non-boss stonks) */
+#ozzy-image.stonks-variant-0{filter:none}
+#ozzy-image.stonks-variant-1{filter:hue-rotate(45deg)brightness(1.2)saturate(1.8)}
+#ozzy-image.stonks-variant-2{filter:hue-rotate(120deg)saturate(1.8)brightness(1.1)contrast(1.2)drop-shadow(0 0 5px rgba(0,255,0,0.5))}
+#ozzy-image.stonks-variant-3{filter:invert(100%)hue-rotate(270deg)saturate(1.5)brightness(1.3)drop-shadow(0 0 5px rgba(128,0,128,0.5))}
+#ozzy-image.stonks-variant-4{filter:contrast(180%)brightness(0.9)hue-rotate(100deg)}
+#ozzy-image.stonks-variant-5{filter:blur(0.3px)saturate(150%)hue-rotate(200deg)}
+#ozzy-image.stonks-variant-6{filter:drop-shadow(0 0 8px #00FF00)brightness(1.3)}
+#ozzy-image.stonks-variant-7{filter:sepia(70%)contrast(150%)brightness(1.1)}
+#ozzy-image.stonks-variant-8{filter:hue-rotate(270deg)saturate(180%)drop-shadow(0 0 10px #FF00FF)}
+#ozzy-image.stonks-variant-9{filter:brightness(0.7)contrast(200%)}
+
+/* Boss Visual Variants (applied in addition to boss-mode class) */
+#ozzy-image.boss-mode-variant-0{filter:brightness(1.2)contrast(1.2)hue-rotate(180deg)drop-shadow(0 0 30px #FF0000)}
+#ozzy-image.boss-mode-variant-1{filter:sepia(100%)hue-rotate(50deg)brightness(1.5)saturate(200%)contrast(1.3)drop-shadow(0 0 45px #FFA500)}
+#ozzy-image.boss-mode-variant-2{filter:invert(100%)saturate(200%)brightness(1.1)blur(0.8px)contrast(1.5)drop-shadow(0 0 50px #00FFFF)}
+#ozzy-image.boss-mode-variant-3{filter:grayscale(90%)contrast(250%)brightness(0.7)hue-rotate(60deg)drop-shadow(0 0 55px #808080)}
+#ozzy-image.boss-mode-variant-4{filter:blur(2px)hue-rotate(280deg)saturate(400%)contrast(1.8)drop-shadow(0 0 60px #FF00FF)}
+#ozzy-image.boss-mode-variant-5{filter:brightness(3.0)contrast(0.4)invert(30%)hue-rotate(20deg)drop-shadow(0 0 65px #FFFFFF)}
+#ozzy-image.boss-mode-variant-6{filter:hue-rotate(100deg)saturate(300%)brightness(1.5)contrast(1.8)drop-shadow(0 0 70px #00FF00)}
+#ozzy-image.boss-mode-variant-7{filter:sepia(90%)invert(60%)brightness(1.3)saturate(200%)contrast(1.5)drop-shadow(0 0 75px #FFFF00)}
+#ozzy-image.boss-mode-variant-8{filter:contrast(400%)brightness(0.4)hue-rotate(150deg)drop-shadow(0 0 80px #0000FF)}
+#ozzy-image.boss-mode-variant-9{filter:hue-rotate(320deg)saturate(200%)blur(1.2px)brightness(1.1)drop-shadow(0 0 85px #FF007F)}
+
+@keyframes boss-flicker{
+    0%,100%{opacity:1}
+    50%{opacity:0.8}
+}
+@keyframes boss-pulsate{
+    0%,100%{transform:scale(1.2)}
+    50%{transform:scale(1.25)}
+}
+#health-bar-container{width:80%;height:25px;background-color:#333;border:3px solid #eee;border-radius:10px;margin:10px auto 0;overflow:hidden;box-shadow:0 0 15px rgba(0,255,0,0.5);transform:translateY(-5px)}
+#health-bar-fill{height:100%;width:100%;background-color:limegreen;transition:width 0.3s ease-out,background-color 0.3s ease-out;border-radius:7px}
+#player-health-container{position:absolute;top:10px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,0.7);padding:10px 15px;border-radius:8px;border:2px solid #00BFFF;z-index:30;font-size:clamp(0.7em,2.5vw,1em);color:#00BFFF;box-shadow:0 0 15px rgba(0,191,255,0.5);width:clamp(200px,30vw,350px);text-align:center}
+#player-health-container p{margin:5px 0}
+#player-health-bar-bg{width:100%;height:20px;background-color:#333;border:2px solid #00BFFF;border-radius:5px;overflow:hidden;margin-top:5px}
+#player-health-bar-fill{height:100%;width:100%;background-color:#00BFFF;transition:width 0.3s ease-out,background-color 0.3s ease-out;border-radius:3px}
+#start-screen,#end-screen,#leaderboard-screen,#upgrade-shop-screen,#skin-selection-screen{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80%;max-width:500px;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1000;padding:30px;box-sizing:border-box;max-height:95vh;overflow-y:auto}
+#start-screen h1,#end-screen h2,#leaderboard-screen h2,#upgrade-shop-screen h2,#skin-selection-screen h2{font-size:clamp(1.5em,6vw,3em);color:#FFD700;margin-bottom:20px;text-shadow:4px 4px 8px rgba(255,165,0,0.8)}
+#start-screen p,#end-screen p,#leaderboard-screen ol,#upgrade-shop-screen p,#skin-selection-screen p{font-size:clamp(0.8em,3vw,1.2em);margin-bottom:15px}
+#nickname-input{padding:10px 15px;font-size:clamp(0.8em,3.5vw,1.2em);margin-bottom:20px;border:3px solid #FFD700;background-color:#333;color:#eee;border-radius:8px;text-align:center;font-family:'Press Start 2P',cursive;max-width:80%}
+button{background-color:#8B0000;color:#FFD700;padding:12px 25px;margin:10px;border:3px solid #FFD700;border-radius:8px;font-family:'Press Start 2P',cursive;font-size:clamp(0.7em,3vw,1em);cursor:pointer;transition:background-color 0.2s,color 0.2s,transform 0.1s;box-shadow:0 5px 15px rgba(255,0,0,0.5)}
+button:hover{background-color:#FF4500;color:#FFF;transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,69,0,0.7)}
+button:active{transform:translateY(0);box-shadow:0 3px 10px rgba(255,0,0,0.5)}
+button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-allowed;box-shadow:none;transform:none}
+#leaderboard-list{list-style:none;padding:0;max-height:60vh;overflow-y:auto;width:clamp(250px,90vw,500px);margin-top:20px;background-color:rgba(50,0,0,0.8);border-radius:10px;padding:15px;border:2px solid #FFD700}
+#leaderboard-list li{padding:10px;border-bottom:1px dashed #777;font-size:clamp(0.7em,2.8vw,1.1em);color:#eee}
+#leaderboard-list li:last-child{border-bottom:none}
+#game-info-container{position:absolute;top:10px;left:10px;background-color:rgba(0,0,0,0.7);padding:10px 15px;border-radius:8px;border:2px solid #FFD700;z-index:30;font-size:clamp(0.7em,2.5vw,1em)}
+#game-info-container p{margin:5px 0}
+#superpower-buttons-container{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:30}
+.superpower-button{background-color:#004d00;border-color:#00FF00;color:#FFF;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em);display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;width:auto}
+.superpower-button:hover{background-color:#008000;border-color:#7FFF00}
+.superpower-button span{white-space:nowrap}
+
+.knockout-message,.boss-message{position:absolute;left:50%;transform:translate(-50%,-50%);background-color:rgba(0,0,0,0.8);padding:20px 30px;border-radius:10px;border:4px solid #FFD700;font-size:clamp(1em,3.5vw,2em);text-align:center;color:#FFD700;z-index:1000;animation:message-pop-fade 2s ease-out forwards;white-space:normal;word-break:break-word;max-width:90%;box-sizing:border-box}
+.boss-message{border-color:#FF0000;color:#FF0000;text-shadow:0 0 10px #FF4500;animation:message-pop-fade-boss 2.5s ease-out forwards}
+@keyframes message-pop-fade{
+    0%{opacity:0;transform:translate(-50%,-50%)scale(0.8)}
+    10%{opacity:1;transform:translate(-50%,-50%)scale(1.1)}
+    90%{opacity:1;transform:translate(-50%,-50%)scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%)scale(0.9)}
+}
+@keyframes message-pop-fade-boss{
+    0%{opacity:0;transform:translate(-50%,-50%)scale(0.7)}
+    10%{transform:translate(-50%,-50%)scale(1.2)rotate(-5deg)}
+    20%{transform:translate(-50%,-50%)scale(1.1)rotate(5deg)}
+    30%{transform:translate(-50%,-50%)scale(1.2)rotate(-5deg)}
+    90%{opacity:1;transform:translate(-50%,-50%)scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%)scale(0.8)}
+}
+#shop-button{position:absolute;top:3px;right:3px;background-color:#4CAF50;border-color:#8BC34A;color:white;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em);z-index:30}
+#shop-button:hover{background-color:#66BB6A}
+
+/* ZMIANA: Responsywny layout sklepu - GŁÓWNY OVERHAUL */
+#upgrade-shop-screen {
+    background: rgba(0, 0, 0, 0.95);
+    border: 5px solid #FFD700;
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+    /* Używamy vh dla wysokości i vw dla szerokości */
+    width: clamp(280px, 90vw, 800px); /* Szerokość od 280px do 800px, max 90% viewport width */
+    max-width: 800px;
+    height: clamp(400px, 85vh, 700px); /* Wysokość od 400px do 700px, max 85% viewport height */
+    max-height: 700px; /* Dodatkowy limit na większych ekranach */
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Rozkłada elementy równomiernie w pionie */
+    align-items: center;
+    
+    padding: clamp(10px, 3vw, 25px); /* Padding wewnętrzny */
+    /* Usunięto gap, ponieważ flex-direction: column z space-between sam zarządza odstępami */
+
+    overflow-y: auto; /* Fallback na wypadek, gdyby mimo wszystko coś się nie zmieściło (rzadko) */
+}
+
+#upgrade-shop-screen h2 {
+    font-size: clamp(1.2em, 5vw, 2.5em); /* Nagłówek sklepu */
+    margin-top: 0;
+    margin-bottom: clamp(10px, 2vw, 20px);
+}
+
+#upgrade-shop-screen #shop-points{
+    color:#FFD700;
+    font-size:clamp(0.7em, 2.8vw, 1.1em); /* Rozmiar tekstu punktów */
+    margin-bottom: clamp(5px, 1.5vw, 10px); /* Zmniejszony margines */
+    text-align: center;
+    width: 100%; /* Upewnij się, że zajmuje całą szerokość */
+}
+
+.upgrade-category{
+    background-color: rgba(50, 0, 0, 0.8);
+    border: 2px solid #FFD700;
+    border-radius: 10px;
+    padding: clamp(6px, 2vw, 15px); /* Bardziej skompresowany padding */
+    margin-bottom: clamp(5px, 1vw, 10px); /* Mniejsze marginesy między kategoriami */
+    text-align: left;
+    width: 100%; /* Kategoria zajmuje całą dostępną szerokość */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px; /* Bardzo mały odstęp wewnątrz kategorii */
+    flex-grow: 1; /* Pozwala kategoriom rosnąć i kurczyć się równomiernie */
+    justify-content: center; /* Wyśrodkowuje zawartość w pionie w kategorii */
+}
+.upgrade-category h3{
+    font-size:clamp(0.7em, 2.8vw, 1.2em); /* Rozmiar nagłówka kategorii */
+    margin: 0; /* Usunięto marginesy */
+}
+.upgrade-category p{
+    margin: 1px 0; /* Bardzo małe marginesy */
+    font-size:clamp(0.55em, 2.2vw, 0.9em); /* Rozmiar tekstu poziomu/kosztu */
+}
+.upgrade-category button{
+    margin-top: clamp(5px, 1vw, 8px); /* Margines nad przyciskiem */
+    width:100%;
+    padding: clamp(5px, 1.8vw, 9px); /* Padding przycisku */
+    font-size: clamp(0.55em, 2.2vw, 0.85em); /* Rozmiar czcionki przycisku */
+}
+
+#close-shop-button{
+    background-color:#B22222;
+    border-color:#FF6347;
+    margin-top: clamp(10px, 2.5vw, 15px); /* Margines nad przyciskiem zamknij */
+    font-size:clamp(0.7em, 2.8vw, 1.1em); /* Rozmiar czcionki przycisku zamknij */
+    width: 100%; /* Przycisk zajmuje całą szerokość */
+    padding: clamp(8px, 2.5vw, 12px); /* Padding przycisku */
+}
+
+/* Style dla ekranu wyboru skórki - podobne zasady responsywności */
+#skin-selection-screen{
+    background:rgba(0,0,0,0.95);
+    border:5px solid #00BFFF;
+    box-shadow:0 0 40px rgba(0,191,255,0.7);
+    padding:clamp(15px, 4vw, 30px);
+    border-radius:15px;
+    gap:clamp(10px, 3vw, 20px); /* Odstępy między elementami */
+    width: clamp(250px, 80vw, 500px); /* Szerokość ekranu wyboru skórki */
+    max-height: 80vh; /* Ograniczenie wysokości */
+    overflow-y: auto; /* Fallback */
+    box-sizing: border-box; /* Ważne */
+}
+#skin-selection-screen h2{
+    font-size:clamp(1.3em, 5.5vw, 2.8em);
+    color:#00BFFF;
+    text-shadow:4px 4px 8px rgba(0,191,255,0.8);
+    margin-bottom: clamp(10px, 2vw, 20px);
+}
+.skin-options{
+    display:flex;
+    justify-content:center;
+    gap:clamp(10px, 3vw, 20px); /* Odstępy między przyciskami skórek */
+    margin-top:0; /* Usunięto margines */
+    flex-wrap:wrap;
+    width: 100%; /* Upewnij się, że kontenery skórek też są responsywne */
+}
+.skin-button{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background-color:#333;
+    border:3px solid #00BFFF;
+    color:#eee;
+    padding:clamp(10px, 2.5vw, 15px);
+    border-radius:10px;
+    transition:all 0.2s;
+    cursor:pointer;
+    width:clamp(100px,22vw,150px); /* Szerokość pojedynczego przycisku skórki */
+    box-shadow:0 5px 15px rgba(0,191,255,0.3);
+    flex-shrink: 0; /* Zapobiega kurczeniu się na siłę */
+}
+.skin-button:hover{background-color:#005f7f;transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,191,255,0.5)}
+.skin-button img{width:clamp(60px,15vw,100px);height:clamp(60px,15vw,100px);object-fit:contain;margin-bottom:clamp(5px, 1.5vw, 10px);border-radius:5px}
+.skin-button p{margin:0;font-size:clamp(0.7em,2.8vw,1em)}
+#close-skin-selection-button{
+    background-color:#B22222;
+    border-color:#FF6347;
+    margin-top:clamp(15px, 3vw, 20px);
+    font-size:clamp(0.7em, 3vw, 1.1em);
+    width: 100%; /* Przycisk zajmuje całą szerokość */
+    padding: clamp(8px, 2.5vw, 12px); /* Padding przycisku */
+}
+
+
+@media(max-width:768px){
+    #game-container{height:100dvh;min-height:unset;max-height:unset;border:none;box-shadow:none}
+    #ozzy-image{width:clamp(100px,50vw,250px)}
+    #health-bar-container{height:20px}
+    #player-health-container{top:unset;bottom:75px;left:50%;transform:translateX(-50%);width:clamp(100px,45vw,200px);padding:8px 12px;font-size:clamp(0.6em,2.5vw,1em)}
+    #player-health-bar-bg{height:10px}
+    #superpower-buttons-container{top:unset;bottom:5px;left:50%;transform:translateX(-50%);flex-direction:row;width:95%;padding:5px;justify-content:space-around;gap:5px}.superpower-button{flex:1;padding:8px;font-size:1.5em;width:50px;height:50px;display:flex;justify-content:center;align-items:center}.superpower-button .superpower-text{display:none}
+    #game-info-container{top:10px;left:10px;right:unset;bottom:unset}
+    #shop-button{top:2px;right:3px;left:unset;bottom:unset;padding:10px 15px;font-size:clamp(0.7em,2.5vw,1em)}.knockout-message,.boss-message{top:30%;transform:translate(-50%,-50%);font-size:clamp(0.7em,3vw,1.2em);padding:12px 18px}
+    
+    /* ZMIANA: Sklep na mobilnych - elementy wypełniają całą szerokość i są bardziej kompaktowe */
+    #upgrade-shop-screen {
+        width: 98%; /* Prawie cała szerokość viewportu */
+        height: 98vh; /* Prawie cała wysokość viewportu na mobilnych */
+        padding: clamp(5px, 2vw, 10px); /* Bardzo mały padding */
+        gap: clamp(3px, 1vw, 8px); /* Bardzo mały odstęp między elementami */
+        overflow-y: auto; /* Zawsze auto, na wypadek */
+    }
+    #upgrade-shop-screen h2 {
+        font-size: clamp(1em, 4.5vw, 2em); /* Jeszcze mniejszy nagłówek */
+        margin-bottom: clamp(5px, 1.5vw, 10px);
+    }
+    #upgrade-shop-screen #shop-points{
+        font-size:clamp(0.6em, 2.5vw, 1em); /* Jeszcze mniejszy rozmiar tekstu punktów */
+        margin-bottom: clamp(3px, 1vw, 5px);
+    }
+    .upgrade-category{
+        padding: clamp(4px, 1.5vw, 8px); /* Bardzo mały padding w kategoriach */
+        margin-bottom: clamp(3px, 0.8vw, 6px); /* Jeszcze mniejsze marginesy między kategoriami */
+        gap: 1px; /* Minimalny odstęp wewnątrz kategorii */
+    }
+    .upgrade-category h3{font-size:clamp(0.65em,2.6vw,1em)} /* Jeszcze mniejszy nagłówek kategorii */
+    .upgrade-category p{font-size:clamp(0.5em,2vw,0.8em)} /* Jeszcze mniejszy tekst poziomu/kosztu */
+    .upgrade-category button{padding:4px 8px; font-size:clamp(0.5em, 2vw, 0.8em);} /* Jeszcze mniejsze przyciski */
+    #close-shop-button{
+        font-size:clamp(0.6em, 2.5vw, 1em); /* Jeszcze mniejsza czcionka przycisku zamknij */
+        padding: clamp(6px, 2vw, 10px); /* Mniejszy padding */
+        margin-top: clamp(8px, 2vw, 10px);
+    }
+    
+    .skin-options{flex-direction:column;align-items:center}
+    .skin-button{width:clamp(150px,40vw,250px)}
+}
+@media(min-width:769px){.knockout-message,.boss-message{top:80%;transform:translate(-50%,-50%)}}
