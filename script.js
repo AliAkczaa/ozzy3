@@ -175,12 +175,10 @@ const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100;
 
 const BOSS_MOVEMENT_SPEED = 2; 
 const BOSS_QUOTES = [
-    "The system is evolving!", 
-    "My algorithms are superior!", 
-    "Dominance is inevitable!", 
-    "Calculating next move!", 
-    "They call me a fraud!"
-]; // ZMIANA: Zneutralizowane cytaty bossa
+    "CRYPTON TEAM IS FARMING!", "TTB IS BEST!", 
+    "TO DUBAI!", "WITH INVESTOR'S MONEY!", 
+    "REFUND FOR V1?", "STONKS OR STINKS?"
+];
 let bossMovementAnimationFrameId; 
 let bossDx = BOSS_MOVEMENT_SPEED; 
 let bossCurrentTransformX = 0; // Tracks additional X offset from center
@@ -759,7 +757,7 @@ function drawScratchEffect(x, y, count, color, baseSize) {
  * @param {number} ozzyX X position of bot on canvas (center)
  * @param {number} ozzyY Y position of bot on canvas (center)
  */
-function spawnStonksAttackEffects(ozzyX, ozzyY) { // Renamed from spawnStonksAttackEffects to spawnBotAttackEffects
+function spawnStonksAttackEffects(ozzyX, ozzyY) { // Renamed from stonksAttackEffects to botAttackEffects in thought
     const gameContainerRect = gameContainer.getBoundingClientRect(); 
     const gameContainerWidth = gameContainerRect.width;
     const gameContainerHeight = gameContainerRect.height;
@@ -1472,7 +1470,6 @@ function endGame(message) {
     
     punchesSinceLastPowerup = 0; 
     lastUsedLightningTime = 0;
-    lastUsedFreezeTime = 0;
     lastUsedFrenzyTime = 0;
     updateSuperpowerButtons(); 
 
@@ -1571,7 +1568,7 @@ function handleOzzyKnockout() {
 
         updateOzzyAppearance(); // Apply the new bot variant
 
-        bossCurrentTransformX = 0; // Reset position for normal bot
+        bossCurrentTransformX = 0; 
         ozzyContainer.style.transform = `translate(-50%,-50%)`; // ZMIANA: Użyj `translate(-50%,-50%)` zamiast calc() dla resetu
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = false; 
@@ -1911,6 +1908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     skinSelectionScreen.classList.add('hidden'); // Hide skin selection screen on start
 
     // Set initial text based on default skin (Tinu)
+    // PRZENIESIONE: Wywołaj updateMainScreenText po przypisaniu zmiennych DOM
     updateMainScreenText(); 
     
     // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
