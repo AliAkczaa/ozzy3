@@ -91,11 +91,6 @@ let btnLightningLvlDisplay;
 let btnFreezeLvlDisplay;
 let btnFrenzyLvlDisplay;
 
-// NEW: DOM variables for dynamic texts
-let gameTitleElement;
-let gameMissionElement;
-let endScreenTitleElement;
-
 
 // --- Other global variables (not directly related to DOM), with immediate assignments ---
 let playerNickname = "Player";
@@ -143,27 +138,18 @@ let superpowerCooldownIntervalId;
 let freezeModeActive = false;
 let freezeDotIntervalId;
 
-// NEW: Object to store all skin-specific data
-const SKIN_DATA = {
-    tinu: {
-        normalImage: 'tinu.png', // Replace with actual Tinu image path
-        bossImage: 'tinuboss.png', // Replace with actual Tinu Boss image path
-        gameTitle: 'Beat TINU!',
-        gameMission: 'Your mission: punch TINU until he drops!',
-        ozzyAltText: 'Tinu to beat',
-        defeatedTitle: 'TINU DEFEATED!'
-    },
+// CHANGE: Default images and for other skins
+const SKIN_IMAGES = {
     stonks: {
-        normalImage: 'stonks.png',
-        bossImage: 'stonksboss.png',
-        gameTitle: 'Beat STONKS!',
-        gameMission: 'Your mission: crush STONKS until he falls!',
-        ozzyAltText: 'Stonks to beat',
-        defeatedTitle: 'STONKS CRUSHED!'
+        normal: 'stonks.png',
+        boss: 'stonksboss.png'
+    },
+    tinu: {
+        normal: 'tinu.png', // Replace with actual Tinu image path
+        boss: 'tinuboss.png' // Replace with actual Tinu Boss image path
     }
-    // Add more skins here in the future
 };
-let currentSkin = 'tinu'; // Default to Tinu
+let currentSkin = 'tinu'; // Domyślna skórka na Tinu
 
 const BOSS_LEVEL_INTERVAL = 10; // Boss appears every 10 levels (e.g. level 10, 20, 30)
 
@@ -174,6 +160,7 @@ const BOSS_INITIAL_HEALTH = 300;
 const BOSS_HEALTH_INCREMENT_PER_ENCOUNTER = 100; 
 
 const BOSS_MOVEMENT_SPEED = 2; 
+// ZMIANA: Zneutralizowane cytaty bossa
 const BOSS_QUOTES = [
     "CRYPTON TEAM IS FARMING!", "TTB IS BEST!", 
     "TO DUBAI!", "WITH INVESTOR'S MONEY!", 
@@ -209,8 +196,8 @@ const COOLDOWN_REDUCTION_PER_LEVEL_MS = 5 * 1000; // 5 seconds per level
 const MIN_COOLDOWN_MS = 15 * 1000; // Minimum cooldown 15 seconds
 const MAX_UPGRADE_LEVEL = 10; // Maximum upgrade level for superpowers
 
-// --- Variables for visual variants of bot ---
-let stonksVisualVariantIndex = 0; // Current index of bot visual variant
+// --- Variables for visual variants of Stonks ---
+let stonksVisualVariantIndex = 0; // Current index of Stonks visual variant
 const totalStonksVariants = 20;     // ZMIANA: Zwiększona liczba wariantów (0-19)
 let bossVisualVariantIndex = 0;    // Current index of Boss visual variant
 const totalBossVariants = 20;       // ZMIANA: Zwiększona liczba wariantów (0-19)
@@ -220,17 +207,17 @@ const originalLightningText = 'Lightning Strike';
 const originalFreezeText = 'Ice Blast';
 const originalFrenzyText = 'Battle Frenzy';
 
-// NEW: Variables for player health and bot attacks (from previous changes)
+// NEW: Variables for player health and Stonks attacks (from previous changes)
 let playerHealth = 100;
 
-// CHANGE: Constant for bot damage increase AFTER DEFEATING A BOSS
+// CHANGE: Constant for Stonks damage increase AFTER DEFEATING A BOSS
 const STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE = 3; 
 
-let baseStonksDamage = 5; // Base bot damage, which increases after each boss
-let STONKS_ATTACK_DAMAGE = baseStonksDamage; // Current damage dealt by bot (can be modified by boss)
+let baseStonksDamage = 5; // Base Stonks damage, which increases after each boss
+let STONKS_ATTACK_DAMAGE = baseStonksDamage; // Current damage dealt by Stonks (can be modified by boss)
 
-const STONKS_ATTACK_INTERVAL_MS = 2000; // How often in ms bot attacks the player
-let playerAttackIntervalId; // Interval ID for bot's attack
+const STONKS_ATTACK_INTERVAL_MS = 2000; // How often in ms Stonks attacks the player
+let playerAttackIntervalId; // Interval ID for Stonks' attack
 
 // === Canvas Particles System ===
 class CanvasParticle {
@@ -442,9 +429,9 @@ let lightningCanvasParticles = [];
 let freezeCanvasParticles = [];
 let frenzyCanvasParticles = [];
 let scratchCanvasParticles = [];
-// NEW: Arrays for bot attack particles
-let stonksAttackClawParticles = []; // Renamed from stonks to bot for neutrality
-let stonksAttackPainParticles = [];  // Renamed from stonks to bot for neutrality
+// NEW: Arrays for Stonks attack particles
+let stonksAttackClawParticles = [];
+let stonksAttackPainParticles = [];
 let clawMarks = []; // New array for claw effects
 let clawImage = new Image(); // Create a new Image object for the claw
 
@@ -673,7 +660,7 @@ function animateGameCanvasEffects(currentTime) {
         }
     }
 
-    // NEW: Update and draw bot attack particles
+    // NEW: Update and draw Stonks attack particles
     for (let i = stonksAttackClawParticles.length - 1; i >= 0; i--) {
         stonksAttackClawParticles[i].update(deltaTime); // Pass deltaTime
         if (stonksAttackClawParticles[i].isDead()) {
@@ -753,11 +740,11 @@ function drawScratchEffect(x, y, count, color, baseSize) {
 }
 
 /**
- * NEW: Function to create dynamic bot attack effects (claws, pain splatter)
- * @param {number} ozzyX X position of bot on canvas (center)
- * @param {number} ozzyY Y position of bot on canvas (center)
+ * NEW: Function to create dynamic Stonks attack effects (claws, pain splatter)
+ * @param {number} ozzyX X position of Stonks on canvas (center)
+ * @param {number} ozzyY Y position of Stonks on canvas (center)
  */
-function spawnStonksAttackEffects(ozzyX, ozzyY) { // Renamed from stonksAttackEffects to botAttackEffects in thought
+function spawnStonksAttackEffects(ozzyX, ozzyY) {
     const gameContainerRect = gameContainer.getBoundingClientRect(); 
     const gameContainerWidth = gameContainerRect.width;
     const gameContainerHeight = gameContainerRect.height;
@@ -928,14 +915,14 @@ function applyDamageToOzzy(damageAmount) {
     }
 }
 
-// NEW: bot function to attack the player
-function stonksAttack() { // Renamed from stonksAttack to botAttack
+// NEW: Stonks function to attack the player
+function stonksAttack() {
     if (!isGameActive) {
         clearInterval(playerAttackIntervalId); // Stop attacking if game is inactive
         return;
     }
 
-    // 1. Visual effect on bot character
+    // 1. Visual effect on Stonks character
     // We will use a CSS class to quickly apply a filter (e.g., invert or brightness)
     ozzyImage.classList.add('attacking'); // Class for movement animation (already exists)
     ozzyImage.classList.add('stonks-attack-effect'); // NEW class for visual effect
@@ -945,7 +932,7 @@ function stonksAttack() { // Renamed from stonksAttack to botAttack
         ozzyImage.classList.remove('stonks-attack-effect');
     }, 200); // Short flash/effect lasting 200ms
 
-    // Apply visual attack animation to bot (already exists)
+    // Apply visual attack animation to Stonks (already exists)
     setTimeout(() => {
         ozzyImage.classList.remove('attacking');
     }, 800); // Duration of the attack animation
@@ -961,7 +948,7 @@ function stonksAttack() { // Renamed from stonksAttack to botAttack
     playerHealth = Math.max(0, playerHealth); // Ensure health doesn't go below zero
     updatePlayerHealthUI();
 
-    // Call NEW bot attack effect on canvas (changed)
+    // Call NEW Stonks attack effect on canvas (changed)
     const ozzyRect = ozzyContainer.getBoundingClientRect();
     const gameRect = gameContainer.getBoundingClientRect();
     const ozzyCanvasX = ozzyRect.left - gameRect.left + ozzyRect.width / 2;
@@ -971,7 +958,7 @@ function stonksAttack() { // Renamed from stonksAttack to botAttack
     spawnStonksAttackEffects(ozzyCanvasX, ozzyCanvasY); // Pass Ozzy's position for reference
 
     if (playerHealth <= 0) {
-        endGame(SKIN_DATA[currentSkin].defeatedTitle); // ZMIANA: Używaj dynamicznego tekstu z SKIN_DATA
+        endGame("YOU DIED FIGHTING THE BOT!"); // ZMIANA: Neutralny tekst
     }
 }
 
@@ -1217,7 +1204,7 @@ function updateOzzyAppearance() {
         ozzyImage.classList.remove(`boss-mode-variant-${i}`);
     }
 
-    // Add bot variant class based on level (for normal bot)
+    // Add Stonks variant class based on level (for normal Stonks)
     // If it's a boss fight, the boss-mode class takes precedence for core appearance
     if (!isBossFight) {
             ozzyImage.classList.add(`stonks-variant-${stonksVisualVariantIndex}`);
@@ -1238,13 +1225,12 @@ function resetGame() {
     currentLevelDisplay.textContent = currentLevel;
 
     isBossFight = false;
-    // ZMIANA: Używaj obrazu z wybranej skórki
-    ozzyImage.src = SKIN_DATA[currentSkin].normalImage;
-    ozzyImage.alt = SKIN_DATA[currentSkin].ozzyAltText; // ZMIANA: Ustaw alt text
+    // CHANGE: Use image path based on selected skin
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
     ozzyImage.classList.remove('boss-mode');
     ozzyImage.classList.remove('flipped-x'); 
     ozzyImage.classList.remove('attacking'); // NEW: Remove attack class
-    ozzyImage.classList.remove('stonks-attack-effect'); // NEW: Remove bot attack effect class
+    ozzyImage.classList.remove('stonks-attack-effect'); // NEW: Remove Stonks attack effect class
     gameContainer.classList.remove('screen-shake'); // NEW: Remove shake class
 
     // Reset visual variants
@@ -1262,9 +1248,9 @@ function resetGame() {
     ozzyImage.classList.remove('spawn-ozzy');
     ozzyContainer.classList.add('hidden'); 
 
-    // Reset Ozzy's position to center for normal bot
+    // Reset Ozzy's position to center for normal Stonks
     bossCurrentTransformX = 0; 
-    ozzyContainer.style.transform = `translate(-50%,-50%)`; // ZMIANA: Użyj `translate(-50%,-50%)` zamiast calc() dla resetu
+    ozzyContainer.style.transform = `translate(-50%, -50%)`; 
 
     cancelAnimationFrame(bossMovementAnimationFrameId); 
     isBossMovementPaused = false; 
@@ -1314,7 +1300,7 @@ function resetGame() {
     playerHealth = MAX_PLAYER_HEALTH; // Set player health to max base
     updatePlayerHealthUI();
     playerHealthContainer.classList.add('hidden');
-    clearInterval(playerAttackIntervalId); // Stop bot attack
+    clearInterval(playerAttackIntervalId); // Stop Stonks attack
 
     // NEW: Reset superpower upgrade levels to 1
     upgradeLevels.lightningDamage = 1;
@@ -1342,7 +1328,7 @@ function resetGame() {
         gameOverSound.pause();
         gameOverSound.currentTime = 0;
     }
-    baseStonksDamage = 5; // Reset base bot damage to initial value
+    baseStonksDamage = 5; // Reset base Stonks damage to initial value
     STONKS_ATTACK_DAMAGE = baseStonksDamage; // Set current damage to base
 }
 
@@ -1411,7 +1397,7 @@ function startGame() {
     ozzyHealth = INITIAL_OZZY_HEALTH;
     updateHealthBar();
     
-    // Apply initial bot appearance for level 1 (always variant 0)
+    // Apply initial Stonks appearance for level 1 (always variant 0)
     stonksVisualVariantIndex = 0; 
     updateOzzyAppearance(); 
 
@@ -1425,14 +1411,14 @@ function startGame() {
     gameEffectsCanvas.classList.remove('hidden'); // CHANGE: Ensure canvas is visible
     gameEffectsCanvas.classList.add('active');
 
-    // CHANGE: Set player health, show bar, and start bot attack
+    // CHANGE: Set player health, show bar, and start Stonks attack
     MAX_PLAYER_HEALTH = PLAYER_HEALTH_BASE_VALUE + (upgradeLevels.maxHealth - 1) * PLAYER_HEALTH_INCREASE_PER_LEVEL;
     playerHealth = MAX_PLAYER_HEALTH;
     updatePlayerHealthUI();
     playerHealthContainer.classList.remove('hidden');
     clearInterval(playerAttackIntervalId); // Clear any previous interval first
     STONKS_ATTACK_DAMAGE = baseStonksDamage; // Set current damage to base for level 1
-    playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // bot starts attacking
+    playerAttackIntervalId = setInterval(stonksAttack, STONKS_ATTACK_INTERVAL_MS); // Stonks starts attacking
 
     if (backgroundMusic) {
         backgroundMusic.play().catch(e => console.error("Error playing backgroundMusic:", e));
@@ -1470,11 +1456,12 @@ function endGame(message) {
     
     punchesSinceLastPowerup = 0; 
     lastUsedLightningTime = 0;
+    lastUsedFreezeTime = 0;
     lastUsedFrenzyTime = 0;
     updateSuperpowerButtons(); 
 
     clearInterval(superpowerCooldownIntervalId);
-    clearInterval(playerAttackIntervalId); // NEW: Stop bot attack
+    clearInterval(playerAttackIntervalId); // NEW: Stop Stonks attack
     cancelAnimationFrame(bossMovementAnimationFrameId);
     isBossMovementPaused = false; 
 
@@ -1546,8 +1533,7 @@ function handleOzzyKnockout() {
         console.log(`Normal bot knockout. New level: ${currentLevel}`); // ZMIANA: Neutralny tekst
 
         isBossFight = false;
-        ozzyImage.src = SKIN_DATA[currentSkin].normalImage; // ZMIANA: Używaj obrazu z wybranej skórki
-        ozzyImage.alt = SKIN_DATA[currentSkin].ozzyAltText; // ZMIANA: Ustaw alt text
+        ozzyImage.src = SKIN_IMAGES[currentSkin].normal; // ZMIANA: Używaj obrazu z wybranej skórki
         ozzyImage.classList.remove('boss-mode'); 
         ozzyImage.classList.remove('flipped-x'); 
         
@@ -1568,8 +1554,8 @@ function handleOzzyKnockout() {
 
         updateOzzyAppearance(); // Apply the new bot variant
 
-        bossCurrentTransformX = 0; 
-        ozzyContainer.style.transform = `translate(-50%,-50%)`; // ZMIANA: Użyj `translate(-50%,-50%)` zamiast calc() dla resetu
+        bossCurrentTransformX = 0; // Reset position for normal bot
+        ozzyContainer.style.transform = `translate(-50%, -50%)`; 
         cancelAnimationFrame(bossMovementAnimationFrameId); 
         isBossMovementPaused = false; 
         
@@ -1595,7 +1581,7 @@ function handleOzzyKnockout() {
         ozzyContainer.classList.remove('hidden');
         ozzyImage.classList.remove('hit-effect');
         if (!isBossFight) {
-            ozzyContainer.style.transform = `translate(-50%,-50%)`; // Clean centering for normal bot
+            ozzyContainer.style.transform = `translate(-50%, -50%)`; // Clean centering for normal bot
         } else {
             // If it's a boss, movement animation continues, so we keep bossCurrentTransformX
             ozzyContainer.style.transform = `translate(calc(-50% + ${bossCurrentTransformX}px), -50%)`;
@@ -1613,9 +1599,8 @@ function handleOzzyKnockout() {
 
 function startBossFight() {
     // `isBossFight` and `currentLevel` are already correctly set by `handleOzzyKnockout`
-    // ZMIANA: Używaj obrazu z wybranej skórki
-    ozzyImage.src = SKIN_DATA[currentSkin].bossImage; 
-    ozzyImage.alt = SKIN_DATA[currentSkin].ozzyAltText; // ZMIANA: Ustaw alt text
+    // CHANGE: Use image path based on selected skin
+    ozzyImage.src = SKIN_IMAGES[currentSkin].boss; 
     ozzyImage.classList.add('boss-mode'); 
     
     // Scale boss health based on encounter count (currentLevel is already correct)
@@ -1679,7 +1664,7 @@ function handlePunch(event) {
 
     if (!isBossFight && ozzyHealth > 0 && Math.random() < 0.3) { 
         spawnRandomQuote();
-    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.4) { // CHANGE: Increased frequency of boss quotes
+    } else if (isBossFight && ozzyHealth > 0 && Math.random() < 0.45) { // CHANGE: Increased frequency of boss quotes
         if (document.querySelectorAll('.knockout-message').length === 0 && document.querySelectorAll('.boss-message').length === 0) {
             const randomBossQuote = BOSS_QUOTES[Math.floor(Math.random() * BOSS_QUOTES.length)];
             showBossMessage(randomBossQuote, 2000); 
@@ -1791,26 +1776,16 @@ function hideSkinSelectionScreen() {
     skinSelectionScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
     // Other UI elements will be hidden/shown by resetGame/startGame
-    updateMainScreenText(); // Ensure main screen texts are updated after selection
 }
 
 function selectSkin(skinName) {
     currentSkin = skinName;
     console.log(`Skin selected: ${currentSkin}`);
-    updateMainScreenText(); // Update titles and mission
-    hideSkinSelectionScreen(); // Go back to start screen
-}
-
-// NEW: Function to update main screen elements based on currentSkin
-function updateMainScreenText() {
-    const skinData = SKIN_DATA[currentSkin];
-    if (skinData) {
-        gameTitleElement.textContent = skinData.gameTitle;
-        gameMissionElement.textContent = skinData.gameMission;
-        // document.title to update browser tab title (optional, but good for consistency)
-        document.title = skinData.gameTitle; 
-        endScreenTitleElement.textContent = skinData.defeatedTitle; // Update end screen title
-    }
+    // Update image source for ozzyImage immediately after skin selection
+    ozzyImage.src = SKIN_IMAGES[currentSkin].normal;
+    // Optional: update skin preview in menu, if visible
+    // In this simple implementation, the change will be visible after starting the game.
+    hideSkinSelectionScreen();
 }
 
 
@@ -1890,11 +1865,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnFreezeLvlDisplay = btnFreeze.querySelector('.superpower-level-display');
     btnFrenzyLvlDisplay = btnFrenzy.querySelector('.superpower-level-display');
 
-    // NEW: Assign DOM variables for dynamic texts
-    gameTitleElement = document.getElementById('game-title');
-    gameMissionElement = document.getElementById('game-mission');
-    endScreenTitleElement = document.getElementById('end-screen-title');
-
 
     // IMPORTANT: Hide the upgrade shop screen immediately upon loading.
     upgradeShopScreen.classList.add('hidden');
@@ -1907,7 +1877,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     quoteImagesContainer.innerHTML = ''; 
     skinSelectionScreen.classList.add('hidden'); // Hide skin selection screen on start
 
-    
     // resetGame is called in DOMContentLoaded, so its use of global DOM variables is safe
     resetGame(); 
 
@@ -2088,6 +2057,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     updateUpgradeShopUI();
-    // Set initial text based on default skin (Tinu) - PRZENIESIONE TUTAJ
-    updateMainScreenText(); 
 });
