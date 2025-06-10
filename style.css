@@ -235,10 +235,19 @@ button:disabled{background-color:#555;color:#aaa;border-color:#777;cursor:not-al
 }
 
 .superpower-button:hover{background-color:#008000;border-color:#7FFF00}
-.superpower-button:disabled { /* Dodatkowe style dla wyłączonych przycisków */
-    background-color: #555 !important; /* Ważne, aby nadpisać gradient */
-    background-image: none !important;
-    border-color: #777 !important;
+/* ZMIANA: Nowe style dla wyłączonych przycisków supermocy, aby pasek cooldownu był widoczny */
+.superpower-button:disabled {
+    /* Nadpisz zmienne CSS, aby używać przyciemnionych kolorów, ale pozwól gradientowi działać */
+    --superpower-base-bg: #3a3a3a; /* Przyciemniony, szary kolor bazowy */
+    --superpower-cooldown-bg: #5a5a5a; /* Przyciemniony, szary kolor wypełnienia cooldownu */
+    
+    border-color: #777; /* Utrzymaj przyciemnioną ramkę */
+    color: #aaa; /* Przyciemniony kolor tekstu */
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    /* Usunięto background-color !important i background-image: none !important,
+       aby gradient był widoczny, a kolory sterowane zmiennymi. */
 }
 
 .knockout-message,.boss-message{position:absolute;left:50%;transform:translate(-50%,-50%);background-color:rgba(0,0,0,0.8);padding:20px 30px;border-radius:10px;border:4px solid #FFD700;font-size:clamp(1em,3.5vw,2em);text-align:center;color:#FFD700;z-index:1000;animation:message-pop-fade 2s ease-out forwards;white-space:normal;word-break:break-word;max-width:90%;box-sizing:border-box}
