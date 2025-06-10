@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CHANGE: Added maximum-scale=1.0, user-scalable=no, to disable zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beat Stonks!</title>
+    <!-- Press Start 2P font is imported in style.css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Changed background, adjust image -->
+        <img id="animated-background-tractor" src="zdjecie 1 - tlo.jpg" alt="Battle Arena Background">
+        
+        <!-- NEW: Canvas for Boss effects - will be drawn by JS -->
+        <canvas id="boss-effect-canvas"></canvas>
+
+        <div id="quote-images-container"></div>
+        
+        <div id="ozzy-container" class="hidden">
+            <!-- We use zdjecie 2.jpg for Ozzy -->
+            <img id="ozzy-image" src="stonks2.png" alt="Stonks to beat">
+            <!-- Health bar for Ozzy -->
+            <div id="health-bar-container">
+                <div id="health-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Superpower effects containers (transparent overlays) -->
+        <div id="lightning-effect" class="effect-overlay hidden"></div>
+        <div id="freeze-effect" class="effect-overlay hidden"></div>
+        <div id="frenzy-effect" class="effect-overlay hidden"></div>
+        
+        <div id="start-screen">
+            <h1>Beat Stonks!</h1>
+            <p>Your mission: punch Stonks until he drops!</p>
+            <div id="nick-input-container">
+                <label for="nickname-input"></label>
+                <input type="text" id="nickname-input" placeholder="Enter your nickname" maxlength="15">
+            </div>
+            <button id="start-button">Start!</button>
+            <button id="select-skin-button">Select Skin</button>
+            <button id="show-leaderboard-button">Leaderboard</button>
+        </div>
+
+        <!-- Skin selection screen -->
+        <div id="skin-selection-screen" class="screen hidden">
+            <h2>Select Skin</h2>
+            <div class="skin-options">
+                <button id="select-stonks-skin" class="skin-button">
+                    <img src="stonks.png" alt="Stonks Skin">
+                    <p>Stonks</p>
+                </button>
+                <button id="select-tinu-skin" class="skin-button">
+                    <img src="tinu.png" alt="Tinu Skin Placeholder">
+                    <p>Tinu</p>
+                </button>
+            </div>
+            <button id="close-skin-selection-button">Close</button>
+        </div>
+        
+        <div id="end-screen" class="hidden">
+            <h1>Stonks defeated you!</h1>
+            <p id="end-message">Congratulations! You defeated Stonks!</p>
+            <!-- Changed ID to "final-score" for consistency with script.js -->
+            <p>Levels cleared: <span id="final-score">0</span>!</p>
+            <button id="restart-button">Play Again!</button>
+            <button id="show-leaderboard-after-game-button">View Leaderboard</button>
+        </div>
+
+        <div id="leaderboard-screen" class="hidden">
+            <h2>Top Players</h2>
+            <ol id="leaderboard-list"></ol>
+            <button id="back-to-start-button">Back to Menu</button>
+        </div>
+
+        <!-- NEW element: Player health bar (added here) -->
+        <div id="player-health-container" class="hidden">
+            <p>HEALTH: <span id="player-health-display"></span></p>
+            <div id="player-health-bar-bg">
+                <div id="player-health-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- NEW CONTAINER FOR GAME INFORMATION (SCORE AND LEVEL) -->
+        <div id="game-info-container" class="hidden">
+            <div id="score-display">Points: <span id="score">0</span></div>
+            <div id="level-display">Level: <span id="current-level">0</span></div>
+        </div>
+        
+        <!-- message-display remains standalone as it's used globally -->
+        <div id="message-display" class="hidden"></div>
+
+        <!-- Superpower buttons container -->
+        <div id="superpower-buttons-container" class="hidden">
+            <!-- CHANGE: Changed superpower button structure -->
+            <button id="btn-lightning" class="superpower-button" disabled>
+                <span class="superpower-icon">⚡</span>
+                <span class="superpower-name-cooldown">Lightning Strike</span>
+                <span class="superpower-level-display"></span>
+            </button>
+            <button id="btn-freeze" class="superpower-button" disabled>
+                <span class="superpower-icon">❄️</span>
+                <span class="superpower-name-cooldown">Ice Blast</span>
+                <span class="superpower-level-display"></span>
+            </button>
+            <button id="btn-frenzy" class="superpower-button" disabled>
+                <span class="superpower-icon">🔥</span>
+                <span class="superpower-name-cooldown">Battle Frenzy</span>
+                <span class="superpower-level-display"></span>
+            </button>
+        </div>
+
+        <!-- NEW: Upgrade Shop Screen -->
+        <div id="upgrade-shop-screen" class="hidden">
+            <h2>Upgrade Shop</h2>
+            <p id="shop-points">Your points: <span id="current-score-shop">0</span></p>
+            
+            <div class="upgrade-category">
+                <h3>Base Damage</h3>
+                <p>Level: <span id="base-damage-level">1</span></p>
+                <p>Cost: <span id="base-damage-cost">10</span> points</p>
+                <button id="buy-base-damage">Buy Upgrade</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Max Player Health</h3>
+                <p>Level: <span id="max-health-level">1</span></p>
+                <p>Cost: <span id="max-health-cost">10</span> points</p>
+                <button id="buy-max-health">Buy Upgrade</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Lightning Strike</h3>
+                <p>Level: <span id="lightning-damage-level">1</span></p>
+                <p>Cost: <span id="lightning-damage-cost">10</span> points</p>
+                <button id="buy-lightning-damage">Buy Upgrade</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Ice Blast</h3>
+                <p>Level: <span id="freeze-damage-level">1</span></p>
+                <p>Cost: <span id="freeze-damage-cost">10</span> points</p>
+                <button id="buy-freeze-damage">Buy Upgrade</button>
+            </div>
+            <div class="upgrade-category">
+                <h3>Battle Frenzy</h3>
+                <p>Level: <span id="frenzy-damage-level">1</span></p>
+                <p>Cost: <span id="frenzy-cost">10</span> points</p>
+                <button id="buy-frenzy-damage">Buy Upgrade</button>
+            </div>
+            <button id="close-shop-button">Close Shop</button>
+        </div>
+
+        <!-- NEW SHOP BUTTON ON GAME SCREEN -->
+        <button id="shop-button" class="hidden">🛒 SHOP</button>
+    </div>
+
+    <!-- CHANGE: Simplified audio tags -->
+    <audio id="background-music" src="muzyka.mp3" loop preload="auto"></audio>
+    <audio id="punch-sound" src="punch.mp3" preload="auto"></audio>
+    <audio id="game-over-sound" src="gameover.mp3" preload="auto"></audio> <!-- NEW game over sound -->
+
+    <!-- CHANGE: Removed old Firebase compat.js scripts. script.js uses modular v9. -->
+    <script src="script.js" type="module"></script>
+</body>
+</html>
