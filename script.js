@@ -142,6 +142,11 @@ let freezeDotIntervalId;
 const TINU_NFT_PATH = 'tinu_nfts/'; // Directory where your 200 Tinu NFT PNGs are located
 const NUM_TINU_NFTS = 200; // Total number of Tinu NFT images (1.png to 200.png)
 
+// NEW: Paths for dynamic backgrounds
+const BACKGROUND_PATH = 'background/'; // Directory where your background PNGs are located
+const NUM_BACKGROUNDS = 12; // Total number of background images (1.png to 12.png)
+let currentBackgroundIndex = 1; // Current background image index
+
 // CHANGE: Default images and for other skins
 const SKIN_IMAGES = {
     stonks: {
@@ -1232,6 +1237,11 @@ function updateOzzyAppearance() {
     }
 }
 
+// NEW: Function to update the background image
+function updateBackground() {
+    backgroundTractor.src = `${BACKGROUND_PATH}${currentBackgroundIndex}.png`;
+}
+
 
 // --- Game Functions ---
 function resetGame() {
@@ -1354,6 +1364,10 @@ function resetGame() {
     }
     baseStonksDamage = 5; // Reset base Stonks damage to initial value
     STONKS_ATTACK_DAMAGE = baseStonksDamage; // Set current damage to base
+
+    // NEW: Set initial background to 1.png
+    currentBackgroundIndex = 1;
+    updateBackground();
 }
 
 function showMessage(message, duration = 1500) {
@@ -1543,6 +1557,10 @@ function handleOzzyKnockout() {
         // INCREASE BASE BOT DAMAGE AFTER DEFEATING THE PREVIOUS BOSS
         baseStonksDamage += STONKS_DAMAGE_INCREMENT_PER_BOSS_CYCLE;
         console.log(`Base bot damage increased to ${baseStonksDamage} after boss cycle.`); // ZMIANA: Neutralny tekst
+
+        // NEW: Change background after boss fight
+        currentBackgroundIndex = (currentBackgroundIndex % NUM_BACKGROUNDS) + 1; // Cycle through backgrounds
+        updateBackground();
 
         startBossFight(); // This function will setup boss, increment bossVisualVariantIndex, and apply appearance
         
